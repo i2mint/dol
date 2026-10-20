@@ -219,6 +219,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.records.html">dol.records</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.signatures.html">dol.signatures</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.sources.html">dol.sources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.store_addons.html">dol.store_addons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.tools.html">dol.tools</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.trans.html">dol.trans</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../_autosummary/dol.trash.html">dol.trash</a></li>
@@ -292,14 +293,19 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemgetter</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="c1"># The codec types are defined in the dependency-free ``dol._codecs_core`` (so that</span>
+<span class="c1"># ``dol.trans`` can re-export them without loading the ready-made codecs below).</span>
+<span class="c1"># This module is their public home: import them from here (i2mint/dol#70).</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol._codecs_core</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EncodedType</span><span class="p">,</span>
+    <span class="n">DecodedType</span><span class="p">,</span>
     <span class="n">Codec</span><span class="p">,</span>
     <span class="n">ValueCodec</span><span class="p">,</span>
     <span class="n">KeyCodec</span><span class="p">,</span>
     <span class="n">KeyValueCodec</span><span class="p">,</span>
     <span class="n">affix_key_codec</span><span class="p">,</span>
-    <span class="n">store_decorator</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">store_decorator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.paths</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyTemplate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.signatures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sig</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">named_partial</span><span class="p">,</span> <span class="n">identity_func</span><span class="p">,</span> <span class="n">single_nest_in_dict</span><span class="p">,</span> <span class="n">nest_in_dict</span>
@@ -947,7 +953,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=5314aa16"></script>
+</div><script src="../../_static/documentation_options.js?v=73a530fd"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

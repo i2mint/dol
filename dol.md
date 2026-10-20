@@ -1,4 +1,4 @@
-> built 2026-10-20 16:34 UTC from ea98517 (master) · dol 0.3.91. Details: build_info.json
+> built 2026-10-20 18:13 UTC from 7e834f3 (master) · dol 0.3.92. Details: build_info.json
 
 # index.html.md
 
@@ -4528,6 +4528,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`records`](_autosummary/dol.records.html.md#module-dol.records)                                 | Records: a queryable CRUD facade for the small rows beside the blobs (#80).                                     |
 | [`signatures`](_autosummary/dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](_autosummary/dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
+| [`store_addons`](_autosummary/dol.store_addons.html.md#module-dol.store_addons)                       | Store add-ons: path access, flattening, method aliases and hashing.                                             |
 | [`tools`](_autosummary/dol.tools.html.md#module-dol.tools)                                     | Various tools to add functionality to stores.                                                                   |
 | [`trans`](_autosummary/dol.trans.html.md#module-dol.trans)                                     | Tools to wrap stores with key/value transforms, filters, caches and other layers.                               |
 | [`trash`](_autosummary/dol.trash.html.md#module-dol.trash)                                     | Cross-platform file trash/recycle bin functionality for dol.                                                    |
@@ -12335,6 +12336,718 @@ sources.NotUnique: iterator had more than one element
 ```
 
 
+# _autosummary/dol.store_addons.html.md
+
+# dol.store_addons
+
+Store add-ons: path access, flattening, method aliases and hashing.
+
+Each tool here takes a store (class or instance) and gives it an extra capability,
+without changing its keys or values:
+
+- `add_path_get` / `add_path_access` / `autoviv`: read (and write) nested stores
+  through key paths such as `s['a', 'b', 'c']`
+- `flatten`: a flat view of a nested store, keyed by key paths
+- `insert_aliases` / `insert_load_dump_aliases`: alias the mapping methods
+  (`write`, `read`, `delete`, `list`, `count`, `load`, `dump`)
+- `insert_hash_method`: make a store hashable
+
+These used to live in `dol.trans`, which still re-exports them, so
+`from dol.trans import add_path_access` keeps working (i2mint/dol#70).
+
+```pycon
+>>> from dol.store_addons import add_path_access
+>>> s = add_path_access({'a': {'b': {'c': 42}}})
+>>> s['a', 'b', 'c']
+42
+```
+
+### Functions
+
+| [`add_path_access`](_autosummary/dol.store_addons.html.md#dol.store_addons.add_path_access)([store, name, path_type, ...])    | Make nested stores (read/write) accessible through key paths (iterable of keys).   |
+|----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| [`add_path_get`](_autosummary/dol.store_addons.html.md#dol.store_addons.add_path_get)([store, name, path_type, ...])       | Make nested stores accessible through key paths.                                   |
+| [`autoviv`](_autosummary/dol.store_addons.html.md#dol.store_addons.autoviv)([store])                                  | Opt-in write-through autovivification for key-paths.                               |
+| [`flatten`](_autosummary/dol.store_addons.html.md#dol.store_addons.flatten)([store, levels, cache_keys, ...])         | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.          |
+| [`flatten_store`](_autosummary/dol.store_addons.html.md#dol.store_addons.flatten_store)([store, levels, cache_keys, ...])   | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.          |
+| [`insert_aliases`](_autosummary/dol.store_addons.html.md#dol.store_addons.insert_aliases)([store, write, read, delete, ...]) | Insert method aliases of CRUD operations of a store (class or instance).           |
+| [`insert_hash_method`](_autosummary/dol.store_addons.html.md#dol.store_addons.insert_hash_method)([store, hash_method, ...])     | Make a store hashable using the specified `hash_method`.                           |
+| [`insert_load_dump_aliases`](_autosummary/dol.store_addons.html.md#dol.store_addons.insert_load_dump_aliases)([store, delete, ...])    | Insert load and dump methods, with familiar dump(obj, location) signature.         |
+| [`leveled_paths_walk`](_autosummary/dol.store_addons.html.md#dol.store_addons.leveled_paths_walk)(m, levels)                     | Yield the key paths of `m`, down to `levels` levels.                               |
+| [`mk_level_walk_filt`](_autosummary/dol.store_addons.html.md#dol.store_addons.mk_level_walk_filt)(levels)                        | Makes a `walk_filt` function for `kv_walk` based on some level logic.              |
+
+### dol.store_addons.add_path_access(store=None, \*, name=None, path_type=<class 'tuple'>, create_missing=False, mk_missing=None, explore_further=None, may_create=None, on_create=<function \_warn_on_create>, max_created=None, max_levels=20, verify_writeback=False, writeback_lock=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Make nested stores (read/write) accessible through key paths (iterable of keys).
+
+Like `add_path_get`, but with write and delete accessible through key paths.
+
+In a way “flatten the nested keys access”.
+(Warning: `path_type` only effects the first level.
+That is, it doesn’t work recursively.
+See issue: [https://github.com/i2mint/dol/issues/10](https://github.com/i2mint/dol/issues/10).)
+
+By default, the path object will be a tuple (e.g. `('a', 'b', 'c')`, but you can
+make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
+forms like `'a.b.c'`, `'a/b/c'`, etc.
+
+Say you have some nested stores.
+You know… like a `ZipFileReader` store whose values are `ZipReader` instances,
+whose values are bytes of the zipped files
+(and you can go on… whose (json) values are…).
+
+For our example, let’s take a nested dict instead:
+
+```pycon
+>>> s = {'a': {'b': {'c': 42}}}
+```
+
+Well, you can access any node of this nested tree of stores like this:
+
+```pycon
+>>> s['a']['b']['c']
+42
+```
+
+And that’s fine. But maybe you’d like to do it this way instead:
+
+```pycon
+>>> s = add_path_access(s)
+>>> s['a', 'b', 'c']
+42
+```
+
+So far, this is what `add_path_get` does. With `add_path_access` though you
+can also write and delete that way too:
+
+```pycon
+>>> s['a', 'b', 'c'] = 3.14
+>>> s['a', 'b', 'c']
+3.14
+>>> del s['a', 'b', 'c']
+>>> s
+{'a': {'b': {}}}
+```
+
+You might also want to access 42 with `a.b.c` or `a/b/c` etc.
+To do that you can use `dol.paths.KeyPath` in combination with
+
+* **Parameters:**
+  * **store** – The store (class or instance) you’re wrapping.
+    If not specified, the function will return a decorator.
+  * **name** – The name to give the class (not applicable to instance wrapping)
+  * **path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
+    By default, a tuple.
+    This is used to decide whether the key should be taken as a “normal”
+    key of the store,
+    or should be used to iterate through, recursively getting values.
+* **Returns:**
+  A wrapped store (class or instance), or a store wrapping decorator
+  (if store is not specified)
+
+#### SEE ALSO
+`KeyPath` in `dol.paths`
+
+Wrapping a class
+
+```pycon
+>>> S = add_path_access(dict)
+>>> s = S(a={'b': {'c': 42}})
+>>> assert s['a'] == {'b': {'c': 42}};
+>>> assert s['a', 'b'] == {'c': 42};
+>>> assert s['a', 'b', 'c'] == 42
+>>> s['a', 'b', 'c'] = 3.14
+>>> s['a', 'b', 'c']
+3.14
+>>> del s['a', 'b', 'c']
+>>> s
+{'a': {'b': {}}}
+```
+
+Using add_path_get as a decorator
+
+```pycon
+>>> @add_path_access
+... class S(dict):
+...    pass
+>>> s = S(a={'b': {'c': 42}})
+>>> assert s['a'] == {'b': {'c': 42}};
+>>> assert s['a', 'b'] == s['a']['b'] == {'c': 42};
+>>> assert s['a', 'b', 'c'] == s['a']['b']['c'] == 42
+>>> s['a', 'b', 'c'] = 3.14
+>>> s['a', 'b', 'c']
+3.14
+>>> del s['a', 'b', 'c']
+>>> s
+{'a': {'b': {}}}
+```
+
+A different kind of path?
+You can choose a different path_type, but sometimes (say both keys and key paths are strings)
+You need to involve more tools. Like dol.paths.KeyPath…
+
+```pycon
+>>> from dol.paths import KeyPath
+>>> from dol.trans import kv_wrap
+>>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
+>>> s = SS({'a': {'b': {'c': 42}}})
+>>> assert s['a'] == {'b': {'c': 42}};
+>>> assert s['a.b'] == s['a']['b'];
+>>> assert s['a.b.c'] == s['a']['b']['c']
+>>> s['a.b.c'] = 3.14
+>>> s
+{'a': {'b': {'c': 3.14}}}
+>>> del s['a.b.c']
+>>> s
+{'a': {'b': {}}}
+```
+
+#### NOTE
+The add_path_access doesn’t carry on to values.
+
+```pycon
+>>> s = add_path_access({'a': {'b': {'c': 42}}})
+>>> s['a', 'b', 'c']
+42
+>>> # but
+>>> s['a']['b', 'c']
+Traceback (most recent call last):
+  ...
+KeyError: ('b', 'c')
+```
+
+That said,
+
+```pycon
+>>> add_path_access(s['a'])['b', 'c']
+42
+```
+
+The reason why we don’t do this automatically is that it may not always be desirable.
+If one wanted to though, one could use `wrap_kvs(obj_of_data=...)` to wrap
+specific values with `add_path_access`.
+For example, if you wanted to wrap all mappings recursively, you could:
+
+```pycon
+>>> from typing import Mapping
+>>> from dol.util import instance_checker
+>>> from dol.trans import conditional_data_trans
+>>> add_path_access_if_mapping = conditional_data_trans(
+...     condition=instance_checker(Mapping), data_trans=add_path_access
+... )
+>>> s = add_path_access_if_mapping({'a': {'b': {'c': 42}}})
+>>> s['a', 'b', 'c']
+42
+>>> # But now this works:
+>>> s['a']['b', 'c']
+42
+```
+
+### dol.store_addons.add_path_get(store=None, \*, name=None, path_type=<class 'tuple'>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Make nested stores accessible through key paths.
+In a way “flatten the nested keys access”.
+By default, the path object will be a tuple (e.g. `('a', 'b', 'c')`, but you can
+make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
+forms like `'a.b.c'`, `'a/b/c'`, etc.
+
+(Warning: `path_type` only effects the first level.
+That is, it doesn’t work recursively.
+See issue: [https://github.com/i2mint/dol/issues/10](https://github.com/i2mint/dol/issues/10).)
+
+Say you have some nested stores.
+You know… like a `ZipFileReader` store whose values are `ZipReader` instances,
+whose values are bytes of the zipped files
+(and you can go on… whose (json) values are…).
+
+For our example, let’s take a nested dict instead:
+
+```pycon
+>>> s = {'a': {'b': {'c': 42}}}
+```
+
+Well, you can access any node of this nested tree of stores like this:
+
+```pycon
+>>> s['a']['b']['c']
+42
+```
+
+And that’s fine. But maybe you’d like to do it this way instead:
+
+```pycon
+>>> s = add_path_get(s)
+>>> s['a', 'b', 'c']
+42
+```
+
+You might also want to access 42 with `a.b.c` or `a/b/c` etc.
+To do that you can use `dol.paths.KeyPath` in combination with
+
+* **Parameters:**
+  * **store** – The store (class or instance) you’re wrapping.
+    If not specified, the function will return a decorator.
+  * **name** – The name to give the class (not applicable to instance wrapping)
+  * **path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
+    By default, a tuple.
+    This is used to decide whether the key should be taken as a “normal”
+    key of the store,
+    or should be used to iterate through, recursively getting values.
+* **Returns:**
+  A wrapped store (class or instance), or a store wrapping decorator
+  (if store is not specified)
+
+#### SEE ALSO
+`KeyPath` in `dol.paths`
+
+Wrapping an instance
+
+```pycon
+>>> s = add_path_get({'a': {'b': {'c': 42}}})
+>>> s['a']
+{'b': {'c': 42}}
+>>> s['a', 'b']
+{'c': 42}
+>>> s['a', 'b', 'c']
+42
+```
+
+Wrapping a class
+
+```pycon
+>>> S = add_path_get(dict)
+>>> s = S(a={'b': {'c': 42}})
+>>> assert s['a'] == {'b': {'c': 42}};
+>>> assert s['a', 'b'] == {'c': 42};
+>>> assert s['a', 'b', 'c'] == 42
+```
+
+Using add_path_get as a decorator
+
+```pycon
+>>> @add_path_get
+... class S(dict):
+...    pass
+>>> s = S(a={'b': {'c': 42}})
+>>> assert s['a'] == {'b': {'c': 42}};
+>>> assert s['a', 'b'] == s['a']['b'] == {'c': 42};
+>>> assert s['a', 'b', 'c'] == s['a']['b']['c'] == 42
+```
+
+A different kind of path?
+You can choose a different path_type, but sometimes (say both keys and key paths are strings)
+You need to involve more tools. Like dol.paths.KeyPath…
+
+```pycon
+>>> from dol.paths import KeyPath
+>>> from dol.trans import kv_wrap
+>>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
+>>> s = SS({'a': {'b': {'c': 42}}})
+>>> assert s['a'] == {'b': {'c': 42}};
+>>> assert s['a.b'] == s['a']['b'];
+>>> assert s['a.b.c'] == s['a']['b']['c']
+```
+
+### dol.store_addons.autoviv(store=None, \*\*kwargs)
+
+Opt-in write-through autovivification for key-paths.
+
+Shorthand for `add_path_access(store, create_missing=True, **kwargs)`: writing
+through a key-path (e.g. `s['a', 'b', 'c'] = v`) creates any missing intermediate
+levels on the way, and the change persists correctly even through persistent /
+copy-semantics stores (`Files`, `wrap_kvs`-wrapped stores). See
+`add_path_access` for the full set of options (`mk_missing`, `may_create`,
+`max_created`, `on_create`, …). Missing-key creation is announced via
+`warnings.warn` by default, so a typo is never silent.
+
+```pycon
+>>> from dol import autoviv
+>>> s = autoviv({})
+>>> s['a', 'b', 'c'] = 42
+>>> s['a', 'b', 'c']
+42
+>>> s['a']['b']['c']
+42
+```
+
+Like `add_path_access`, it also works as a class decorator / factory:
+
+```pycon
+>>> S = autoviv(dict)
+>>> s = S()
+>>> s['x', 'y'] = 1
+>>> s['x', 'y']
+1
+```
+
+### dol.store_addons.flatten(store=None, , levels=None, cache_keys=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
+
+Not to be confused with `dol.flatten_dict`, which flattens a plain nested
+`Mapping` into a new `dict` (eagerly, with joined-string keys). This one wraps
+a *store of stores* in a lazy, levels-aware view. `flatten_store` is the
+unambiguous name for this function (`flatten` stays as its alias).
+
+Say you have a store that has three levels (or more), that is, that you can always
+ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
+`b` is a valid key of `store[a]` and `c` is a valid key of `store[a][b]`.
+
+What `flattened_store = flatten(store, levels=3)` will give you is the ability
+to access the `store[a][b][c]` as `store[a, b, c]`, while still being able
+to access these stores “normally”.
+
+If that’s all you need, you can just use the `add_get_path` wrapper for this.
+
+Why would you use `flatten`? Because `add_get_path(store)` would still only
+give you the `KvReader` point of view of the root `store`.
+If you `list(store)`, you’d only get the first level keys,
+or if you ask if `(a, b, c)` is in the store, it will tell you it’s not
+(though you can access data with such a key.
+
+Instead, a flattened store will consider that the keys are those `(a, b, c)`
+key paths.
+
+Further, when flattening a store, you can ask for the view to cache the keys,
+specifying `cache_keys=True` or give it an explicit place to cache or
+factory to make a cache (see `cached_keys` wrapper for more details).
+Though caching keys is not the default it’s highly recommended to do so in most
+cases. The only reason it is not the default is because if you have millions of
+keys, but little memory, that’s not what you might want.
+
+#### NOTE
+Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
+change the store itself, or it’s contents.
+
+* **Parameters:**
+  * **store** – The store instance or class to be wrapped
+  * **levels** – The number of nested levels to flatten
+  * **cache_keys** – Whether to cache the keys, or a cache factory or instance.
+
+```pycon
+>>> from dol import flatten
+>>> d = {
+...     'a': {'b': {'c': 42}},
+...     'aa': {'bb': {'cc': 'dragon_con'}}
+... }
+```
+
+You can get a flattened view of an instance:
+
+```pycon
+>>> m = flatten(d, levels=3, cache_keys=True)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a', 'b', 'c'), 42),
+...             (('aa', 'bb', 'cc'), 'dragon_con')
+...         ]
+... )
+```
+
+You can make a flattener and apply it to an instance (or a class):
+
+```pycon
+>>> my_flattener = flatten(levels=2)
+>>> m = my_flattener(d)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a', 'b'), {'c': 42}),
+...             (('aa', 'bb'), {'cc': 'dragon_con'})
+...         ]
+... )
+```
+
+Finally, you can wrap a class itself.
+
+```pycon
+>>> @flatten(levels=1)
+... class MyFlatDict(dict):
+...     pass
+>>> m = MyFlatDict(d)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a',), {'b': {'c': 42}}),
+...             (('aa',), {'bb': {'cc': 'dragon_con'}})
+...         ]
+... )
+```
+
+### dol.store_addons.flatten_store(store=None, , levels=None, cache_keys=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
+
+Not to be confused with `dol.flatten_dict`, which flattens a plain nested
+`Mapping` into a new `dict` (eagerly, with joined-string keys). This one wraps
+a *store of stores* in a lazy, levels-aware view. `flatten_store` is the
+unambiguous name for this function (`flatten` stays as its alias).
+
+Say you have a store that has three levels (or more), that is, that you can always
+ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
+`b` is a valid key of `store[a]` and `c` is a valid key of `store[a][b]`.
+
+What `flattened_store = flatten(store, levels=3)` will give you is the ability
+to access the `store[a][b][c]` as `store[a, b, c]`, while still being able
+to access these stores “normally”.
+
+If that’s all you need, you can just use the `add_get_path` wrapper for this.
+
+Why would you use `flatten`? Because `add_get_path(store)` would still only
+give you the `KvReader` point of view of the root `store`.
+If you `list(store)`, you’d only get the first level keys,
+or if you ask if `(a, b, c)` is in the store, it will tell you it’s not
+(though you can access data with such a key.
+
+Instead, a flattened store will consider that the keys are those `(a, b, c)`
+key paths.
+
+Further, when flattening a store, you can ask for the view to cache the keys,
+specifying `cache_keys=True` or give it an explicit place to cache or
+factory to make a cache (see `cached_keys` wrapper for more details).
+Though caching keys is not the default it’s highly recommended to do so in most
+cases. The only reason it is not the default is because if you have millions of
+keys, but little memory, that’s not what you might want.
+
+#### NOTE
+Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
+change the store itself, or it’s contents.
+
+* **Parameters:**
+  * **store** – The store instance or class to be wrapped
+  * **levels** – The number of nested levels to flatten
+  * **cache_keys** – Whether to cache the keys, or a cache factory or instance.
+
+```pycon
+>>> from dol import flatten
+>>> d = {
+...     'a': {'b': {'c': 42}},
+...     'aa': {'bb': {'cc': 'dragon_con'}}
+... }
+```
+
+You can get a flattened view of an instance:
+
+```pycon
+>>> m = flatten(d, levels=3, cache_keys=True)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a', 'b', 'c'), 42),
+...             (('aa', 'bb', 'cc'), 'dragon_con')
+...         ]
+... )
+```
+
+You can make a flattener and apply it to an instance (or a class):
+
+```pycon
+>>> my_flattener = flatten(levels=2)
+>>> m = my_flattener(d)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a', 'b'), {'c': 42}),
+...             (('aa', 'bb'), {'cc': 'dragon_con'})
+...         ]
+... )
+```
+
+Finally, you can wrap a class itself.
+
+```pycon
+>>> @flatten(levels=1)
+... class MyFlatDict(dict):
+...     pass
+>>> m = MyFlatDict(d)
+>>> assert (
+...         list(m.items())
+...         == [
+...             (('a',), {'b': {'c': 42}}),
+...             (('aa',), {'bb': {'cc': 'dragon_con'}})
+...         ]
+... )
+```
+
+### dol.store_addons.insert_aliases(store=None, , write=None, read=None, delete=None, list=None, count=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Insert method aliases of CRUD operations of a store (class or instance).
+If store is a class, you’ll get a copy of the class with those methods added.
+If store is an instance, the methods will be added in place (no copy will be made).
+
+#### NOTE
+If an operation (write, read, delete, list, count) is not specified, no alias will be created for
+that operation.
+
+IMPORTANT NOTE: The signatures of the methods the aliases will point to will not change.
+We say this because, you can call the write method “dump”, but you’ll have to use it as
+`store.dump(key, val)`, not `store.dump(val, key)`, which is the signature you’re probably used to
+(it’s the one used by json.dump or pickle.dump for example). If you want that familiar interface,
+using the insert_load_dump_aliases function.
+
+See also (and not to be confused with): `add_aliases`
+
+* **Parameters:**
+  * **store** – The store to extend with aliases.
+  * **write** – Desired method name for \_\_setitem_\_
+  * **read** – Desired method name for \_\_getitem_\_
+  * **delete** – Desired method name for \_\_delitem_\_
+  * **list** – Desired method name for \_\_iter_\_
+  * **count** – Desired method name for \_\_len_\_
+* **Returns:**
+  A store with the desired aliases.
+
+```pycon
+>>> # Example of extending a class
+>>> mydict = insert_aliases(dict, write='dump', read='load', delete='rm', list='peek', count='size')
+>>> s = mydict(true='love')
+>>> s.dump('friends', 'forever')
+>>> s
+{'true': 'love', 'friends': 'forever'}
+>>> s.load('true')
+'love'
+>>> list(s.peek())
+['true', 'friends']
+>>> s.size()
+2
+>>> s.rm('true')
+>>> s
+{'friends': 'forever'}
+>>>
+>>> # Example of extending an instance
+>>> from collections import UserDict
+>>> s = UserDict(true='love')  # make (and instance) of a UserDict (can't modify a dict instance)
+>>> # make aliases of note that you don't need
+>>> s = insert_aliases(s, write='put', read='retrieve', count='num_of_items')
+>>> s.put('friends', 'forever')
+>>> s
+{'true': 'love', 'friends': 'forever'}
+>>> s.retrieve('true')
+'love'
+>>> s.num_of_items()
+2
+```
+
+### dol.store_addons.insert_hash_method(store=None, \*, hash_method=<built-in function id>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Make a store hashable using the specified `hash_method`.
+Will add (or overwrite) a `__hash__` method to the store that uses the
+hash_method to hash the store and an `__eq__` method that compares the store to
+another based on the hash_method.
+
+The `hash_method`, which will be used as the `__hash__` method of a class
+should return an integer value that represents the hash of the object.
+To remain sane, the hash value must be the same for an object every time the
+`__hash__` method is called during the lifetime of the object, and objects
+that compare equal (using the \_\_eq_\_ method) must have the same hash value.
+
+It’s also important that the hash function has the property of being deterministic
+and returning a hash value that is uniformly distributed across the range of
+possible integers for the given data. This is important for the hash table
+data structure to work efficiently.
+
+See [This issue](https://github.com/i2mint/dol/issues/7) for further information.
+
+```pycon
+>>> d = {1: 2}  # not hashable!
+>>> dd = insert_hash_method(d)
+>>> assert isinstance(hash(dd), int)  # now hashable!
+```
+
+It looks the same:
+
+```pycon
+>>> dd
+{1: 2}
+```
+
+But don’t be fooled: dd is not equal to the original `d` (since
+insert_hash_method\`\`overwrote the `__eq__` method to compare based on the
+hash value):
+
+```pycon
+>>> d == dd
+False
+```
+
+But if you cast both to dicts and then compare, you’ll be using the key and value
+based comparison of dicts, which makes these two equal.
+
+```pycon
+>>> dict(d) == dict(dd)
+True
+```
+
+The default `hash_method` is `id`, so two hashable wrappers won’t be equal
+to eachother:
+
+```pycon
+>>> insert_hash_method(d) == insert_hash_method(d)
+False
+```
+
+In the following we show two things: That you can specify your own custom
+`hash_method`, and that you can use `insert_hash_method` to wrap classes
+
+```pycon
+>>> class D(dict):
+...     pass
+>>> DD = insert_hash_method(D, hash_method=lambda x: 42)
+>>> hash(DD(d))
+42
+```
+
+You can also use it as a decorator, without arguments,
+
+```pycon
+>>> @insert_hash_method
+... class E(dict):
+...     pass
+>>> assert isinstance(hash(E({1: 2})), int)
+```
+
+or with arguments (which you must specify as keyword arguments):
+
+```pycon
+>>> @insert_hash_method(hash_method=lambda x: sum(x.values()))
+... class F(dict):
+...     pass
+>>> hash(F({1: 2, 3: 4}))
+6
+```
+
+### dol.store_addons.insert_load_dump_aliases(store=None, , delete=None, list=None, count=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
+
+Insert load and dump methods, with familiar dump(obj, location) signature.
+
+* **Parameters:**
+  * **store** – The store to extend with aliases.
+  * **delete** – Desired method name for \_\_delitem_\_
+  * **list** – Desired method name for \_\_iter_\_
+  * **count** – Desired method name for \_\_len_\_
+* **Returns:**
+  A store with the desired aliases.
+
+```pycon
+>>> mydict = insert_load_dump_aliases(dict)
+>>> s = mydict()
+>>> s.dump(obj='love', key='true')
+>>> s
+{'true': 'love'}
+```
+
+### dol.store_addons.leveled_paths_walk(m, levels)
+
+Yield the key paths of `m`, down to `levels` levels.
+
+### dol.store_addons.mk_level_walk_filt(levels)
+
+Makes a `walk_filt` function for `kv_walk` based on some level logic.
+If `levels` is an integer, will consider it as the max path length,
+if not it will just assert that `levels` is callable, and return it
+
+
 # _autosummary/dol.tools.html.md
 
 # dol.tools
@@ -12701,17 +13414,22 @@ Main entry points:
 - `wrap_kvs`: key/value transforms (`key_of_id`, `obj_of_data`, codecs, …)
 - `filt_iter`: restrict a store to a subset of its keys
 - `cached_keys`: cache the key listing of a slow store
-- `add_path_access`: read/write nested stores through key paths
+- `add_path_access`: read/write nested stores through key paths (defined in
+  `dol.store_addons`, with the other add-ons: `flatten`, `insert_aliases`, …)
 - `kv_wrap`: wrap using an object that holds `_id_of_key`/`_obj_of_data`-style methods
-  ```pycon
-  >>> from dol.trans import wrap_kvs
-  >>> s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)
-  >>> s['a'] = 1
-  >>> s.store  # the backend holds the transformed key and value
-  {'a': '1'}
-  >>> list(s), s['A']
-  (['A'], 1)
-  ```
+
+The codec types (`Codec`, `ValueCodec`, `KeyCodec`, …) live in `dol.kv_codecs`.
+This module re-exports them, and the add-ons, so older imports keep working.
+
+```pycon
+>>> from dol.trans import wrap_kvs
+>>> s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)
+>>> s['a'] = 1
+>>> s.store  # the backend holds the transformed key and value
+{'a': '1'}
+>>> list(s), s['A']
+(['A'], 1)
+```
 
 ### Module Attributes
 
@@ -12725,13 +13443,9 @@ Main entry points:
 | [`add_decoder`](_autosummary/dol.trans.html.md#dol.trans.add_decoder)([store_cls, decoder, name, ...])        | Add a decoder layer to a store.                                                                                                                          |
 | [`add_ipython_key_completions`](_autosummary/dol.trans.html.md#dol.trans.add_ipython_key_completions)(store)                  | Add tab completion that shows you the keys of the store.                                                                                                 |
 | [`add_missing_key_handling`](_autosummary/dol.trans.html.md#dol.trans.add_missing_key_handling)([store, ...])              | Overrides the `__missing__` method of a store with a custom callback.                                                                                    |
-| [`add_path_access`](_autosummary/dol.trans.html.md#dol.trans.add_path_access)([store, name, path_type, ...])      | Make nested stores (read/write) accessible through key paths (iterable of keys).                                                                         |
-| [`add_path_get`](_autosummary/dol.trans.html.md#dol.trans.add_path_get)([store, name, path_type, ...])         | Make nested stores accessible through key paths.                                                                                                         |
 | [`add_store_method`](_autosummary/dol.trans.html.md#dol.trans.add_store_method)(store, \*, method_func[, ...])     | Add methods to store classes or instances                                                                                                                |
 | [`add_wrapper_method`](_autosummary/dol.trans.html.md#dol.trans.add_wrapper_method)([wrap_cls, method_name])         | Decorator that adds a wrapper method (itself a decorator) to a wrapping class Clear? See `mk_wrapper` function and doctest example if not.               |
-| [`affix_key_codec`](_autosummary/dol.trans.html.md#dol.trans.affix_key_codec)([prefix, suffix])                   | A factory that creates a key codec that affixes a prefix and suffix to the key                                                                           |
 | [`assert_min_num_of_args`](_autosummary/dol.trans.html.md#dol.trans.assert_min_num_of_args)(func, num_of_args)           | Assert that a function can be a store method.                                                                                                            |
-| [`autoviv`](_autosummary/dol.trans.html.md#dol.trans.autoviv)([store])                                    | Opt-in write-through autovivification for key-paths.                                                                                                     |
 | [`cache_iter`](_autosummary/dol.trans.html.md#dol.trans.cache_iter)([store, keys_cache, ...])                | Make a class that wraps input class's \_\_iter_\_ becomes cached.                                                                                        |
 | [`cached_keys`](_autosummary/dol.trans.html.md#dol.trans.cached_keys)([store, keys_cache, ...])               | Make a class that wraps input class's \_\_iter_\_ becomes cached.                                                                                        |
 | [`catch_and_cache_error_keys`](_autosummary/dol.trans.html.md#dol.trans.catch_and_cache_error_keys)([store, ...])            | Store that will cache keys as they're accessed, separating those that raised errors and those that didn't.                                               |
@@ -12749,21 +13463,14 @@ Main entry points:
 | [`filter_prefixes`](_autosummary/dol.trans.html.md#dol.trans.filter_prefixes)(prefixes)                           | Make a filter that returns True if a string starts with one of the given prefixes                                                                        |
 | [`filter_regex`](_autosummary/dol.trans.html.md#dol.trans.filter_regex)(regex, \*[, return_search_func])       | Make a filter that returns True if a string matches the given regex                                                                                      |
 | [`filter_suffixes`](_autosummary/dol.trans.html.md#dol.trans.filter_suffixes)(suffixes)                           | Make a filter that returns True if a string ends with one of the given suffixes                                                                          |
-| [`flatten`](_autosummary/dol.trans.html.md#dol.trans.flatten)([store, levels, cache_keys, ...])           | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.                                                                                |
-| [`flatten_store`](_autosummary/dol.trans.html.md#dol.trans.flatten_store)([store, levels, cache_keys, ...])     | Give a nested store a flat view whose keys are the `(a, b, c)` key paths.                                                                                |
 | [`get_class_name`](_autosummary/dol.trans.html.md#dol.trans.get_class_name)(cls[, dflt_name])                    | The `__qualname__` of `cls` (or of its class), else `dflt_name`; raises `ValueError` if there is neither.                                                |
 | [`ignore_if_error`](_autosummary/dol.trans.html.md#dol.trans.ignore_if_error)([store, errors])                    | Wrap `store` so that `__getitem__` errors in `errors` return `None` instead of raising.                                                                  |
-| [`insert_aliases`](_autosummary/dol.trans.html.md#dol.trans.insert_aliases)([store, write, read, delete, ...])   | Insert method aliases of CRUD operations of a store (class or instance).                                                                                 |
-| [`insert_hash_method`](_autosummary/dol.trans.html.md#dol.trans.insert_hash_method)([store, hash_method, ...])       | Make a store hashable using the specified `hash_method`.                                                                                                 |
-| [`insert_load_dump_aliases`](_autosummary/dol.trans.html.md#dol.trans.insert_load_dump_aliases)([store, delete, ...])      | Insert load and dump methods, with familiar dump(obj, location) signature.                                                                               |
 | [`is_iterable`](_autosummary/dol.trans.html.md#dol.trans.is_iterable)(x)                                      | Whether `x` is an `Iterable`.                                                                                                                            |
 | [`iterate_values_and_accumulate_non_error_keys`](_autosummary/dol.trans.html.md#dol.trans.iterate_values_and_accumulate_non_error_keys)(...)   | Yield the values of `store`, appending to `cache_keys_here` the keys whose value was fetched without error.                                              |
 | [`kv_wrap`](_autosummary/dol.trans.html.md#dol.trans.kv_wrap)(trans_obj)                                  | A function that makes a wrapper (a decorator) that will get the wrappers from methods of the input object.                                               |
 | [`kv_wrap_persister_cls`](_autosummary/dol.trans.html.md#dol.trans.kv_wrap_persister_cls)(persister_cls[, name])        | Make a class that wraps a persister into a dol.base.Store,                                                                                               |
-| [`leveled_paths_walk`](_autosummary/dol.trans.html.md#dol.trans.leveled_paths_walk)(m, levels)                       | Yield the key paths of `m`, down to `levels` levels.                                                                                                     |
 | [`mk_confirm_overwrite_preset`](_autosummary/dol.trans.html.md#dol.trans.mk_confirm_overwrite_preset)(\*[, get_input, ...])   | Make a `wrap_kvs` `preset` that asks for confirmation before overwriting an existing key that holds a *different* value.                                 |
 | [`mk_kv_reader_from_kv_collection`](_autosummary/dol.trans.html.md#dol.trans.mk_kv_reader_from_kv_collection)(kv_collection)      | Make a KvReader class from a Collection class.                                                                                                           |
-| [`mk_level_walk_filt`](_autosummary/dol.trans.html.md#dol.trans.mk_level_walk_filt)(levels)                          | Makes a `walk_filt` function for `kv_walk` based on some level logic.                                                                                    |
 | [`mk_read_only`](_autosummary/dol.trans.html.md#dol.trans.mk_read_only)(o)                                     | Disable `__setitem__` and `__delitem__` on `o` (a store class, typically).                                                                               |
 | [`mk_trans_obj`](_autosummary/dol.trans.html.md#dol.trans.mk_trans_obj)(\*\*kwargs)                            | Convenience method to quickly make a trans_obj (just an object holding some trans functions                                                              |
 | [`mk_wrapper`](_autosummary/dol.trans.html.md#dol.trans.mk_wrapper)(wrap_cls)                                | You have a wrapper class and you want to make a wrapper out of it, that is, a decorator factory with which you can make wrappers, like this:             |
@@ -12779,16 +13486,12 @@ Main entry points:
 
 ### Classes
 
-| [`CachedInvertibleTrans`](_autosummary/dol.trans.html.md#dol.trans.CachedInvertibleTrans)(trans_func)   |                                                                                                 |
-|--------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| [`Codec`](_autosummary/dol.trans.html.md#dol.trans.Codec)(encoder, decoder)             | An `encoder`/`decoder` pair; iterates as `(encoder, decoder)` and composes with `compose_with`. |
-| [`FiltIter`](_autosummary/dol.trans.html.md#dol.trans.FiltIter)(\*args, \*\*kwargs)        | Namespace of `filt_iter` factories (`regex`, `suffixes`, ...); not meant to be instantiated.    |
-| [`FirstArgIsMapping`](_autosummary/dol.trans.html.md#dol.trans.FirstArgIsMapping)(val)              | Mark a transform so its first argument is the store (mapping), not the data.                    |
-| [`KeyCodec`](_autosummary/dol.trans.html.md#dol.trans.KeyCodec)(encoder, decoder)          | A `Codec` that, called on a store, wraps its keys (`id_of_key`/`key_of_id`).                    |
-| [`KeyValueCodec`](_autosummary/dol.trans.html.md#dol.trans.KeyValueCodec)(encoder, decoder)     | A `Codec` that, called on a store, wraps values with key context (`preset`/`postget`).          |
-| [`OverWritesNotAllowedMixin`](_autosummary/dol.trans.html.md#dol.trans.OverWritesNotAllowedMixin)()         | Mixin for only allowing a write to a key if they key doesn't already exist.                     |
-| [`SimpleDelegator`](_autosummary/dol.trans.html.md#dol.trans.SimpleDelegator)(obj)                | Forward attribute access (and calls) to the wrapped `obj`.                                      |
-| [`ValueCodec`](_autosummary/dol.trans.html.md#dol.trans.ValueCodec)(encoder, decoder)        | A `Codec` that, called on a store, wraps its values (`data_of_obj`/`obj_of_data`).              |
+| [`CachedInvertibleTrans`](_autosummary/dol.trans.html.md#dol.trans.CachedInvertibleTrans)(trans_func)   |                                                                                              |
+|--------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| [`FiltIter`](_autosummary/dol.trans.html.md#dol.trans.FiltIter)(\*args, \*\*kwargs)        | Namespace of `filt_iter` factories (`regex`, `suffixes`, ...); not meant to be instantiated. |
+| [`FirstArgIsMapping`](_autosummary/dol.trans.html.md#dol.trans.FirstArgIsMapping)(val)              | Mark a transform so its first argument is the store (mapping), not the data.                 |
+| [`OverWritesNotAllowedMixin`](_autosummary/dol.trans.html.md#dol.trans.OverWritesNotAllowedMixin)()         | Mixin for only allowing a write to a key if they key doesn't already exist.                  |
+| [`SimpleDelegator`](_autosummary/dol.trans.html.md#dol.trans.SimpleDelegator)(obj)                | Forward attribute access (and calls) to the wrapped `obj`.                                   |
 
 ### Exceptions
 
@@ -12810,17 +13513,6 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 >>> t.egress(2)
 (1, 2)
 ```
-
-### *class* dol.trans.Codec(encoder, decoder)
-
-Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`]
-
-An `encoder`/`decoder` pair; iterates as `(encoder, decoder)` and composes with `compose_with`.
-
-#### invert()
-
-Return a codec that is the inverse of this one.
-That is, encoder and decoder will be swapped.
 
 ### *class* dol.trans.FiltIter(\*args, \*\*kwargs)
 
@@ -12895,18 +13587,6 @@ alternative to naming a transform’s first parameter `self`/`store`/`mapping`.
 'ns:x'
 ```
 
-### *class* dol.trans.KeyCodec(encoder, decoder)
-
-Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`], [`Codec`](_autosummary/dol.trans.html.md#dol.trans.Codec)[`DecodedType`, `EncodedType`]
-
-A `Codec` that, called on a store, wraps its keys (`id_of_key`/`key_of_id`).
-
-### *class* dol.trans.KeyValueCodec(encoder, decoder)
-
-Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`], [`Codec`](_autosummary/dol.trans.html.md#dol.trans.Codec)[`DecodedType`, `EncodedType`]
-
-A `Codec` that, called on a store, wraps values with key context (`preset`/`postget`).
-
 ### *exception* dol.trans.MapInvertabilityError
 
 Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
@@ -12946,12 +13626,6 @@ dol.errors.OverWritesNotAllowedError: key foo already exists and cannot be overw
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Forward attribute access (and calls) to the wrapped `obj`.
-
-### *class* dol.trans.ValueCodec(encoder, decoder)
-
-Bases: [`Generic`](https://docs.python.org/3/library/typing.html#typing.Generic)[`DecodedType`, `EncodedType`], [`Codec`](_autosummary/dol.trans.html.md#dol.trans.Codec)[`DecodedType`, `EncodedType`]
-
-A `Codec` that, called on a store, wraps its values (`data_of_obj`/`obj_of_data`).
 
 ### dol.trans.add_aliases(obj, \*\*aliases)
 
@@ -13028,277 +13702,6 @@ True
 >>> assert dict(v) == {'a/b': 1, 'a/c': 2}
 ```
 
-### dol.trans.add_path_access(store=None, \*, name=None, path_type=<class 'tuple'>, create_missing=False, mk_missing=None, explore_further=None, may_create=None, on_create=<function \_warn_on_create>, max_created=None, max_levels=20, verify_writeback=False, writeback_lock=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Make nested stores (read/write) accessible through key paths (iterable of keys).
-
-Like `add_path_get`, but with write and delete accessible through key paths.
-
-In a way “flatten the nested keys access”.
-(Warning: `path_type` only effects the first level.
-That is, it doesn’t work recursively.
-See issue: [https://github.com/i2mint/dol/issues/10](https://github.com/i2mint/dol/issues/10).)
-
-By default, the path object will be a tuple (e.g. `('a', 'b', 'c')`, but you can
-make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
-forms like `'a.b.c'`, `'a/b/c'`, etc.
-
-Say you have some nested stores.
-You know… like a `ZipFileReader` store whose values are `ZipReader` instances,
-whose values are bytes of the zipped files
-(and you can go on… whose (json) values are…).
-
-For our example, let’s take a nested dict instead:
-
-```pycon
->>> s = {'a': {'b': {'c': 42}}}
-```
-
-Well, you can access any node of this nested tree of stores like this:
-
-```pycon
->>> s['a']['b']['c']
-42
-```
-
-And that’s fine. But maybe you’d like to do it this way instead:
-
-```pycon
->>> s = add_path_access(s)
->>> s['a', 'b', 'c']
-42
-```
-
-So far, this is what `add_path_get` does. With `add_path_access` though you
-can also write and delete that way too:
-
-```pycon
->>> s['a', 'b', 'c'] = 3.14
->>> s['a', 'b', 'c']
-3.14
->>> del s['a', 'b', 'c']
->>> s
-{'a': {'b': {}}}
-```
-
-You might also want to access 42 with `a.b.c` or `a/b/c` etc.
-To do that you can use `dol.paths.KeyPath` in combination with
-
-* **Parameters:**
-  * **store** – The store (class or instance) you’re wrapping.
-    If not specified, the function will return a decorator.
-  * **name** – The name to give the class (not applicable to instance wrapping)
-  * **path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
-    By default, a tuple.
-    This is used to decide whether the key should be taken as a “normal”
-    key of the store,
-    or should be used to iterate through, recursively getting values.
-* **Returns:**
-  A wrapped store (class or instance), or a store wrapping decorator
-  (if store is not specified)
-
-#### SEE ALSO
-`KeyPath` in `dol.paths`
-
-Wrapping a class
-
-```pycon
->>> S = add_path_access(dict)
->>> s = S(a={'b': {'c': 42}})
->>> assert s['a'] == {'b': {'c': 42}};
->>> assert s['a', 'b'] == {'c': 42};
->>> assert s['a', 'b', 'c'] == 42
->>> s['a', 'b', 'c'] = 3.14
->>> s['a', 'b', 'c']
-3.14
->>> del s['a', 'b', 'c']
->>> s
-{'a': {'b': {}}}
-```
-
-Using add_path_get as a decorator
-
-```pycon
->>> @add_path_access
-... class S(dict):
-...    pass
->>> s = S(a={'b': {'c': 42}})
->>> assert s['a'] == {'b': {'c': 42}};
->>> assert s['a', 'b'] == s['a']['b'] == {'c': 42};
->>> assert s['a', 'b', 'c'] == s['a']['b']['c'] == 42
->>> s['a', 'b', 'c'] = 3.14
->>> s['a', 'b', 'c']
-3.14
->>> del s['a', 'b', 'c']
->>> s
-{'a': {'b': {}}}
-```
-
-A different kind of path?
-You can choose a different path_type, but sometimes (say both keys and key paths are strings)
-You need to involve more tools. Like dol.paths.KeyPath…
-
-```pycon
->>> from dol.paths import KeyPath
->>> from dol.trans import kv_wrap
->>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
->>> s = SS({'a': {'b': {'c': 42}}})
->>> assert s['a'] == {'b': {'c': 42}};
->>> assert s['a.b'] == s['a']['b'];
->>> assert s['a.b.c'] == s['a']['b']['c']
->>> s['a.b.c'] = 3.14
->>> s
-{'a': {'b': {'c': 3.14}}}
->>> del s['a.b.c']
->>> s
-{'a': {'b': {}}}
-```
-
-#### NOTE
-The add_path_access doesn’t carry on to values.
-
-```pycon
->>> s = add_path_access({'a': {'b': {'c': 42}}})
->>> s['a', 'b', 'c']
-42
->>> # but
->>> s['a']['b', 'c']
-Traceback (most recent call last):
-  ...
-KeyError: ('b', 'c')
-```
-
-That said,
-
-```pycon
->>> add_path_access(s['a'])['b', 'c']
-42
-```
-
-The reason why we don’t do this automatically is that it may not always be desirable.
-If one wanted to though, one could use `wrap_kvs(obj_of_data=...)` to wrap
-specific values with `add_path_access`.
-For example, if you wanted to wrap all mappings recursively, you could:
-
-```pycon
->>> from typing import Mapping
->>> from dol.util import instance_checker
->>> add_path_access_if_mapping = conditional_data_trans(
-...     condition=instance_checker(Mapping), data_trans=add_path_access
-... )
->>> s = add_path_access_if_mapping({'a': {'b': {'c': 42}}})
->>> s['a', 'b', 'c']
-42
->>> # But now this works:
->>> s['a']['b', 'c']
-42
-```
-
-### dol.trans.add_path_get(store=None, \*, name=None, path_type=<class 'tuple'>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Make nested stores accessible through key paths.
-In a way “flatten the nested keys access”.
-By default, the path object will be a tuple (e.g. `('a', 'b', 'c')`, but you can
-make it whatever you want, and/or use `dol.paths.KeyPath` to map to and from
-forms like `'a.b.c'`, `'a/b/c'`, etc.
-
-(Warning: `path_type` only effects the first level.
-That is, it doesn’t work recursively.
-See issue: [https://github.com/i2mint/dol/issues/10](https://github.com/i2mint/dol/issues/10).)
-
-Say you have some nested stores.
-You know… like a `ZipFileReader` store whose values are `ZipReader` instances,
-whose values are bytes of the zipped files
-(and you can go on… whose (json) values are…).
-
-For our example, let’s take a nested dict instead:
-
-```pycon
->>> s = {'a': {'b': {'c': 42}}}
-```
-
-Well, you can access any node of this nested tree of stores like this:
-
-```pycon
->>> s['a']['b']['c']
-42
-```
-
-And that’s fine. But maybe you’d like to do it this way instead:
-
-```pycon
->>> s = add_path_get(s)
->>> s['a', 'b', 'c']
-42
-```
-
-You might also want to access 42 with `a.b.c` or `a/b/c` etc.
-To do that you can use `dol.paths.KeyPath` in combination with
-
-* **Parameters:**
-  * **store** – The store (class or instance) you’re wrapping.
-    If not specified, the function will return a decorator.
-  * **name** – The name to give the class (not applicable to instance wrapping)
-  * **path_type** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The type that paths are expressed as. Needs to be an Iterable type.
-    By default, a tuple.
-    This is used to decide whether the key should be taken as a “normal”
-    key of the store,
-    or should be used to iterate through, recursively getting values.
-* **Returns:**
-  A wrapped store (class or instance), or a store wrapping decorator
-  (if store is not specified)
-
-#### SEE ALSO
-`KeyPath` in `dol.paths`
-
-Wrapping an instance
-
-```pycon
->>> s = add_path_get({'a': {'b': {'c': 42}}})
->>> s['a']
-{'b': {'c': 42}}
->>> s['a', 'b']
-{'c': 42}
->>> s['a', 'b', 'c']
-42
-```
-
-Wrapping a class
-
-```pycon
->>> S = add_path_get(dict)
->>> s = S(a={'b': {'c': 42}})
->>> assert s['a'] == {'b': {'c': 42}};
->>> assert s['a', 'b'] == {'c': 42};
->>> assert s['a', 'b', 'c'] == 42
-```
-
-Using add_path_get as a decorator
-
-```pycon
->>> @add_path_get
-... class S(dict):
-...    pass
->>> s = S(a={'b': {'c': 42}})
->>> assert s['a'] == {'b': {'c': 42}};
->>> assert s['a', 'b'] == s['a']['b'] == {'c': 42};
->>> assert s['a', 'b', 'c'] == s['a']['b']['c'] == 42
-```
-
-A different kind of path?
-You can choose a different path_type, but sometimes (say both keys and key paths are strings)
-You need to involve more tools. Like dol.paths.KeyPath…
-
-```pycon
->>> from dol.paths import KeyPath
->>> from dol.trans import kv_wrap
->>> SS = kv_wrap(KeyPath(path_sep='.'))(S)
->>> s = SS({'a': {'b': {'c': 42}}})
->>> assert s['a'] == {'b': {'c': 42}};
->>> assert s['a.b'] == s['a']['b'];
->>> assert s['a.b.c'] == s['a']['b']['c']
-```
-
 ### dol.trans.add_store_method(store, , method_func, method_name=None, validator=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
 Add methods to store classes or instances
@@ -13348,54 +13751,10 @@ class for it’s purpose of transforming stores more conveniently.
 >>> assert str(s) == "{'foo/bar': 42}"  # reveals that actually, behind the scenes, there's a "foo/" prefix
 ```
 
-### dol.trans.affix_key_codec(prefix='', suffix='')
-
-A factory that creates a key codec that affixes a prefix and suffix to the key
-
-```pycon
->>> codec = affix_key_codec(prefix='/folder/', suffix='.txt')
->>> codec.encoder('name')
-'/folder/name.txt'
->>> codec.decoder('/folder/name.txt')
-'name'
-```
-
 ### dol.trans.assert_min_num_of_args(func, num_of_args)
 
 Assert that a function can be a store method.
 That is, it should have a signature that takes the store as the first argument
-
-### dol.trans.autoviv(store=None, \*\*kwargs)
-
-Opt-in write-through autovivification for key-paths.
-
-Shorthand for `add_path_access(store, create_missing=True, **kwargs)`: writing
-through a key-path (e.g. `s['a', 'b', 'c'] = v`) creates any missing intermediate
-levels on the way, and the change persists correctly even through persistent /
-copy-semantics stores (`Files`, `wrap_kvs`-wrapped stores). See
-`add_path_access` for the full set of options (`mk_missing`, `may_create`,
-`max_created`, `on_create`, …). Missing-key creation is announced via
-`warnings.warn` by default, so a typo is never silent.
-
-```pycon
->>> from dol import autoviv
->>> s = autoviv({})
->>> s['a', 'b', 'c'] = 42
->>> s['a', 'b', 'c']
-42
->>> s['a']['b']['c']
-42
-```
-
-Like `add_path_access`, it also works as a class decorator / factory:
-
-```pycon
->>> S = autoviv(dict)
->>> s = S()
->>> s['x', 'y'] = 1
->>> s['x', 'y']
-1
-```
 
 ### dol.trans.cache_iter(store=None, \*, keys_cache=<class 'list'>, iter_to_container=None, cache_update_method='update', name=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
 
@@ -14288,196 +14647,6 @@ True
 False
 ```
 
-### dol.trans.flatten(store=None, , levels=None, cache_keys=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
-
-Not to be confused with `dol.flatten_dict`, which flattens a plain nested
-`Mapping` into a new `dict` (eagerly, with joined-string keys). This one wraps
-a *store of stores* in a lazy, levels-aware view. `flatten_store` is the
-unambiguous name for this function (`flatten` stays as its alias).
-
-Say you have a store that has three levels (or more), that is, that you can always
-ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
-`b` is a valid key of `store[a]` and `c` is a valid key of `store[a][b]`.
-
-What `flattened_store = flatten(store, levels=3)` will give you is the ability
-to access the `store[a][b][c]` as `store[a, b, c]`, while still being able
-to access these stores “normally”.
-
-If that’s all you need, you can just use the `add_get_path` wrapper for this.
-
-Why would you use `flatten`? Because `add_get_path(store)` would still only
-give you the `KvReader` point of view of the root `store`.
-If you `list(store)`, you’d only get the first level keys,
-or if you ask if `(a, b, c)` is in the store, it will tell you it’s not
-(though you can access data with such a key.
-
-Instead, a flattened store will consider that the keys are those `(a, b, c)`
-key paths.
-
-Further, when flattening a store, you can ask for the view to cache the keys,
-specifying `cache_keys=True` or give it an explicit place to cache or
-factory to make a cache (see `cached_keys` wrapper for more details).
-Though caching keys is not the default it’s highly recommended to do so in most
-cases. The only reason it is not the default is because if you have millions of
-keys, but little memory, that’s not what you might want.
-
-#### NOTE
-Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
-change the store itself, or it’s contents.
-
-* **Parameters:**
-  * **store** – The store instance or class to be wrapped
-  * **levels** – The number of nested levels to flatten
-  * **cache_keys** – Whether to cache the keys, or a cache factory or instance.
-
-```pycon
->>> from dol import flatten
->>> d = {
-...     'a': {'b': {'c': 42}},
-...     'aa': {'bb': {'cc': 'dragon_con'}}
-... }
-```
-
-You can get a flattened view of an instance:
-
-```pycon
->>> m = flatten(d, levels=3, cache_keys=True)
->>> assert (
-...         list(m.items())
-...         == [
-...             (('a', 'b', 'c'), 42),
-...             (('aa', 'bb', 'cc'), 'dragon_con')
-...         ]
-... )
-```
-
-You can make a flattener and apply it to an instance (or a class):
-
-```pycon
->>> my_flattener = flatten(levels=2)
->>> m = my_flattener(d)
->>> assert (
-...         list(m.items())
-...         == [
-...             (('a', 'b'), {'c': 42}),
-...             (('aa', 'bb'), {'cc': 'dragon_con'})
-...         ]
-... )
-```
-
-Finally, you can wrap a class itself.
-
-```pycon
->>> @flatten(levels=1)
-... class MyFlatDict(dict):
-...     pass
->>> m = MyFlatDict(d)
->>> assert (
-...         list(m.items())
-...         == [
-...             (('a',), {'b': {'c': 42}}),
-...             (('aa',), {'bb': {'cc': 'dragon_con'}})
-...         ]
-... )
-```
-
-### dol.trans.flatten_store(store=None, , levels=None, cache_keys=False, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Give a nested store a flat view whose keys are the `(a, b, c)` key paths.
-
-Not to be confused with `dol.flatten_dict`, which flattens a plain nested
-`Mapping` into a new `dict` (eagerly, with joined-string keys). This one wraps
-a *store of stores* in a lazy, levels-aware view. `flatten_store` is the
-unambiguous name for this function (`flatten` stays as its alias).
-
-Say you have a store that has three levels (or more), that is, that you can always
-ask for the value `store[a][b][c]` if `a` is a valid key of `store`,
-`b` is a valid key of `store[a]` and `c` is a valid key of `store[a][b]`.
-
-What `flattened_store = flatten(store, levels=3)` will give you is the ability
-to access the `store[a][b][c]` as `store[a, b, c]`, while still being able
-to access these stores “normally”.
-
-If that’s all you need, you can just use the `add_get_path` wrapper for this.
-
-Why would you use `flatten`? Because `add_get_path(store)` would still only
-give you the `KvReader` point of view of the root `store`.
-If you `list(store)`, you’d only get the first level keys,
-or if you ask if `(a, b, c)` is in the store, it will tell you it’s not
-(though you can access data with such a key.
-
-Instead, a flattened store will consider that the keys are those `(a, b, c)`
-key paths.
-
-Further, when flattening a store, you can ask for the view to cache the keys,
-specifying `cache_keys=True` or give it an explicit place to cache or
-factory to make a cache (see `cached_keys` wrapper for more details).
-Though caching keys is not the default it’s highly recommended to do so in most
-cases. The only reason it is not the default is because if you have millions of
-keys, but little memory, that’s not what you might want.
-
-#### NOTE
-Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
-change the store itself, or it’s contents.
-
-* **Parameters:**
-  * **store** – The store instance or class to be wrapped
-  * **levels** – The number of nested levels to flatten
-  * **cache_keys** – Whether to cache the keys, or a cache factory or instance.
-
-```pycon
->>> from dol import flatten
->>> d = {
-...     'a': {'b': {'c': 42}},
-...     'aa': {'bb': {'cc': 'dragon_con'}}
-... }
-```
-
-You can get a flattened view of an instance:
-
-```pycon
->>> m = flatten(d, levels=3, cache_keys=True)
->>> assert (
-...         list(m.items())
-...         == [
-...             (('a', 'b', 'c'), 42),
-...             (('aa', 'bb', 'cc'), 'dragon_con')
-...         ]
-... )
-```
-
-You can make a flattener and apply it to an instance (or a class):
-
-```pycon
->>> my_flattener = flatten(levels=2)
->>> m = my_flattener(d)
->>> assert (
-...         list(m.items())
-...         == [
-...             (('a', 'b'), {'c': 42}),
-...             (('aa', 'bb'), {'cc': 'dragon_con'})
-...         ]
-... )
-```
-
-Finally, you can wrap a class itself.
-
-```pycon
->>> @flatten(levels=1)
-... class MyFlatDict(dict):
-...     pass
->>> m = MyFlatDict(d)
->>> assert (
-...         list(m.items())
-...         == [
-...             (('a',), {'b': {'c': 42}}),
-...             (('aa',), {'bb': {'cc': 'dragon_con'}})
-...         ]
-... )
-```
-
 ### dol.trans.get_class_name(cls, dflt_name=None)
 
 The `__qualname__` of `cls` (or of its class), else `dflt_name`; raises `ValueError` if there is neither.
@@ -14485,173 +14654,6 @@ The `__qualname__` of `cls` (or of its class), else `dflt_name`; raises `ValueEr
 ### dol.trans.ignore_if_error(store=None, \*, errors=(<class 'KeyError'>, ))
 
 Wrap `store` so that `__getitem__` errors in `errors` return `None` instead of raising.
-
-### dol.trans.insert_aliases(store=None, , write=None, read=None, delete=None, list=None, count=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Insert method aliases of CRUD operations of a store (class or instance).
-If store is a class, you’ll get a copy of the class with those methods added.
-If store is an instance, the methods will be added in place (no copy will be made).
-
-#### NOTE
-If an operation (write, read, delete, list, count) is not specified, no alias will be created for
-that operation.
-
-IMPORTANT NOTE: The signatures of the methods the aliases will point to will not change.
-We say this because, you can call the write method “dump”, but you’ll have to use it as
-`store.dump(key, val)`, not `store.dump(val, key)`, which is the signature you’re probably used to
-(it’s the one used by json.dump or pickle.dump for example). If you want that familiar interface,
-using the insert_load_dump_aliases function.
-
-See also (and not to be confused with): `add_aliases`
-
-* **Parameters:**
-  * **store** – The store to extend with aliases.
-  * **write** – Desired method name for \_\_setitem_\_
-  * **read** – Desired method name for \_\_getitem_\_
-  * **delete** – Desired method name for \_\_delitem_\_
-  * **list** – Desired method name for \_\_iter_\_
-  * **count** – Desired method name for \_\_len_\_
-* **Returns:**
-  A store with the desired aliases.
-
-```pycon
->>> # Example of extending a class
->>> mydict = insert_aliases(dict, write='dump', read='load', delete='rm', list='peek', count='size')
->>> s = mydict(true='love')
->>> s.dump('friends', 'forever')
->>> s
-{'true': 'love', 'friends': 'forever'}
->>> s.load('true')
-'love'
->>> list(s.peek())
-['true', 'friends']
->>> s.size()
-2
->>> s.rm('true')
->>> s
-{'friends': 'forever'}
->>>
->>> # Example of extending an instance
->>> from collections import UserDict
->>> s = UserDict(true='love')  # make (and instance) of a UserDict (can't modify a dict instance)
->>> # make aliases of note that you don't need
->>> s = insert_aliases(s, write='put', read='retrieve', count='num_of_items')
->>> s.put('friends', 'forever')
->>> s
-{'true': 'love', 'friends': 'forever'}
->>> s.retrieve('true')
-'love'
->>> s.num_of_items()
-2
-```
-
-### dol.trans.insert_hash_method(store=None, \*, hash_method=<built-in function id>, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Make a store hashable using the specified `hash_method`.
-Will add (or overwrite) a `__hash__` method to the store that uses the
-hash_method to hash the store and an `__eq__` method that compares the store to
-another based on the hash_method.
-
-The `hash_method`, which will be used as the `__hash__` method of a class
-should return an integer value that represents the hash of the object.
-To remain sane, the hash value must be the same for an object every time the
-`__hash__` method is called during the lifetime of the object, and objects
-that compare equal (using the \_\_eq_\_ method) must have the same hash value.
-
-It’s also important that the hash function has the property of being deterministic
-and returning a hash value that is uniformly distributed across the range of
-possible integers for the given data. This is important for the hash table
-data structure to work efficiently.
-
-See [This issue](https://github.com/i2mint/dol/issues/7) for further information.
-
-```pycon
->>> d = {1: 2}  # not hashable!
->>> dd = insert_hash_method(d)
->>> assert isinstance(hash(dd), int)  # now hashable!
-```
-
-It looks the same:
-
-```pycon
->>> dd
-{1: 2}
-```
-
-But don’t be fooled: dd is not equal to the original `d` (since
-insert_hash_method\`\`overwrote the `__eq__` method to compare based on the
-hash value):
-
-```pycon
->>> d == dd
-False
-```
-
-But if you cast both to dicts and then compare, you’ll be using the key and value
-based comparison of dicts, which makes these two equal.
-
-```pycon
->>> dict(d) == dict(dd)
-True
-```
-
-The default `hash_method` is `id`, so two hashable wrappers won’t be equal
-to eachother:
-
-```pycon
->>> insert_hash_method(d) == insert_hash_method(d)
-False
-```
-
-In the following we show two things: That you can specify your own custom
-`hash_method`, and that you can use `insert_hash_method` to wrap classes
-
-```pycon
->>> class D(dict):
-...     pass
->>> DD = insert_hash_method(D, hash_method=lambda x: 42)
->>> hash(DD(d))
-42
-```
-
-You can also use it as a decorator, without arguments,
-
-```pycon
->>> @insert_hash_method
-... class E(dict):
-...     pass
->>> assert isinstance(hash(E({1: 2})), int)
-```
-
-or with arguments (which you must specify as keyword arguments):
-
-```pycon
->>> @insert_hash_method(hash_method=lambda x: sum(x.values()))
-... class F(dict):
-...     pass
->>> hash(F({1: 2, 3: 4}))
-6
-```
-
-### dol.trans.insert_load_dump_aliases(store=None, , delete=None, list=None, count=None, \_\_module_\_=None, \_\_name_\_=None, \_\_qualname_\_=None, \_\_doc_\_=None, \_\_annotations_\_=None, \_\_defaults_\_=None, \_\_kwdefaults_\_=None)
-
-Insert load and dump methods, with familiar dump(obj, location) signature.
-
-* **Parameters:**
-  * **store** – The store to extend with aliases.
-  * **delete** – Desired method name for \_\_delitem_\_
-  * **list** – Desired method name for \_\_iter_\_
-  * **count** – Desired method name for \_\_len_\_
-* **Returns:**
-  A store with the desired aliases.
-
-```pycon
->>> mydict = insert_load_dump_aliases(dict)
->>> s = mydict()
->>> s.dump(obj='love', key='true')
->>> s
-{'true': 'love'}
-```
 
 ### dol.trans.is_iterable(x)
 
@@ -14778,10 +14780,6 @@ Make a class that wraps a persister into a dol.base.Store,
 >>> # before the key/val transformers are in place to do their jobs.
 ```
 
-### dol.trans.leveled_paths_walk(m, levels)
-
-Yield the key paths of `m`, down to `levels` levels.
-
 ### dol.trans.mk_confirm_overwrite_preset(\*, get_input=None, prompt=<function \_dflt_overwrite_prompt>)
 
 Make a `wrap_kvs` `preset` that asks for confirmation before overwriting an
@@ -14824,12 +14822,6 @@ Make a KvReader class from a Collection class.
     This default is useful when you want to delegate the actual getting to a \_obj_of_data wrapper.
 * **Returns:**
   A KvReader class that subclasses the input kv_collection
-
-### dol.trans.mk_level_walk_filt(levels)
-
-Makes a `walk_filt` function for `kv_walk` based on some level logic.
-If `levels` is an integer, will consider it as the max path length,
-if not it will just assert that `levels` is callable, and return it
 
 ### dol.trans.mk_read_only(o)
 
@@ -17340,7 +17332,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 16:34 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ea9851731e878d937fb2c393aebbf99cbd30e441"><code>ea98517</code></a> on branch <code>master</code>, for **dol 0.3.91** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 18:13 UTC** from commit <a href="https://github.com/i2mint/dol/commit/7e834f39ba975d191e0db5d46c46505e4ea3d339"><code>7e834f3</code></a> on branch <code>master</code>, for **dol 0.3.92** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17349,9 +17341,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/ea9851731e878d937fb2c393aebbf99cbd30e441"><code>ea9851731e878d937fb2c393aebbf99cbd30e441</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/7e834f39ba975d191e0db5d46c46505e4ea3d339"><code>7e834f39ba975d191e0db5d46c46505e4ea3d339</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.91</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.92</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17360,9 +17352,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39458252469">39458252469</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39472610979">39472610979</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>d78e08ee3b96fa0b714b4dd336c59d3eef4ab770</code> (in the history of the built commit) |
+| Event commit | <code>a73210e4844b3dd8c3c309b7c1569146c5145389</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17387,13 +17379,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.91/">0.3.91</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.92/">0.3.92</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout ea9851731e878d937fb2c393aebbf99cbd30e441
+git checkout 7e834f39ba975d191e0db5d46c46505e4ea3d339
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

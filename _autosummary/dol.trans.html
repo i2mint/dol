@@ -222,6 +222,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dol.records.html">dol.records</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dol.signatures.html">dol.signatures</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dol.sources.html">dol.sources</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dol.store_addons.html">dol.store_addons</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dol.tools.html">dol.tools</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">dol.trans</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dol.trash.html">dol.trash</a></li>
@@ -278,12 +279,16 @@ The decorators built with <code class="docutils literal notranslate"><span class
 <code class="docutils literal notranslate"><span class="pre">cached_keys</span></code>, <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>, …) can be applied to a class, to an instance,
 or used as a factory (<code class="docutils literal notranslate"><span class="pre">deco(**params)(store)</span></code>).</p>
 <p>Main entry points:</p>
-<ul>
+<ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>: key/value transforms (<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>, <code class="docutils literal notranslate"><span class="pre">obj_of_data</span></code>, codecs, …)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">filt_iter</span></code>: restrict a store to a subset of its keys</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cached_keys</span></code>: cache the key listing of a slow store</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>: read/write nested stores through key paths</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">kv_wrap</span></code>: wrap using an object that holds <code class="docutils literal notranslate"><span class="pre">_id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">_obj_of_data</span></code>-style methods</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>: read/write nested stores through key paths (defined in
+<code class="docutils literal notranslate"><span class="pre">dol.store_addons</span></code>, with the other add-ons: <code class="docutils literal notranslate"><span class="pre">flatten</span></code>, <code class="docutils literal notranslate"><span class="pre">insert_aliases</span></code>, …)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kv_wrap</span></code>: wrap using an object that holds <code class="docutils literal notranslate"><span class="pre">_id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">_obj_of_data</span></code>-style methods</p></li>
+</ul>
+<p>The codec types (<code class="docutils literal notranslate"><span class="pre">Codec</span></code>, <code class="docutils literal notranslate"><span class="pre">ValueCodec</span></code>, <code class="docutils literal notranslate"><span class="pre">KeyCodec</span></code>, …) live in <code class="docutils literal notranslate"><span class="pre">dol.kv_codecs</span></code>.
+This module re-exports them, and the add-ons, so older imports keep working.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({},</span> <span class="n">key_of_id</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
@@ -293,8 +298,6 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 <span class="go">(['A'], 1)</span>
 </pre></div>
 </div>
-</li>
-</ul>
 <p class="rubric">Module Attributes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -321,26 +324,14 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.add_missing_key_handling" title="dol.trans.add_missing_key_handling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_missing_key_handling</span></code></a>([store, ...])</p></td>
 <td><p>Overrides the <code class="docutils literal notranslate"><span class="pre">__missing__</span></code> method of a store with a custom callback.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.add_path_access" title="dol.trans.add_path_access"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_path_access</span></code></a>([store, name, path_type, ...])</p></td>
-<td><p>Make nested stores (read/write) accessible through key paths (iterable of keys).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.add_path_get" title="dol.trans.add_path_get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_path_get</span></code></a>([store, name, path_type, ...])</p></td>
-<td><p>Make nested stores accessible through key paths.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.add_store_method" title="dol.trans.add_store_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_store_method</span></code></a>(store, *, method_func[, ...])</p></td>
 <td><p>Add methods to store classes or instances</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.add_wrapper_method" title="dol.trans.add_wrapper_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_wrapper_method</span></code></a>([wrap_cls, method_name])</p></td>
 <td><p>Decorator that adds a wrapper method (itself a decorator) to a wrapping class Clear? See <code class="code docutils literal notranslate"><span class="pre">mk_wrapper</span></code> function and doctest example if not.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.affix_key_codec" title="dol.trans.affix_key_codec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">affix_key_codec</span></code></a>([prefix, suffix])</p></td>
-<td><p>A factory that creates a key codec that affixes a prefix and suffix to the key</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.assert_min_num_of_args" title="dol.trans.assert_min_num_of_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_min_num_of_args</span></code></a>(func, num_of_args)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.assert_min_num_of_args" title="dol.trans.assert_min_num_of_args"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assert_min_num_of_args</span></code></a>(func, num_of_args)</p></td>
 <td><p>Assert that a function can be a store method.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.autoviv" title="dol.trans.autoviv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">autoviv</span></code></a>([store])</p></td>
-<td><p>Opt-in write-through autovivification for key-paths.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.cache_iter" title="dol.trans.cache_iter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_iter</span></code></a>([store, keys_cache, ...])</p></td>
 <td><p>Make a class that wraps input class's __iter__ becomes cached.</p></td>
@@ -393,41 +384,23 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.filter_suffixes" title="dol.trans.filter_suffixes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_suffixes</span></code></a>(suffixes)</p></td>
 <td><p>Make a filter that returns True if a string ends with one of the given suffixes</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.flatten" title="dol.trans.flatten"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten</span></code></a>([store, levels, cache_keys, ...])</p></td>
-<td><p>Give a nested store a flat view whose keys are the <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> key paths.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.flatten_store" title="dol.trans.flatten_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_store</span></code></a>([store, levels, cache_keys, ...])</p></td>
-<td><p>Give a nested store a flat view whose keys are the <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> key paths.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.get_class_name" title="dol.trans.get_class_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_name</span></code></a>(cls[, dflt_name])</p></td>
 <td><p>The <code class="docutils literal notranslate"><span class="pre">__qualname__</span></code> of <code class="docutils literal notranslate"><span class="pre">cls</span></code> (or of its class), else <code class="docutils literal notranslate"><span class="pre">dflt_name</span></code>; raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if there is neither.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.ignore_if_error" title="dol.trans.ignore_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ignore_if_error</span></code></a>([store, errors])</p></td>
 <td><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">None</span></code> instead of raising.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.insert_aliases" title="dol.trans.insert_aliases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_aliases</span></code></a>([store, write, read, delete, ...])</p></td>
-<td><p>Insert method aliases of CRUD operations of a store (class or instance).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.insert_hash_method" title="dol.trans.insert_hash_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_hash_method</span></code></a>([store, hash_method, ...])</p></td>
-<td><p>Make a store hashable using the specified <code class="docutils literal notranslate"><span class="pre">hash_method</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.insert_load_dump_aliases" title="dol.trans.insert_load_dump_aliases"><code class="xref py py-obj docutils literal notranslate"><span class="pre">insert_load_dump_aliases</span></code></a>([store, delete, ...])</p></td>
-<td><p>Insert load and dump methods, with familiar dump(obj, location) signature.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.is_iterable" title="dol.trans.is_iterable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_iterable</span></code></a>(x)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.is_iterable" title="dol.trans.is_iterable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_iterable</span></code></a>(x)</p></td>
 <td><p>Whether <code class="docutils literal notranslate"><span class="pre">x</span></code> is an <code class="docutils literal notranslate"><span class="pre">Iterable</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.iterate_values_and_accumulate_non_error_keys" title="dol.trans.iterate_values_and_accumulate_non_error_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterate_values_and_accumulate_non_error_keys</span></code></a>(...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.iterate_values_and_accumulate_non_error_keys" title="dol.trans.iterate_values_and_accumulate_non_error_keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterate_values_and_accumulate_non_error_keys</span></code></a>(...)</p></td>
 <td><p>Yield the values of <code class="docutils literal notranslate"><span class="pre">store</span></code>, appending to <code class="docutils literal notranslate"><span class="pre">cache_keys_here</span></code> the keys whose value was fetched without error.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.kv_wrap" title="dol.trans.kv_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_wrap</span></code></a>(trans_obj)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.kv_wrap" title="dol.trans.kv_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_wrap</span></code></a>(trans_obj)</p></td>
 <td><p>A function that makes a wrapper (a decorator) that will get the wrappers from methods of the input object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.kv_wrap_persister_cls" title="dol.trans.kv_wrap_persister_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_wrap_persister_cls</span></code></a>(persister_cls[, name])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.kv_wrap_persister_cls" title="dol.trans.kv_wrap_persister_cls"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kv_wrap_persister_cls</span></code></a>(persister_cls[, name])</p></td>
 <td><p>Make a class that wraps a persister into a dol.base.Store,</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.leveled_paths_walk" title="dol.trans.leveled_paths_walk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">leveled_paths_walk</span></code></a>(m, levels)</p></td>
-<td><p>Yield the key paths of <code class="docutils literal notranslate"><span class="pre">m</span></code>, down to <code class="docutils literal notranslate"><span class="pre">levels</span></code> levels.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_confirm_overwrite_preset" title="dol.trans.mk_confirm_overwrite_preset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_confirm_overwrite_preset</span></code></a>(*[, get_input, ...])</p></td>
 <td><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks for confirmation before overwriting an existing key that holds a <em>different</em> value.</p></td>
@@ -435,43 +408,40 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_kv_reader_from_kv_collection" title="dol.trans.mk_kv_reader_from_kv_collection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection</span></code></a>(kv_collection)</p></td>
 <td><p>Make a KvReader class from a Collection class.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_level_walk_filt" title="dol.trans.mk_level_walk_filt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_level_walk_filt</span></code></a>(levels)</p></td>
-<td><p>Makes a <code class="docutils literal notranslate"><span class="pre">walk_filt</span></code> function for <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> based on some level logic.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_read_only" title="dol.trans.mk_read_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_read_only</span></code></a>(o)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_read_only" title="dol.trans.mk_read_only"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_read_only</span></code></a>(o)</p></td>
 <td><p>Disable <code class="docutils literal notranslate"><span class="pre">__setitem__</span></code> and <code class="docutils literal notranslate"><span class="pre">__delitem__</span></code> on <code class="docutils literal notranslate"><span class="pre">o</span></code> (a store class, typically).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_trans_obj" title="dol.trans.mk_trans_obj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_trans_obj</span></code></a>(**kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_trans_obj" title="dol.trans.mk_trans_obj"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_trans_obj</span></code></a>(**kwargs)</p></td>
 <td><p>Convenience method to quickly make a trans_obj (just an object holding some trans functions</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.mk_wrapper" title="dol.trans.mk_wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_wrapper</span></code></a>(wrap_cls)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.mk_wrapper" title="dol.trans.mk_wrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_wrapper</span></code></a>(wrap_cls)</p></td>
 <td><p>You have a wrapper class and you want to make a wrapper out of it, that is, a decorator factory with which you can make wrappers, like this:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.raise_disabled_error" title="dol.trans.raise_disabled_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raise_disabled_error</span></code></a>(functionality)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.raise_disabled_error" title="dol.trans.raise_disabled_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raise_disabled_error</span></code></a>(functionality)</p></td>
 <td><p>Make a function that raises <code class="docutils literal notranslate"><span class="pre">ValueError('&lt;functionality&gt;</span> <span class="pre">is</span> <span class="pre">disabled')</span></code> whenever called.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.redirect_getattr_to_getitem" title="dol.trans.redirect_getattr_to_getitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redirect_getattr_to_getitem</span></code></a>([cls, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.redirect_getattr_to_getitem" title="dol.trans.redirect_getattr_to_getitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redirect_getattr_to_getitem</span></code></a>([cls, ...])</p></td>
 <td><p>A mapping decorator that redirects attribute access to __getitem__.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.return_default_if_error" title="dol.trans.return_default_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">return_default_if_error</span></code></a>([store, default, errors])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.return_default_if_error" title="dol.trans.return_default_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">return_default_if_error</span></code></a>([store, default, errors])</p></td>
 <td><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">default</span></code> instead of raising.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.store_decorator" title="dol.trans.store_decorator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_decorator</span></code></a>(func)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.store_decorator" title="dol.trans.store_decorator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_decorator</span></code></a>(func)</p></td>
 <td><p>Helper to make store decorators.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.store_wrap" title="dol.trans.store_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_wrap</span></code></a>(obj)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.store_wrap" title="dol.trans.store_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_wrap</span></code></a>(obj)</p></td>
 <td><p>Wrap a class or an instance in a <code class="docutils literal notranslate"><span class="pre">Store</span></code> (a class gets a <code class="docutils literal notranslate"><span class="pre">Store</span></code> subclass whose <code class="docutils literal notranslate"><span class="pre">__init__</span></code> builds the wrapped instance).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.take_everything" title="dol.trans.take_everything"><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_everything</span></code></a>(key)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.take_everything" title="dol.trans.take_everything"><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_everything</span></code></a>(key)</p></td>
 <td><p>Key filter that accepts every key.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.transparent_key_method" title="dol.trans.transparent_key_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transparent_key_method</span></code></a>(self, k)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.transparent_key_method" title="dol.trans.transparent_key_method"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transparent_key_method</span></code></a>(self, k)</p></td>
 <td><p>Return the key as is (the default <code class="docutils literal notranslate"><span class="pre">getitem</span></code> of <code class="docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.warn_and_ignore_if_error" title="dol.trans.warn_and_ignore_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warn_and_ignore_if_error</span></code></a>([store, errors, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.warn_and_ignore_if_error" title="dol.trans.warn_and_ignore_if_error"><code class="xref py py-obj docutils literal notranslate"><span class="pre">warn_and_ignore_if_error</span></code></a>([store, errors, ...])</p></td>
 <td><p>Like <code class="docutils literal notranslate"><span class="pre">ignore_if_error</span></code>, but also emit a warning (<code class="docutils literal notranslate"><span class="pre">warn_msg</span></code>) for each ignored error.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.wrap_kvs" title="dol.trans.wrap_kvs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_kvs</span></code></a>([store, wrapper, name, key_of_id, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.wrap_kvs" title="dol.trans.wrap_kvs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_kvs</span></code></a>([store, wrapper, name, key_of_id, ...])</p></td>
 <td><p>Make a Store that is wrapped with the given key/val transformers.</p></td>
 </tr>
 </tbody>
@@ -484,29 +454,17 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.CachedInvertibleTrans" title="dol.trans.CachedInvertibleTrans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CachedInvertibleTrans</span></code></a>(trans_func)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Codec</span></code></a>(encoder, decoder)</p></td>
-<td><p>An <code class="docutils literal notranslate"><span class="pre">encoder</span></code>/<code class="docutils literal notranslate"><span class="pre">decoder</span></code> pair; iterates as <code class="docutils literal notranslate"><span class="pre">(encoder,</span> <span class="pre">decoder)</span></code> and composes with <code class="docutils literal notranslate"><span class="pre">compose_with</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.FiltIter" title="dol.trans.FiltIter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FiltIter</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.FiltIter" title="dol.trans.FiltIter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FiltIter</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Namespace of <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> factories (<code class="docutils literal notranslate"><span class="pre">regex</span></code>, <code class="docutils literal notranslate"><span class="pre">suffixes</span></code>, ...); not meant to be instantiated.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.FirstArgIsMapping" title="dol.trans.FirstArgIsMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FirstArgIsMapping</span></code></a>(val)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.FirstArgIsMapping" title="dol.trans.FirstArgIsMapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FirstArgIsMapping</span></code></a>(val)</p></td>
 <td><p>Mark a transform so its first argument is the store (mapping), not the data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.KeyCodec" title="dol.trans.KeyCodec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyCodec</span></code></a>(encoder, decoder)</p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its keys (<code class="docutils literal notranslate"><span class="pre">id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.KeyValueCodec" title="dol.trans.KeyValueCodec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KeyValueCodec</span></code></a>(encoder, decoder)</p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps values with key context (<code class="docutils literal notranslate"><span class="pre">preset</span></code>/<code class="docutils literal notranslate"><span class="pre">postget</span></code>).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.OverWritesNotAllowedMixin" title="dol.trans.OverWritesNotAllowedMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.OverWritesNotAllowedMixin" title="dol.trans.OverWritesNotAllowedMixin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code></a>()</p></td>
 <td><p>Mixin for only allowing a write to a key if they key doesn't already exist.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.trans.SimpleDelegator" title="dol.trans.SimpleDelegator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleDelegator</span></code></a>(obj)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.SimpleDelegator" title="dol.trans.SimpleDelegator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimpleDelegator</span></code></a>(obj)</p></td>
 <td><p>Forward attribute access (and calls) to the wrapped <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.trans.ValueCodec" title="dol.trans.ValueCodec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValueCodec</span></code></a>(encoder, decoder)</p></td>
-<td><p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its values (<code class="docutils literal notranslate"><span class="pre">data_of_obj</span></code>/<code class="docutils literal notranslate"><span class="pre">obj_of_data</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -538,22 +496,6 @@ or used as a factory (<code class="docutils literal notranslate"><span class="pr
 </div>
 <dl class="field-list simple">
 </dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="dol.trans.Codec">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">Codec</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">DecodedType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EncodedType</span></span></em><span class="sig-paren">]</span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#Codec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.Codec" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
-<p>An <code class="docutils literal notranslate"><span class="pre">encoder</span></code>/<code class="docutils literal notranslate"><span class="pre">decoder</span></code> pair; iterates as <code class="docutils literal notranslate"><span class="pre">(encoder,</span> <span class="pre">decoder)</span></code> and composes with <code class="docutils literal notranslate"><span class="pre">compose_with</span></code>.</p>
-<dl class="field-list simple">
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="dol.trans.Codec.invert">
-<span class="sig-name descname"><span class="pre">invert</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#Codec.invert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.Codec.invert" title="Link to this definition">¶</a></dt>
-<dd><p>Return a codec that is the inverse of this one.
-That is, encoder and decoder will be swapped.</p>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -638,24 +580,6 @@ alternative to naming a transform’s first parameter <code class="docutils lite
 </div>
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="dol.trans.KeyCodec">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">KeyCodec</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">DecodedType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EncodedType</span></span></em><span class="sig-paren">]</span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#KeyCodec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.KeyCodec" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>], <a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Codec</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its keys (<code class="docutils literal notranslate"><span class="pre">id_of_key</span></code>/<code class="docutils literal notranslate"><span class="pre">key_of_id</span></code>).</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="dol.trans.KeyValueCodec">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">KeyValueCodec</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">DecodedType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EncodedType</span></span></em><span class="sig-paren">]</span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#KeyValueCodec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.KeyValueCodec" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>], <a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Codec</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps values with key context (<code class="docutils literal notranslate"><span class="pre">preset</span></code>/<code class="docutils literal notranslate"><span class="pre">postget</span></code>).</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
 <dl class="py exception">
 <dt class="sig sig-object py" id="dol.trans.MapInvertabilityError">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">MapInvertabilityError</span></span><a class="reference internal" href="../_modules/dol/trans.html#MapInvertabilityError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.MapInvertabilityError" title="Link to this definition">¶</a></dt>
@@ -697,15 +621,6 @@ alternative to naming a transform’s first parameter <code class="docutils lite
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">SimpleDelegator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#SimpleDelegator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.SimpleDelegator" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Forward attribute access (and calls) to the wrapped <code class="docutils literal notranslate"><span class="pre">obj</span></code>.</p>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="dol.trans.ValueCodec">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">ValueCodec</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">DecodedType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">EncodedType</span></span></em><span class="sig-paren">]</span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#ValueCodec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.ValueCodec" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Generic" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>], <a class="reference internal" href="#dol.trans.Codec" title="dol.trans.Codec"><code class="xref py py-class docutils literal notranslate"><span class="pre">Codec</span></code></a>[<code class="docutils literal notranslate"><span class="pre">DecodedType</span></code>, <code class="docutils literal notranslate"><span class="pre">EncodedType</span></code>]</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Codec</span></code> that, called on a store, wraps its values (<code class="docutils literal notranslate"><span class="pre">data_of_obj</span></code>/<code class="docutils literal notranslate"><span class="pre">obj_of_data</span></code>).</p>
-<dl class="field-list simple">
-</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -795,253 +710,6 @@ This is useful, for example, to get “subfolder filtering” on a store.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.add_path_access">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">add_path_access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'tuple'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mk_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explore_further</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">may_create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_warn_on_create&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_created</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verify_writeback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writeback_lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#add_path_access"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.add_path_access" title="Link to this definition">¶</a></dt>
-<dd><p>Make nested stores (read/write) accessible through key paths (iterable of keys).</p>
-<p>Like <code class="docutils literal notranslate"><span class="pre">add_path_get</span></code>, but with write and delete accessible through key paths.</p>
-<p>In a way “flatten the nested keys access”.
-(Warning: <code class="docutils literal notranslate"><span class="pre">path_type</span></code> only effects the first level.
-That is, it doesn’t work recursively.
-See issue: <a class="reference external" href="https://github.com/i2mint/dol/issues/10">https://github.com/i2mint/dol/issues/10</a>.)</p>
-<p>By default, the path object will be a tuple (e.g. <code class="docutils literal notranslate"><span class="pre">('a',</span> <span class="pre">'b',</span> <span class="pre">'c')</span></code>, but you can
-make it whatever you want, and/or use <code class="code docutils literal notranslate"><span class="pre">dol.paths.KeyPath</span></code> to map to and from
-forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
-<p>Say you have some nested stores.
-You know… like a <code class="code docutils literal notranslate"><span class="pre">ZipFileReader</span></code> store whose values are <code class="code docutils literal notranslate"><span class="pre">ZipReader</span></code> instances,
-whose values are bytes of the zipped files
-(and you can go on… whose (json) values are…).</p>
-<p>For our example, let’s take a nested dict instead:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}}</span>
-</pre></div>
-</div>
-<p>Well, you can access any node of this nested tree of stores like this:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>And that’s fine. But maybe you’d like to do it this way instead:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>So far, this is what <code class="docutils literal notranslate"><span class="pre">add_path_get</span></code> does. With <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code> though you
-can also write and delete that way too:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'a': {'b': {}}}</span>
-</pre></div>
-</div>
-<p>You might also want to access 42 with <code class="code docutils literal notranslate"><span class="pre">a.b.c</span></code> or <code class="code docutils literal notranslate"><span class="pre">a/b/c</span></code> etc.
-To do that you can use <code class="code docutils literal notranslate"><span class="pre">dol.paths.KeyPath</span></code> in combination with</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> – The store (class or instance) you’re wrapping.
-If not specified, the function will return a decorator.</p></li>
-<li><p><strong>name</strong> – The name to give the class (not applicable to instance wrapping)</p></li>
-<li><p><strong>path_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – The type that paths are expressed as. Needs to be an Iterable type.
-By default, a tuple.
-This is used to decide whether the key should be taken as a “normal”
-key of the store,
-or should be used to iterate through, recursively getting values.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A wrapped store (class or instance), or a store wrapping decorator
-(if store is not specified)</p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <code class="docutils literal notranslate"><span class="pre">dol.paths</span></code></p>
-</div>
-<p>Wrapping a class</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'a': {'b': {}}}</span>
-</pre></div>
-</div>
-<p>Using add_path_get as a decorator</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@add_path_access</span>
-<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">S</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>   <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'a': {'b': {}}}</span>
-</pre></div>
-</div>
-<p>A different kind of path?
-You can choose a different path_type, but sometimes (say both keys and key paths are strings)
-You need to involve more tools. Like dol.paths.KeyPath…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.paths</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyPath</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">kv_wrap</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">SS</span> <span class="o">=</span> <span class="n">kv_wrap</span><span class="p">(</span><span class="n">KeyPath</span><span class="p">(</span><span class="n">path_sep</span><span class="o">=</span><span class="s1">'.'</span><span class="p">))(</span><span class="n">S</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SS</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a.b'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">];</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a.b.c'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a.b.c'</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.14</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'a': {'b': {'c': 3.14}}}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">del</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a.b.c'</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'a': {'b': {}}}</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The add_path_access doesn’t carry on to values.</p>
-</div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_access</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># but</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="gt">Traceback (most recent call last):</span>
-<span class="w">  </span><span class="c">...</span>
-<span class="gr">KeyError</span>: <span class="n">('b', 'c')</span>
-</pre></div>
-</div>
-<p>That said,</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">add_path_access</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">])[</span><span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>The reason why we don’t do this automatically is that it may not always be desirable.
-If one wanted to though, one could use <code class="docutils literal notranslate"><span class="pre">wrap_kvs(obj_of_data=...)</span></code> to wrap
-specific values with <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>.
-For example, if you wanted to wrap all mappings recursively, you could:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">instance_checker</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">add_path_access_if_mapping</span> <span class="o">=</span> <span class="n">conditional_data_trans</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">condition</span><span class="o">=</span><span class="n">instance_checker</span><span class="p">(</span><span class="n">Mapping</span><span class="p">),</span> <span class="n">data_trans</span><span class="o">=</span><span class="n">add_path_access</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_access_if_mapping</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># But now this works:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.add_path_get">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">add_path_get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'tuple'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#add_path_get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.add_path_get" title="Link to this definition">¶</a></dt>
-<dd><p>Make nested stores accessible through key paths.
-In a way “flatten the nested keys access”.
-By default, the path object will be a tuple (e.g. <code class="docutils literal notranslate"><span class="pre">('a',</span> <span class="pre">'b',</span> <span class="pre">'c')</span></code>, but you can
-make it whatever you want, and/or use <code class="code docutils literal notranslate"><span class="pre">dol.paths.KeyPath</span></code> to map to and from
-forms like <code class="docutils literal notranslate"><span class="pre">'a.b.c'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a/b/c'</span></code>, etc.</p>
-<p>(Warning: <code class="docutils literal notranslate"><span class="pre">path_type</span></code> only effects the first level.
-That is, it doesn’t work recursively.
-See issue: <a class="reference external" href="https://github.com/i2mint/dol/issues/10">https://github.com/i2mint/dol/issues/10</a>.)</p>
-<p>Say you have some nested stores.
-You know… like a <code class="code docutils literal notranslate"><span class="pre">ZipFileReader</span></code> store whose values are <code class="code docutils literal notranslate"><span class="pre">ZipReader</span></code> instances,
-whose values are bytes of the zipped files
-(and you can go on… whose (json) values are…).</p>
-<p>For our example, let’s take a nested dict instead:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}}</span>
-</pre></div>
-</div>
-<p>Well, you can access any node of this nested tree of stores like this:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>And that’s fine. But maybe you’d like to do it this way instead:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>You might also want to access 42 with <code class="code docutils literal notranslate"><span class="pre">a.b.c</span></code> or <code class="code docutils literal notranslate"><span class="pre">a/b/c</span></code> etc.
-To do that you can use <code class="code docutils literal notranslate"><span class="pre">dol.paths.KeyPath</span></code> in combination with</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> – The store (class or instance) you’re wrapping.
-If not specified, the function will return a decorator.</p></li>
-<li><p><strong>name</strong> – The name to give the class (not applicable to instance wrapping)</p></li>
-<li><p><strong>path_type</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">type</span></code></a></span>) – The type that paths are expressed as. Needs to be an Iterable type.
-By default, a tuple.
-This is used to decide whether the key should be taken as a “normal”
-key of the store,
-or should be used to iterate through, recursively getting values.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A wrapped store (class or instance), or a store wrapping decorator
-(if store is not specified)</p>
-</dd>
-</dl>
-<div class="admonition seealso">
-<p class="admonition-title">See also</p>
-<p><code class="docutils literal notranslate"><span class="pre">KeyPath</span></code> in <code class="docutils literal notranslate"><span class="pre">dol.paths</span></code></p>
-</div>
-<p>Wrapping an instance</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span>
-<span class="go">{'b': {'c': 42}}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span>
-<span class="go">{'c': 42}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>Wrapping a class</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">add_path_get</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">42</span>
-</pre></div>
-</div>
-<p>Using add_path_get as a decorator</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@add_path_get</span>
-<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">S</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>   <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">42</span>
-</pre></div>
-</div>
-<p>A different kind of path?
-You can choose a different path_type, but sometimes (say both keys and key paths are strings)
-You need to involve more tools. Like dol.paths.KeyPath…</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.paths</span><span class="w"> </span><span class="kn">import</span> <span class="n">KeyPath</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.trans</span><span class="w"> </span><span class="kn">import</span> <span class="n">kv_wrap</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">SS</span> <span class="o">=</span> <span class="n">kv_wrap</span><span class="p">(</span><span class="n">KeyPath</span><span class="p">(</span><span class="n">path_sep</span><span class="o">=</span><span class="s1">'.'</span><span class="p">))(</span><span class="n">S</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">SS</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">==</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}};</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a.b'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">];</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a.b.c'</span><span class="p">]</span> <span class="o">==</span> <span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.add_store_method">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">add_store_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#add_store_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.add_store_method" title="Link to this definition">¶</a></dt>
 <dd><p>Add methods to store classes or instances</p>
@@ -1102,57 +770,12 @@ If None, the functiion will make a decorator to decorate wrap_cls later</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.affix_key_codec">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">affix_key_codec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">suffix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#affix_key_codec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.affix_key_codec" title="Link to this definition">¶</a></dt>
-<dd><p>A factory that creates a key codec that affixes a prefix and suffix to the key</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span> <span class="o">=</span> <span class="n">affix_key_codec</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">'/folder/'</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">'.txt'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span>
-<span class="go">'/folder/name.txt'</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">codec</span><span class="o">.</span><span class="n">decoder</span><span class="p">(</span><span class="s1">'/folder/name.txt'</span><span class="p">)</span>
-<span class="go">'name'</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.assert_min_num_of_args">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">assert_min_num_of_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_of_args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#assert_min_num_of_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.assert_min_num_of_args" title="Link to this definition">¶</a></dt>
 <dd><p>Assert that a function can be a store method.
 That is, it should have a signature that takes the store as the first argument</p>
 <dl class="field-list simple">
 </dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.autoviv">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">autoviv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#autoviv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.autoviv" title="Link to this definition">¶</a></dt>
-<dd><p>Opt-in write-through autovivification for key-paths.</p>
-<p>Shorthand for <code class="docutils literal notranslate"><span class="pre">add_path_access(store,</span> <span class="pre">create_missing=True,</span> <span class="pre">**kwargs)</span></code>: writing
-through a key-path (e.g. <code class="docutils literal notranslate"><span class="pre">s['a',</span> <span class="pre">'b',</span> <span class="pre">'c']</span> <span class="pre">=</span> <span class="pre">v</span></code>) creates any missing intermediate
-levels on the way, and the change persists correctly even through persistent /
-copy-semantics stores (<code class="docutils literal notranslate"><span class="pre">Files</span></code>, <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code>-wrapped stores). See
-<code class="docutils literal notranslate"><span class="pre">add_path_access</span></code> for the full set of options (<code class="docutils literal notranslate"><span class="pre">mk_missing</span></code>, <code class="docutils literal notranslate"><span class="pre">may_create</span></code>,
-<code class="docutils literal notranslate"><span class="pre">max_created</span></code>, <code class="docutils literal notranslate"><span class="pre">on_create</span></code>, …). Missing-key creation is announced via
-<code class="docutils literal notranslate"><span class="pre">warnings.warn</span></code> by default, so a typo is never silent.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">autoviv</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">autoviv</span><span class="p">({})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">][</span><span class="s1">'b'</span><span class="p">][</span><span class="s1">'c'</span><span class="p">]</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>Like <code class="docutils literal notranslate"><span class="pre">add_path_access</span></code>, it also works as a class decorator / factory:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">S</span> <span class="o">=</span> <span class="n">autoviv</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">S</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'x'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">]</span>
-<span class="go">1</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py function">
@@ -1987,182 +1610,6 @@ matched and the store raised <code class="docutils literal notranslate"><span cl
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.flatten">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#flatten"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.flatten" title="Link to this definition">¶</a></dt>
-<dd><p>Give a nested store a flat view whose keys are the <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> key paths.</p>
-<p>Not to be confused with <code class="docutils literal notranslate"><span class="pre">dol.flatten_dict</span></code>, which flattens a plain nested
-<code class="docutils literal notranslate"><span class="pre">Mapping</span></code> into a new <code class="docutils literal notranslate"><span class="pre">dict</span></code> (eagerly, with joined-string keys). This one wraps
-a <em>store of stores</em> in a lazy, levels-aware view. <code class="docutils literal notranslate"><span class="pre">flatten_store</span></code> is the
-unambiguous name for this function (<code class="docutils literal notranslate"><span class="pre">flatten</span></code> stays as its alias).</p>
-<p>Say you have a store that has three levels (or more), that is, that you can always
-ask for the value <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> if <code class="docutils literal notranslate"><span class="pre">a</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store</span></code>,
-<code class="docutils literal notranslate"><span class="pre">b</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a]</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a][b]</span></code>.</p>
-<p>What <code class="docutils literal notranslate"><span class="pre">flattened_store</span> <span class="pre">=</span> <span class="pre">flatten(store,</span> <span class="pre">levels=3)</span></code> will give you is the ability
-to access the <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> as <code class="docutils literal notranslate"><span class="pre">store[a,</span> <span class="pre">b,</span> <span class="pre">c]</span></code>, while still being able
-to access these stores “normally”.</p>
-<p>If that’s all you need, you can just use the <code class="docutils literal notranslate"><span class="pre">add_get_path</span></code> wrapper for this.</p>
-<p>Why would you use <code class="docutils literal notranslate"><span class="pre">flatten</span></code>? Because <code class="docutils literal notranslate"><span class="pre">add_get_path(store)</span></code> would still only
-give you the <code class="docutils literal notranslate"><span class="pre">KvReader</span></code> point of view of the root <code class="docutils literal notranslate"><span class="pre">store</span></code>.
-If you <code class="docutils literal notranslate"><span class="pre">list(store)</span></code>, you’d only get the first level keys,
-or if you ask if <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> is in the store, it will tell you it’s not
-(though you can access data with such a key.</p>
-<p>Instead, a flattened store will consider that the keys are those <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code>
-key paths.</p>
-<p>Further, when flattening a store, you can ask for the view to cache the keys,
-specifying <code class="docutils literal notranslate"><span class="pre">cache_keys=True</span></code> or give it an explicit place to cache or
-factory to make a cache (see <code class="docutils literal notranslate"><span class="pre">cached_keys</span></code> wrapper for more details).
-Though caching keys is not the default it’s highly recommended to do so in most
-cases. The only reason it is not the default is because if you have millions of
-keys, but little memory, that’s not what you might want.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
-change the store itself, or it’s contents.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> – The store instance or class to be wrapped</p></li>
-<li><p><strong>levels</strong> – The number of nested levels to flatten</p></li>
-<li><p><strong>cache_keys</strong> – Whether to cache the keys, or a cache factory or instance.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">flatten</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
-<span class="gp">... </span>    <span class="s1">'aa'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">}}</span>
-<span class="gp">... </span><span class="p">}</span>
-</pre></div>
-</div>
-<p>You can get a flattened view of an instance:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cache_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">),</span> <span class="mi">42</span><span class="p">),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,</span> <span class="s1">'bb'</span><span class="p">,</span> <span class="s1">'cc'</span><span class="p">),</span> <span class="s1">'dragon_con'</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can make a flattener and apply it to an instance (or a class):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_flattener</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">levels</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">my_flattener</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">),</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,</span> <span class="s1">'bb'</span><span class="p">),</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">})</span>
-<span class="gp">... </span>        <span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Finally, you can wrap a class itself.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@flatten</span><span class="p">(</span><span class="n">levels</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">MyFlatDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">MyFlatDict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,),</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,),</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">}})</span>
-<span class="gp">... </span>        <span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.flatten_store">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">flatten_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dol.trans.flatten_store" title="Link to this definition">¶</a></dt>
-<dd><p>Give a nested store a flat view whose keys are the <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> key paths.</p>
-<p>Not to be confused with <code class="docutils literal notranslate"><span class="pre">dol.flatten_dict</span></code>, which flattens a plain nested
-<code class="docutils literal notranslate"><span class="pre">Mapping</span></code> into a new <code class="docutils literal notranslate"><span class="pre">dict</span></code> (eagerly, with joined-string keys). This one wraps
-a <em>store of stores</em> in a lazy, levels-aware view. <code class="docutils literal notranslate"><span class="pre">flatten_store</span></code> is the
-unambiguous name for this function (<code class="docutils literal notranslate"><span class="pre">flatten</span></code> stays as its alias).</p>
-<p>Say you have a store that has three levels (or more), that is, that you can always
-ask for the value <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> if <code class="docutils literal notranslate"><span class="pre">a</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store</span></code>,
-<code class="docutils literal notranslate"><span class="pre">b</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a]</span></code> and <code class="docutils literal notranslate"><span class="pre">c</span></code> is a valid key of <code class="docutils literal notranslate"><span class="pre">store[a][b]</span></code>.</p>
-<p>What <code class="docutils literal notranslate"><span class="pre">flattened_store</span> <span class="pre">=</span> <span class="pre">flatten(store,</span> <span class="pre">levels=3)</span></code> will give you is the ability
-to access the <code class="docutils literal notranslate"><span class="pre">store[a][b][c]</span></code> as <code class="docutils literal notranslate"><span class="pre">store[a,</span> <span class="pre">b,</span> <span class="pre">c]</span></code>, while still being able
-to access these stores “normally”.</p>
-<p>If that’s all you need, you can just use the <code class="docutils literal notranslate"><span class="pre">add_get_path</span></code> wrapper for this.</p>
-<p>Why would you use <code class="docutils literal notranslate"><span class="pre">flatten</span></code>? Because <code class="docutils literal notranslate"><span class="pre">add_get_path(store)</span></code> would still only
-give you the <code class="docutils literal notranslate"><span class="pre">KvReader</span></code> point of view of the root <code class="docutils literal notranslate"><span class="pre">store</span></code>.
-If you <code class="docutils literal notranslate"><span class="pre">list(store)</span></code>, you’d only get the first level keys,
-or if you ask if <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code> is in the store, it will tell you it’s not
-(though you can access data with such a key.</p>
-<p>Instead, a flattened store will consider that the keys are those <code class="docutils literal notranslate"><span class="pre">(a,</span> <span class="pre">b,</span> <span class="pre">c)</span></code>
-key paths.</p>
-<p>Further, when flattening a store, you can ask for the view to cache the keys,
-specifying <code class="docutils literal notranslate"><span class="pre">cache_keys=True</span></code> or give it an explicit place to cache or
-factory to make a cache (see <code class="docutils literal notranslate"><span class="pre">cached_keys</span></code> wrapper for more details).
-Though caching keys is not the default it’s highly recommended to do so in most
-cases. The only reason it is not the default is because if you have millions of
-keys, but little memory, that’s not what you might want.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Flattening just provides a wrapper giving you a “flattened view”. It doesn’t
-change the store itself, or it’s contents.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> – The store instance or class to be wrapped</p></li>
-<li><p><strong>levels</strong> – The number of nested levels to flatten</p></li>
-<li><p><strong>cache_keys</strong> – Whether to cache the keys, or a cache factory or instance.</p></li>
-</ul>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">flatten</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span>
-<span class="gp">... </span>    <span class="s1">'a'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}},</span>
-<span class="gp">... </span>    <span class="s1">'aa'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">}}</span>
-<span class="gp">... </span><span class="p">}</span>
-</pre></div>
-</div>
-<p>You can get a flattened view of an instance:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cache_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">,</span> <span class="s1">'c'</span><span class="p">),</span> <span class="mi">42</span><span class="p">),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,</span> <span class="s1">'bb'</span><span class="p">,</span> <span class="s1">'cc'</span><span class="p">),</span> <span class="s1">'dragon_con'</span><span class="p">)</span>
-<span class="gp">... </span>        <span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can make a flattener and apply it to an instance (or a class):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">my_flattener</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">(</span><span class="n">levels</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">my_flattener</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,</span> <span class="s1">'b'</span><span class="p">),</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,</span> <span class="s1">'bb'</span><span class="p">),</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">})</span>
-<span class="gp">... </span>        <span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Finally, you can wrap a class itself.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@flatten</span><span class="p">(</span><span class="n">levels</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">MyFlatDict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">MyFlatDict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="p">(</span>
-<span class="gp">... </span>        <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
-<span class="gp">... </span>        <span class="o">==</span> <span class="p">[</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'a'</span><span class="p">,),</span> <span class="p">{</span><span class="s1">'b'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'c'</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}),</span>
-<span class="gp">... </span>            <span class="p">((</span><span class="s1">'aa'</span><span class="p">,),</span> <span class="p">{</span><span class="s1">'bb'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'cc'</span><span class="p">:</span> <span class="s1">'dragon_con'</span><span class="p">}})</span>
-<span class="gp">... </span>        <span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.get_class_name">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">get_class_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dflt_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#get_class_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.get_class_name" title="Link to this definition">¶</a></dt>
 <dd><p>The <code class="docutils literal notranslate"><span class="pre">__qualname__</span></code> of <code class="docutils literal notranslate"><span class="pre">cls</span></code> (or of its class), else <code class="docutils literal notranslate"><span class="pre">dflt_name</span></code>; raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if there is neither.</p>
@@ -2172,170 +1619,6 @@ change the store itself, or it’s contents.</p>
 <dt class="sig sig-object py" id="dol.trans.ignore_if_error">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">ignore_if_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(&lt;class</span> <span class="pre">'KeyError'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#ignore_if_error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.ignore_if_error" title="Link to this definition">¶</a></dt>
 <dd><p>Wrap <code class="docutils literal notranslate"><span class="pre">store</span></code> so that <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> errors in <code class="docutils literal notranslate"><span class="pre">errors</span></code> return <code class="docutils literal notranslate"><span class="pre">None</span></code> instead of raising.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.insert_aliases">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">insert_aliases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">write</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#insert_aliases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.insert_aliases" title="Link to this definition">¶</a></dt>
-<dd><p>Insert method aliases of CRUD operations of a store (class or instance).
-If store is a class, you’ll get a copy of the class with those methods added.
-If store is an instance, the methods will be added in place (no copy will be made).</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If an operation (write, read, delete, list, count) is not specified, no alias will be created for
-that operation.</p>
-</div>
-<p>IMPORTANT NOTE: The signatures of the methods the aliases will point to will not change.
-We say this because, you can call the write method “dump”, but you’ll have to use it as
-<code class="code docutils literal notranslate"><span class="pre">store.dump(key,</span> <span class="pre">val)</span></code>, not <code class="code docutils literal notranslate"><span class="pre">store.dump(val,</span> <span class="pre">key)</span></code>, which is the signature you’re probably used to
-(it’s the one used by json.dump or pickle.dump for example). If you want that familiar interface,
-using the insert_load_dump_aliases function.</p>
-<p>See also (and not to be confused with): <code class="docutils literal notranslate"><span class="pre">add_aliases</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> – The store to extend with aliases.</p></li>
-<li><p><strong>write</strong> – Desired method name for __setitem__</p></li>
-<li><p><strong>read</strong> – Desired method name for __getitem__</p></li>
-<li><p><strong>delete</strong> – Desired method name for __delitem__</p></li>
-<li><p><strong>list</strong> – Desired method name for __iter__</p></li>
-<li><p><strong>count</strong> – Desired method name for __len__</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A store with the desired aliases.</p>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example of extending a class</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">mydict</span> <span class="o">=</span> <span class="n">insert_aliases</span><span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="s1">'dump'</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="s1">'load'</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="s1">'rm'</span><span class="p">,</span> <span class="nb">list</span><span class="o">=</span><span class="s1">'peek'</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="s1">'size'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">mydict</span><span class="p">(</span><span class="n">true</span><span class="o">=</span><span class="s1">'love'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s1">'friends'</span><span class="p">,</span> <span class="s1">'forever'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'true': 'love', 'friends': 'forever'}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">'true'</span><span class="p">)</span>
-<span class="go">'love'</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">peek</span><span class="p">())</span>
-<span class="go">['true', 'friends']</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-<span class="go">2</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="s1">'true'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'friends': 'forever'}</span>
-<span class="gp">&gt;&gt;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Example of extending an instance</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserDict</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">UserDict</span><span class="p">(</span><span class="n">true</span><span class="o">=</span><span class="s1">'love'</span><span class="p">)</span>  <span class="c1"># make (and instance) of a UserDict (can't modify a dict instance)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># make aliases of note that you don't need</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">insert_aliases</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">write</span><span class="o">=</span><span class="s1">'put'</span><span class="p">,</span> <span class="n">read</span><span class="o">=</span><span class="s1">'retrieve'</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="s1">'num_of_items'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s1">'friends'</span><span class="p">,</span> <span class="s1">'forever'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'true': 'love', 'friends': 'forever'}</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s1">'true'</span><span class="p">)</span>
-<span class="go">'love'</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">num_of_items</span><span class="p">()</span>
-<span class="go">2</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.insert_hash_method">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">insert_hash_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hash_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">id&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#insert_hash_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.insert_hash_method" title="Link to this definition">¶</a></dt>
-<dd><p>Make a store hashable using the specified <code class="docutils literal notranslate"><span class="pre">hash_method</span></code>.
-Will add (or overwrite) a <code class="docutils literal notranslate"><span class="pre">__hash__</span></code> method to the store that uses the
-hash_method to hash the store and an <code class="docutils literal notranslate"><span class="pre">__eq__</span></code> method that compares the store to
-another based on the hash_method.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">hash_method</span></code>, which will be used as the <code class="docutils literal notranslate"><span class="pre">__hash__</span></code> method of a class
-should return an integer value that represents the hash of the object.
-To remain sane, the hash value must be the same for an object every time the
-<code class="docutils literal notranslate"><span class="pre">__hash__</span></code> method is called during the lifetime of the object, and objects
-that compare equal (using the __eq__ method) must have the same hash value.</p>
-<p>It’s also important that the hash function has the property of being deterministic
-and returning a hash value that is uniformly distributed across the range of
-possible integers for the given data. This is important for the hash table
-data structure to work efficiently.</p>
-<p>See <a class="reference external" href="https://github.com/i2mint/dol/issues/7">This issue</a> for further information.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>  <span class="c1"># not hashable!</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">insert_hash_method</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">dd</span><span class="p">),</span> <span class="nb">int</span><span class="p">)</span>  <span class="c1"># now hashable!</span>
-</pre></div>
-</div>
-<p>It looks the same:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span>
-<span class="go">{1: 2}</span>
-</pre></div>
-</div>
-<p>But don’t be fooled: dd is not equal to the original <code class="docutils literal notranslate"><span class="pre">d</span></code> (since
-insert_hash_method``overwrote the <code class="docutils literal notranslate"><span class="pre">__eq__</span></code> method to compare based on the
-hash value):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">==</span> <span class="n">dd</span>
-<span class="go">False</span>
-</pre></div>
-</div>
-<p>But if you cast both to dicts and then compare, you’ll be using the key and value
-based comparison of dicts, which makes these two equal.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">(</span><span class="n">dd</span><span class="p">)</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-<p>The default <code class="docutils literal notranslate"><span class="pre">hash_method</span></code> is <code class="docutils literal notranslate"><span class="pre">id</span></code>, so two hashable wrappers won’t be equal
-to eachother:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">insert_hash_method</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="n">insert_hash_method</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-<span class="go">False</span>
-</pre></div>
-</div>
-<p>In the following we show two things: That you can specify your own custom
-<code class="docutils literal notranslate"><span class="pre">hash_method</span></code>, and that you can use <code class="docutils literal notranslate"><span class="pre">insert_hash_method</span></code> to wrap classes</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">D</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">DD</span> <span class="o">=</span> <span class="n">insert_hash_method</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">hash_method</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">42</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">DD</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
-<span class="go">42</span>
-</pre></div>
-</div>
-<p>You can also use it as a decorator, without arguments,</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@insert_hash_method</span>
-<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">E</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">E</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">})),</span> <span class="nb">int</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>or with arguments (which you must specify as keyword arguments):</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@insert_hash_method</span><span class="p">(</span><span class="n">hash_method</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
-<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">F</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">pass</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">hash</span><span class="p">(</span><span class="n">F</span><span class="p">({</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">4</span><span class="p">}))</span>
-<span class="go">6</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.insert_load_dump_aliases">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">insert_load_dump_aliases</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__module__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__name__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__qualname__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__doc__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__annotations__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__defaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">__kwdefaults__</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#insert_load_dump_aliases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.insert_load_dump_aliases" title="Link to this definition">¶</a></dt>
-<dd><p>Insert load and dump methods, with familiar dump(obj, location) signature.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>store</strong> – The store to extend with aliases.</p></li>
-<li><p><strong>delete</strong> – Desired method name for __delitem__</p></li>
-<li><p><strong>list</strong> – Desired method name for __iter__</p></li>
-<li><p><strong>count</strong> – Desired method name for __len__</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A store with the desired aliases.</p>
-</dd>
-</dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mydict</span> <span class="o">=</span> <span class="n">insert_load_dump_aliases</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">mydict</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="s1">'love'</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s1">'true'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span>
-<span class="go">{'true': 'love'}</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py function">
@@ -2475,12 +1758,6 @@ when that’s what you need.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.leveled_paths_walk">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">leveled_paths_walk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#leveled_paths_walk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.leveled_paths_walk" title="Link to this definition">¶</a></dt>
-<dd><p>Yield the key paths of <code class="docutils literal notranslate"><span class="pre">m</span></code>, down to <code class="docutils literal notranslate"><span class="pre">levels</span></code> levels.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="dol.trans.mk_confirm_overwrite_preset">
 <span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_confirm_overwrite_preset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_dflt_overwrite_prompt&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#mk_confirm_overwrite_preset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_confirm_overwrite_preset" title="Link to this definition">¶</a></dt>
 <dd><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> <code class="docutils literal notranslate"><span class="pre">preset</span></code> that asks for confirmation before overwriting an
@@ -2530,14 +1807,6 @@ This default is useful when you want to delegate the actual getting to a _obj_of
 <dd class="field-even"><p>A KvReader class that subclasses the input kv_collection</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.trans.mk_level_walk_filt">
-<span class="sig-prename descclassname"><span class="pre">dol.trans.</span></span><span class="sig-name descname"><span class="pre">mk_level_walk_filt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">levels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/trans.html#mk_level_walk_filt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.trans.mk_level_walk_filt" title="Link to this definition">¶</a></dt>
-<dd><p>Makes a <code class="docutils literal notranslate"><span class="pre">walk_filt</span></code> function for <code class="docutils literal notranslate"><span class="pre">kv_walk</span></code> based on some level logic.
-If <code class="docutils literal notranslate"><span class="pre">levels</span></code> is an integer, will consider it as the max path length,
-if not it will just assert that <code class="docutils literal notranslate"><span class="pre">levels</span></code> is callable, and return it</p>
 </dd></dl>
 
 <dl class="py function">
@@ -3071,10 +2340,6 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
             <ul>
 <li><a class="reference internal" href="#">dol.trans</a><ul>
 <li><a class="reference internal" href="#dol.trans.CachedInvertibleTrans"><code class="docutils literal notranslate"><span class="pre">CachedInvertibleTrans</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.Codec"><code class="docutils literal notranslate"><span class="pre">Codec</span></code></a><ul>
-<li><a class="reference internal" href="#dol.trans.Codec.invert"><code class="docutils literal notranslate"><span class="pre">Codec.invert()</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#dol.trans.FiltIter"><code class="docutils literal notranslate"><span class="pre">FiltIter</span></code></a><ul>
 <li><a class="reference internal" href="#dol.trans.FiltIter.prefixes"><code class="docutils literal notranslate"><span class="pre">FiltIter.prefixes()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.FiltIter.regex"><code class="docutils literal notranslate"><span class="pre">FiltIter.regex()</span></code></a></li>
@@ -3082,23 +2347,16 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
 </ul>
 </li>
 <li><a class="reference internal" href="#dol.trans.FirstArgIsMapping"><code class="docutils literal notranslate"><span class="pre">FirstArgIsMapping</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.KeyCodec"><code class="docutils literal notranslate"><span class="pre">KeyCodec</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.KeyValueCodec"><code class="docutils literal notranslate"><span class="pre">KeyValueCodec</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.MapInvertabilityError"><code class="docutils literal notranslate"><span class="pre">MapInvertabilityError</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.OverWritesNotAllowedMixin"><code class="docutils literal notranslate"><span class="pre">OverWritesNotAllowedMixin</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.SimpleDelegator"><code class="docutils literal notranslate"><span class="pre">SimpleDelegator</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.ValueCodec"><code class="docutils literal notranslate"><span class="pre">ValueCodec</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_aliases"><code class="docutils literal notranslate"><span class="pre">add_aliases()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_decoder"><code class="docutils literal notranslate"><span class="pre">add_decoder()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_ipython_key_completions"><code class="docutils literal notranslate"><span class="pre">add_ipython_key_completions()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_missing_key_handling"><code class="docutils literal notranslate"><span class="pre">add_missing_key_handling()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.add_path_access"><code class="docutils literal notranslate"><span class="pre">add_path_access()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.add_path_get"><code class="docutils literal notranslate"><span class="pre">add_path_get()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_store_method"><code class="docutils literal notranslate"><span class="pre">add_store_method()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.add_wrapper_method"><code class="docutils literal notranslate"><span class="pre">add_wrapper_method()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.affix_key_codec"><code class="docutils literal notranslate"><span class="pre">affix_key_codec()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.assert_min_num_of_args"><code class="docutils literal notranslate"><span class="pre">assert_min_num_of_args()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.autoviv"><code class="docutils literal notranslate"><span class="pre">autoviv()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.cache_iter"><code class="docutils literal notranslate"><span class="pre">cache_iter()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.cached_keys"><code class="docutils literal notranslate"><span class="pre">cached_keys()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.catch_and_cache_error_keys"><code class="docutils literal notranslate"><span class="pre">catch_and_cache_error_keys()</span></code></a></li>
@@ -3116,21 +2374,14 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
 <li><a class="reference internal" href="#dol.trans.filter_prefixes"><code class="docutils literal notranslate"><span class="pre">filter_prefixes()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.filter_regex"><code class="docutils literal notranslate"><span class="pre">filter_regex()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.filter_suffixes"><code class="docutils literal notranslate"><span class="pre">filter_suffixes()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.flatten"><code class="docutils literal notranslate"><span class="pre">flatten()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.flatten_store"><code class="docutils literal notranslate"><span class="pre">flatten_store()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.get_class_name"><code class="docutils literal notranslate"><span class="pre">get_class_name()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.ignore_if_error"><code class="docutils literal notranslate"><span class="pre">ignore_if_error()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.insert_aliases"><code class="docutils literal notranslate"><span class="pre">insert_aliases()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.insert_hash_method"><code class="docutils literal notranslate"><span class="pre">insert_hash_method()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.insert_load_dump_aliases"><code class="docutils literal notranslate"><span class="pre">insert_load_dump_aliases()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.is_iterable"><code class="docutils literal notranslate"><span class="pre">is_iterable()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.iterate_values_and_accumulate_non_error_keys"><code class="docutils literal notranslate"><span class="pre">iterate_values_and_accumulate_non_error_keys()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.kv_wrap"><code class="docutils literal notranslate"><span class="pre">kv_wrap()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.kv_wrap_persister_cls"><code class="docutils literal notranslate"><span class="pre">kv_wrap_persister_cls()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.leveled_paths_walk"><code class="docutils literal notranslate"><span class="pre">leveled_paths_walk()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_confirm_overwrite_preset"><code class="docutils literal notranslate"><span class="pre">mk_confirm_overwrite_preset()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_kv_reader_from_kv_collection"><code class="docutils literal notranslate"><span class="pre">mk_kv_reader_from_kv_collection()</span></code></a></li>
-<li><a class="reference internal" href="#dol.trans.mk_level_walk_filt"><code class="docutils literal notranslate"><span class="pre">mk_level_walk_filt()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_read_only"><code class="docutils literal notranslate"><span class="pre">mk_read_only()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_trans_obj"><code class="docutils literal notranslate"><span class="pre">mk_trans_obj()</span></code></a></li>
 <li><a class="reference internal" href="#dol.trans.mk_wrapper"><code class="docutils literal notranslate"><span class="pre">mk_wrapper()</span></code></a></li>
@@ -3154,7 +2405,7 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=5314aa16"></script>
+</div><script src="../_static/documentation_options.js?v=73a530fd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -51,6 +51,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`records`](dol.records.html.md#module-dol.records)                                 | Records: a queryable CRUD facade for the small rows beside the blobs (#80).                                     |
 | [`signatures`](dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
+| [`store_addons`](dol.store_addons.html.md#module-dol.store_addons)                       | Store add-ons: path access, flattening, method aliases and hashing.                                             |
 | [`tools`](dol.tools.html.md#module-dol.tools)                                     | Various tools to add functionality to stores.                                                                   |
 | [`trans`](dol.trans.html.md#module-dol.trans)                                     | Tools to wrap stores with key/value transforms, filters, caches and other layers.                               |
 | [`trash`](dol.trash.html.md#module-dol.trash)                                     | Cross-platform file trash/recycle bin functionality for dol.                                                    |
