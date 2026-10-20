@@ -50,6 +50,9 @@ Get the first item of a kv store, or a list of the first n items
 | [`paths`](dol.paths.html.md#module-dol.paths)                                     | Module for path (and path-like) object manipulation                                                             |
 | [`recipes`](dol.recipes.html.md#module-dol.recipes)                                 | Recipes using dol                                                                                               |
 | [`records`](dol.records.html.md#module-dol.records)                                 | Records: a queryable CRUD facade for the small rows beside the blobs (#80).                                     |
+| [`sig_builtins`](dol.sig_builtins.html.md#module-dol.sig_builtins)                       | Signatures for the callables that `inspect.signature` can't handle.                                             |
+| [`sig_compare`](dol.sig_compare.html.md#module-dol.sig_compare)                         | Compare signatures, and check whether calls to one function are valid calls to another.                         |
+| [`sig_recipes`](dol.sig_recipes.html.md#module-dol.sig_recipes)                         | Recipes built on `Sig`: make signatures, and change the signature of functions.                                 |
 | [`signatures`](dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
 | [`store_addons`](dol.store_addons.html.md#module-dol.store_addons)                       | Store add-ons: path access, flattening, method aliases and hashing.                                             |

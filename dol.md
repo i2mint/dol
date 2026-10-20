@@ -1,4 +1,4 @@
-> built 2026-10-20 18:38 UTC from 63b1200 (master) · dol 0.3.93. Details: build_info.json
+> built 2026-10-20 19:03 UTC from da40c55 (master) · dol 0.3.94. Details: build_info.json
 
 # index.html.md
 
@@ -3978,6 +3978,9 @@ Get the first item of a kv store, or a list of the first n items
 | [`paths`](_autosummary/dol.paths.html.md#module-dol.paths)                                     | Module for path (and path-like) object manipulation                                                             |
 | [`recipes`](_autosummary/dol.recipes.html.md#module-dol.recipes)                                 | Recipes using dol                                                                                               |
 | [`records`](_autosummary/dol.records.html.md#module-dol.records)                                 | Records: a queryable CRUD facade for the small rows beside the blobs (#80).                                     |
+| [`sig_builtins`](_autosummary/dol.sig_builtins.html.md#module-dol.sig_builtins)                       | Signatures for the callables that `inspect.signature` can't handle.                                             |
+| [`sig_compare`](_autosummary/dol.sig_compare.html.md#module-dol.sig_compare)                         | Compare signatures, and check whether calls to one function are valid calls to another.                         |
+| [`sig_recipes`](_autosummary/dol.sig_recipes.html.md#module-dol.sig_recipes)                         | Recipes built on `Sig`: make signatures, and change the signature of functions.                                 |
 | [`signatures`](_autosummary/dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](_autosummary/dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
 | [`store_addons`](_autosummary/dol.store_addons.html.md#module-dol.store_addons)                       | Store add-ons: path access, flattening, method aliases and hashing.                                             |
@@ -6830,6 +6833,1300 @@ Case-insensitive substring search over `fields` (default: every str field).
   [`WrappedProvider`](_autosummary/dol.records.html.md#dol.records.WrappedProvider)
 
 
+# _autosummary/dol.sig_builtins.html.md
+
+# dol.sig_builtins
+
+Signatures for the callables that `inspect.signature` can’t handle.
+
+Many builtins (`print`, `map`, `itertools.product`, …) have no signature that
+`inspect` can read. This module holds hand-made ones, and the function `Sig` uses
+to get a signature for any callable, falling back to those:
+
+- `_robust_signature_of_callable`: `inspect.signature`, with the fallbacks below
+- `sigs_for_builtins`, `sigs_for_builtin_modules`, `sigs_for_type_name`: the
+  hand-made signatures, by name (`sigs_for_sigless_builtin_name` merges the first two)
+- `resolve_function`, `dict_of_attribute_signatures`: helpers
+
+It depends on nothing else in `dol`. It used to be part of `dol.signatures`, which
+still re-exports all of it (i2mint/dol#70).
+
+```pycon
+>>> from dol.sig_builtins import _robust_signature_of_callable
+>>> _robust_signature_of_callable(isinstance)
+<Signature (obj, class_or_tuple, /)>
+```
+
+### Functions
+
+| [`dict_of_attribute_signatures`](_autosummary/dol.sig_builtins.html.md#dol.sig_builtins.dict_of_attribute_signatures)(cls)   | A function that extracts the signatures of all callable attributes of a class.   |
+|--------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [`resolve_function`](_autosummary/dol.sig_builtins.html.md#dol.sig_builtins.resolve_function)(obj)               | Get the underlying function of a property or cached_property                     |
+
+### dol.sig_builtins.dict_of_attribute_signatures(cls)
+
+A function that extracts the signatures of all callable attributes of a class.
+
+* **Parameters:**
+  **cls** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The class that holds the the `(name, func)` pairs we want to extract.
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature)]
+* **Returns:**
+  A dict of `(name, signature(func))` pairs extracted from class.
+
+One of the intended applications is to use `dict_of_attribute_signatures` as a
+decorator, like so:
+
+```pycon
+>>> @dict_of_attribute_signatures
+... class names_and_signatures:
+...     def foo(x: str, *, y=2) -> tuple: ...
+...     def bar(z, /) -> float: ...
+>>> names_and_signatures
+{'foo': <Signature (x: str, *, y=2) -> tuple>, 'bar': <Signature (z, /) -> float>}
+```
+
+### dol.sig_builtins.resolve_function(obj)
+
+Get the underlying function of a property or cached_property
+
+Note that if all conditions fail, the object itself is returned.
+
+The problem this function solves is that sometimes there’s a function behind an
+object, but it’s not always easy to get to it. For example, in a class, you might
+want to get the source of the code decorated with `@property`, a
+`@cached_property`, or a `partial` function.
+
+Consider the following example:
+
+```pycon
+>>> from functools import cached_property, partial
+>>> class C:
+...     @property
+...     def prop(self):
+...         pass
+...     @cached_property
+...     def cached_prop(self):
+...         pass
+...     partial_func = partial(partial)
+```
+
+Note that `prop` is not callable, and you can’t get its source.
+
+```pycon
+>>> import inspect
+>>> callable(C.prop)
+False
+>>> inspect.getsource(C.prop)
+Traceback (most recent call last):
+...
+TypeError: <property object at 0x...> is not a module, class, method, function, traceback, frame, or code object
+```
+
+But if you grab the underlying function, you can get the source:
+
+```pycon
+>>> func = resolve_function(C.prop)
+>>> callable(func)
+True
+>>> isinstance(inspect.getsource(func), str)
+True
+```
+
+Same goes with `cached_property` and `partial`:
+
+```pycon
+>>> isinstance(inspect.getsource(resolve_function(C.cached_prop)), str)
+True
+>>> isinstance(inspect.getsource(resolve_function(C.partial_func)), str)
+True
+```
+
+* **Return type:**
+  [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`T`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
+
+
+# _autosummary/dol.sig_compare.html.md
+
+# dol.sig_compare
+
+Compare signatures, and check whether calls to one function are valid calls to another.
+
+- `compare_signatures`, `param_comparator`, `keyed_comparator`: comparison tools
+- `param_differences_dict`, `SigPair`: describe how two signatures differ
+- `is_call_compatible_with`: is every valid call to one signature a valid call to the
+  other? (`Sig.is_call_compatible_with` calls it)
+
+It used to be part of `dol.signatures`, which still re-exports all of it
+(i2mint/dol#70).
+
+```pycon
+>>> from dol.sig_compare import is_call_compatible_with
+>>> from dol.signatures import Sig
+>>> is_call_compatible_with(Sig('(a, b)'), Sig('(a, b, c=3)'))
+True
+>>> is_call_compatible_with(Sig('(a, b, c=3)'), Sig('(a, b)'))
+False
+```
+
+### Functions
+
+| `compare_signatures`(func1, func2[, ...])                                                           |                                                                              |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`defaults_are_the_same_when_not_empty`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.defaults_are_the_same_when_not_empty)(dflt1, ...)   | Check if two defaults are the same when they are not empty.                  |
+| [`dflt1_is_empty_or_dflt2_is_not`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.dflt1_is_empty_or_dflt2_is_not)(dflt1, dflt2)       | Why such a strange default comparison function?                              |
+| `ignore_any_differences`(x, y)                                                                      |                                                                              |
+| [`is_call_compatible_with`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.is_call_compatible_with)(sig1, sig2, \*[, ...])     | Return True if `sig1` is compatible with `sig2`.                             |
+| [`keyed_comparator`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.keyed_comparator)(comparator, key)                  | Create a key-function enabled binary operator.                               |
+| `mk_func_comparator_based_on_signature_comparator`(...)                                             |                                                                              |
+| `param_attribute_dict`(...)                                                                         |                                                                              |
+| [`param_binary_func`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.param_binary_func)(param1, param2, \*[, name, ...]) | Compare two parameters.                                                      |
+| [`param_comparator`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.param_comparator)(param1, param2, \*[, name, ...])  | Compare two parameters.                                                      |
+| [`param_differences_dict`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.param_differences_dict)(param1, param2, \*[, ...])  | Makes a dictionary exibiting the differences between two parameters.         |
+| [`postprocess`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.postprocess)(egress)                                | A decorator that will process the output of the wrapped function with egress |
+| `return_tuple`(x, y)                                                                                |                                                                              |
+
+### Classes
+
+| [`SigPair`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.SigPair)(sig1, sig2)   | Class that operates on a pair of signatures.   |
+|------------------------------------------------------------------------|------------------------------------------------|
+
+### *class* dol.sig_compare.SigPair(sig1, sig2)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Class that operates on a pair of signatures.
+
+For example, offers methods to compare two signatures in various ways.
+
+* **Parameters:**
+  * **sig1** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – First signature or signature-able object.
+  * **sig2** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – Second signature or signature-able object.
+
+```pycon
+>>> from pprint import pprint
+>>> def three(a, b: int, c=3): ...
+>>> def little(a, *, b=2, d=4) -> int: ...
+>>> def pigs(a, b) -> int: ...
+>>> sig_pair = SigPair(three, little)
+>>>
+>>> sig_pair.shared_names
+['a', 'b']
+>>> sig_pair.names_missing_in_sig1
+['d']
+>>> sig_pair.names_missing_in_sig2
+['c']
+>>> sig_pair.param_comparison()
+False
+>>> pprint(sig_pair.diff())
+{'names_missing_in_sig1': ['d'],
+'names_missing_in_sig2': ['c'],
+'param_differences': {'b': {'annotation': (<class 'int'>,
+                                            <class 'inspect._empty'>),
+                            'default': (<class 'inspect._empty'>, 2),
+                            'kind': (<_ParameterKind.POSITIONAL_OR_KEYWORD: 1>,
+                                    <_ParameterKind.KEYWORD_ONLY: 3>)}},
+'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
+```
+
+Call compatibility says that any arguments leading to a valid call to a function
+having the first signature, will also lead to a valid call to a function having the
+second signature. This is not the case for the signatures of `three` and `little`:
+
+```pycon
+>>> sig_pair.are_call_compatible()
+False
+```
+
+But we don’t need to have equal signatures to have call compatibility. For example,
+
+```pycon
+>>> SigPair(three, lambda a, b=2, c=30: None).are_call_compatible()
+True
+```
+
+Note that call-compatibility is not symmetric. For example, `pigs` is call
+compatible with `three`, since any arguments that are valid for `pigs` are valid
+for `three`:
+
+```pycon
+>>> SigPair(pigs, three).are_call_compatible()
+True
+```
+
+But `three` is not call-compatible with `pigs` since `three` requires could include
+a `c` argument, which `pigs` would choke on.
+
+```pycon
+>>> SigPair(three, pigs).are_call_compatible()
+False
+```
+
+#### are_call_compatible(param_comparator=None)
+
+Check if the signatures are call-compatible.
+
+Returns True if sig1 can be used to call sig2 or vice versa.
+
+```pycon
+>>> sig1 = Sig(lambda a, b, c=3: None)
+>>> sig2 = Sig(lambda a, b: None)
+>>> comp = SigPair(sig1, sig2)
+>>> comp.are_call_compatible()
+False
+```
+
+```pycon
+>>> comp = SigPair(sig2, sig1)
+>>> comp.are_call_compatible()
+True
+```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+#### diff()
+
+Get a dictionary of differences between the two signatures.
+
+```pycon
+>>> from pprint import pprint
+>>> def three(a, b: int, c=3): ...
+>>> def little(a, *, b=2, d=4) -> int: ...
+>>> def pigs(a, b: int = 2) -> int: ...
+>>> pprint(SigPair(three, little).diff())
+{'names_missing_in_sig1': ['d'],
+'names_missing_in_sig2': ['c'],
+'param_differences': {'b': {'annotation': (<class 'int'>,
+                                            <class 'inspect._empty'>),
+                            'default': (<class 'inspect._empty'>, 2),
+                            'kind': (<_ParameterKind.POSITIONAL_OR_KEYWORD: 1>,
+                                    <_ParameterKind.KEYWORD_ONLY: 3>)}},
+'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
+>>> pprint(SigPair(three, pigs).diff())
+{'names_missing_in_sig2': ['c'],
+'param_differences': {'b': {'default': (<class 'inspect._empty'>, 2)}},
+'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
+>>> pprint(SigPair(three, three).diff())
+{}
+```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+#### diff_str()
+
+Get a string representation of the differences between the two signatures.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+#### *property* names_missing_in_sig1
+
+List of names that are in the sig2 signature but not in sig1.
+
+```pycon
+>>> sig1 = Sig(lambda a, b, c: None)
+>>> sig2 = Sig(lambda b, c, d: None)
+>>> comp = SigPair(sig1, sig2)
+>>> comp.names_missing_in_sig1
+['d']
+```
+
+#### *property* names_missing_in_sig2
+
+List of names that are in the sig1 signature but not in sig2.
+
+```pycon
+>>> sig1 = Sig(lambda a, b, c: None)
+>>> sig2 = Sig(lambda b, c, d: None)
+>>> comp = SigPair(sig1, sig2)
+>>> comp.names_missing_in_sig2
+['a']
+```
+
+#### param_comparison(comparator=<function param_comparator>, aggregation=<built-in function all>)
+
+Compare parameters between the two signatures using the provided comparator function.
+
+* **Parameters:**
+  * **comparator** – A function to compare two parameters.
+  * **aggregation** – A function to aggregate the results of the comparisons.
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+* **Returns:**
+  Boolean result of the aggregated comparisons.
+
+```pycon
+>>> sig1 = Sig('(a, b: int, c=3)')
+>>> sig2 = Sig('(a, *, b=2, d=4)')
+>>> comp = SigPair(sig1, sig2)
+>>> comp.param_comparison()
+False
+```
+
+#### param_differences()
+
+Get a dictionary of parameter differences between the two signatures.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+* **Returns:**
+  A dict containing differences for each shared param that has any.
+
+```pycon
+>>> sig1 = Sig('(a, b: int, c=3)')
+>>> sig2 = Sig('(a, *, b=2, d=4)')
+>>> comp = SigPair(sig1, sig2)
+>>> result = comp.param_differences()
+>>> expected = {
+...     'b': {
+...         'kind': (Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY),
+...         'default': (Parameter.empty, 2),
+...         'annotation': (int, Parameter.empty),
+...     }
+... }
+>>> result == expected
+True
+```
+
+#### *property* shared_names
+
+List of names that are common to both signatures, in the order of sig1.
+
+```pycon
+>>> sig1 = Sig(lambda a, b, c: None)
+>>> sig2 = Sig(lambda b, c, d: None)
+>>> comp = SigPair(sig1, sig2)
+>>> comp.shared_names
+['b', 'c']
+```
+
+### dol.sig_compare.defaults_are_the_same_when_not_empty(dflt1, dflt2)
+
+Check if two defaults are the same when they are not empty.
+
+```pycon
+>>> defaults_are_the_same_when_not_empty(1, 1)
+True
+>>> defaults_are_the_same_when_not_empty(1, 2)
+False
+>>> defaults_are_the_same_when_not_empty(1, None)
+False
+>>> defaults_are_the_same_when_not_empty(1, Parameter.empty)
+True
+```
+
+### dol.sig_compare.dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2)
+
+Why such a strange default comparison function?
+
+This is to be used as a default in is_call_compatible_with.
+
+Consider two functions func1 and func2 with a parameter p with default values
+dflt1 and dflt2 respectively.
+If dflt1 was not empty and dflt2 was, this would mean that func1 could be called
+without specifying p, but func2 couldn’t.
+
+So to avoid this situation, we use dflt1_is_empty_or_dflt2_is_not as the default
+
+### dol.sig_compare.dflt1_is_empty_or_dflt2_is_not_param_comparator(param1, param2, \*, name=<function ignore_any_differences>, kind=<function ignore_any_differences>, default=<function dflt1_is_empty_or_dflt2_is_not>, annotation=<function ignore_any_differences>, aggreg=<built-in function all>)
+
+Permissive version of param_comparator that ignores any differences of parameter
+attributes.
+
+It is meant to be used with partial, but with a permissive base, contrary to the
+base param_comparator which requires strict equality (`eq`) for all attributes.
+
+* **Return type:**
+  `Comparison`
+
+### dol.sig_compare.is_call_compatible_with(sig1, sig2, , param_comparator=None)
+
+Return True if `sig1` is compatible with `sig2`. Meaning that all valid ways
+to call `sig1` are valid for `sig2`.
+
+* **Parameters:**
+  * **sig1** ([`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – The main signature.
+  * **sig2** ([`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – The signature to be compared with.
+  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], `Comparison`] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+```pycon
+>>> is_call_compatible_with(
+...     Sig('(a, /, b, *, c)'),
+...     Sig('(a, b, c)')
+... )
+True
+>>> is_call_compatible_with(
+...     Sig('()'),
+...     Sig('(a)')
+... )
+False
+>>> is_call_compatible_with(
+...     Sig('()'),
+...     Sig('(a=0)')
+... )
+True
+>>> is_call_compatible_with(
+...     Sig('(a, /, *, c)'),
+...     Sig('(a, /, b, *, c)')
+... )
+False
+>>> is_call_compatible_with(
+...     Sig('(a, /, *, c)'),
+...     Sig('(a, /, b=0, *, c)')
+... )
+True
+>>> is_call_compatible_with(
+...     Sig('(a, /, b)'),
+...     Sig('(a, /, b, *, c)')
+... )
+False
+>>> is_call_compatible_with(
+...     Sig('(a, /, b)'),
+...     Sig('(a, /, b, *, c=0)')
+... )
+True
+>>> is_call_compatible_with(
+...     Sig('(a, /, b, *, c)'),
+...     Sig('(*args, **kwargs)')
+... )
+True
+```
+
+### dol.sig_compare.keyed_comparator(comparator, key)
+
+Create a key-function enabled binary operator.
+
+In various places in python functionality is extended by allowing a key function.
+For example, the `sorted` function allows a key function to be passed, which is
+applied to each element before sorting. The keyed_comparator function allows a
+comparator to be extended in the same way. The returned comparator will apply the
+key function toeach input before applying the original comparator.
+
+```pycon
+>>> from operator import eq
+>>> parity = lambda x: x % 2
+>>> comparator = keyed_comparator(eq, parity)
+>>> list(map(comparator, [1, 1, 2, 2], [3, 4, 5, 6]))
+[True, False, False, True]
+```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]
+
+### dol.sig_compare.param_binary_func(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>, aggreg=<built-in function all>)
+
+Compare two parameters.
+
+Note that by default, this function is strict, and will return False if
+any of the parameters are not equal. This is because the default
+aggregation function is `all` and the default comparison functions of the
+parameter’s attributes are `eq` (meaning equality, not identity).
+
+But you can change that by passing different comparison functions and/or
+aggregation functions.
+
+In fact, the real purpose of this function is to be used as a factory of parameter
+binary functions, through parametrizing it with `functools.partial`.
+
+The parameter binary functions themselves are meant to be used to make signature
+binary functions.
+
+* **Parameters:**
+  * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
+  * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
+  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
+  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
+  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
+  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
+* **Return type:**
+  `Comparison`
+
+```pycon
+>>> from inspect import Parameter
+>>> param1 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
+>>> param2 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
+>>> param_binary_func(param1, param2)
+True
+```
+
+See [https://github.com/i2mint/i2/issues/50#issuecomment-1381686812](https://github.com/i2mint/i2/issues/50#issuecomment-1381686812) for discussion.
+
+### dol.sig_compare.param_comparator(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>, aggreg=<built-in function all>)
+
+Compare two parameters.
+
+Note that by default, this function is strict, and will return False if
+any of the parameters are not equal. This is because the default
+aggregation function is `all` and the default comparison functions of the
+parameter’s attributes are `eq` (meaning equality, not identity).
+
+But you can change that by passing different comparison functions and/or
+aggregation functions.
+
+In fact, the real purpose of this function is to be used as a factory of parameter
+binary functions, through parametrizing it with `functools.partial`.
+
+The parameter binary functions themselves are meant to be used to make signature
+binary functions.
+
+* **Parameters:**
+  * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
+  * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
+  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
+  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
+  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
+  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
+* **Return type:**
+  `Comparison`
+
+```pycon
+>>> from inspect import Parameter
+>>> param1 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
+>>> param2 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
+>>> param_binary_func(param1, param2)
+True
+```
+
+See [https://github.com/i2mint/i2/issues/50#issuecomment-1381686812](https://github.com/i2mint/i2/issues/50#issuecomment-1381686812) for discussion.
+
+### dol.sig_compare.param_comparison_dict(param1, param2, \*, name=<function return_tuple>, kind=<function return_tuple>, default=<function return_tuple>, annotation=<function return_tuple>, aggreg=<function param_attribute_dict>)
+
+A ParamComparator that returns a dictionary with pairs parameter attributes.
+
+```pycon
+>>> param1 = Sig('(a: int = 1)')['a']
+>>> param2 = Sig('(a: str = 2)')['a']
+>>> param_comparison_dict(param1, param2)
+{'name': ('a', 'a'), 'kind': ..., 'default': (1, 2), 'annotation': (<class 'int'>, <class 'str'>)}
+```
+
+* **Return type:**
+  `Comparison`
+
+### dol.sig_compare.param_differences_dict(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>)
+
+Makes a dictionary exibiting the differences between two parameters.
+
+```pycon
+>>> param1 = Sig('(a: int = 1)')['a']
+>>> param2 = Sig('(a: str = 2)')['a']
+>>> param_differences_dict(param1, param2)
+{'default': (1, 2), 'annotation': (<class 'int'>, <class 'str'>)}
+>>> param_differences_dict(param1, param2, default=lambda x, y: isinstance(x, type(y)))
+{'annotation': (<class 'int'>, <class 'str'>)}
+```
+
+### dol.sig_compare.permissive_param_comparator(param1, param2, \*, name=<function ignore_any_differences>, kind=<function ignore_any_differences>, default=<function ignore_any_differences>, annotation=<function ignore_any_differences>, aggreg=<built-in function all>)
+
+Permissive version of param_comparator that ignores any differences of parameter
+attributes.
+
+It is meant to be used with partial, but with a permissive base, contrary to the
+base param_comparator which requires strict equality (`eq`) for all attributes.
+
+* **Return type:**
+  `Comparison`
+
+### dol.sig_compare.postprocess(egress)
+
+A decorator that will process the output of the wrapped function with egress
+
+
+# _autosummary/dol.sig_recipes.html.md
+
+# dol.sig_recipes
+
+Recipes built on `Sig`: make signatures, and change the signature of functions.
+
+- `mk_sig_from_args`, `params_of`, `insert_annotations`: make or edit signatures
+- `call_forgivingly`, `call_somewhat_forgivingly`: call a function with the
+  arguments it accepts, ignoring the others
+- `all_pk_signature`, `ch_func_to_all_pk`, `ch_variadics_to_non_variadic_kind`,
+  `kind_forgiving_func`, `normalized_func`: change the kinds of a function’s parameters
+- `set_signature_of_func`, `replace_kwargs_using`, `use_interface`: give a function
+  another signature
+- `sig_to_dataclass`, `has_signature`, `copy_func`, `common_and_diff_argnames`
+
+It used to be part of `dol.signatures`, which still re-exports all of it
+(i2mint/dol#70).
+
+```pycon
+>>> from dol.sig_recipes import call_forgivingly
+>>> def f(a, b=2):
+...     return a + b
+>>> call_forgivingly(f, 1, b=3, c=4)  # c is not a parameter of f: it is ignored
+4
+```
+
+### Functions
+
+| [`all_pk_signature`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.all_pk_signature)(callable_or_signature)            | Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.                                                  |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| [`call_forgivingly`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.call_forgivingly)(func, \*args, \*\*kwargs)         | Call function on given args and kwargs, but only taking what the function needs (not choking if they're extras variables)         |
+| [`call_somewhat_forgivingly`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.call_somewhat_forgivingly)(func, args, kwargs)      | Call function on given args and kwargs, but with controllable argument leniency.                                                  |
+| [`ch_func_to_all_pk`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.ch_func_to_all_pk)(func)                            | Returns a decorated function where all arguments are of the PK kind.                                                              |
+| [`ch_signature_to_all_pk`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.ch_signature_to_all_pk)(callable_or_signature)      | Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.                                                  |
+| [`ch_variadics_to_non_variadic_kind`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.ch_variadics_to_non_variadic_kind)(func, \*[, ...]) | A decorator that will change a VAR_POSITIONAL (`*args`) argument to a tuple (args) argument of the same name.                     |
+| [`common_and_diff_argnames`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.common_and_diff_argnames)(func1, func2)             | Get list of argument names that are common to two functions, as well as the two lists of names that are different                 |
+| `convert_to_PK`(kinds)                                                                              |                                                                                                                                   |
+| [`copy_func`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.copy_func)(f)                                       | Copy a function (not sure it works with all types of callables)                                                                   |
+| [`has_signature`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.has_signature)(obj[, robust])                       | Check if an object has a signature -- i.e. is callable and inspect.signature( obj) returns something.                             |
+| [`insert_annotations`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.insert_annotations)(s, /, \*, ...)                  | Insert annotations in a signature.                                                                                                |
+| [`kind_forgiving_func`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.kind_forgiving_func)(func[, kinds_modifier])        | Wraps the func, changing the argument kinds according to kinds_modifier.                                                          |
+| [`mk_sig_from_args`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.mk_sig_from_args)(\*args_without_default, ...)      | Make a Signature instance by specifying args_without_default and args_with_defaults.                                              |
+| `normalized_func`(func)                                                                             |                                                                                                                                   |
+| `params_of`(obj)                                                                                    |                                                                                                                                   |
+| [`replace_kwargs_using`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.replace_kwargs_using)(sig)                          | Decorator that replaces the variadic keyword argument of the target function using the `sig`, the signature of a source function. |
+| [`set_signature_of_func`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.set_signature_of_func)(func, parameters, \*, ...)   | Set the signature of a function, with sugar.                                                                                      |
+| [`sig_to_dataclass`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.sig_to_dataclass)(sig, \*[, cls_name, bases, ...])  | Make a `class` (through `make_dataclass`) from the given signature.                                                               |
+| [`use_interface`](_autosummary/dol.sig_recipes.html.md#dol.sig_recipes.use_interface)(interface_sig)                       | Use interface_sig as (enforced/validated) signature of the decorated function.                                                    |
+
+### dol.sig_recipes.all_pk_signature(callable_or_signature)
+
+Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
+
+Wrapping a function with the resulting signature doesn’t make that function callable
+with PK kinds in itself.
+It just gives it a signature without position and keyword ONLY kinds.
+It should be used to wrap such a function that actually carries out the
+implementation though!
+
+```pycon
+>>> def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs):
+...     ...
+>>> def bar(*args, **kwargs):
+...     ...
+...
+>>> from inspect import signature
+>>> new_foo = all_pk_signature(foo)
+>>> Sig(new_foo)
+<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
+>>> all_pk_signature(signature(foo))
+<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
+```
+
+But note that the variadic arguments `*args` and `**kwargs` remain variadic:
+
+```pycon
+>>> all_pk_signature(signature(bar))
+<Signature (*args, **kwargs)>
+```
+
+It works with `Sig` too (since Sig is a Signature), and maintains it’s other
+attributes (like name).
+
+```pycon
+>>> sig = all_pk_signature(Sig(bar))
+>>> sig
+<Sig (*args, **kwargs)>
+>>> sig.name
+'bar'
+```
+
+#### SEE ALSO
+`i2.signatures.kind_forgiving_func`
+
+### dol.sig_recipes.call_forgivingly(func, \*args, \*\*kwargs)
+
+Call function on given args and kwargs, but only taking what the function needs
+(not choking if they’re extras variables)
+
+#### TIP
+If you into trouble because your kwargs has a ‘func’ key,
+(which would then clash with the `func` param of call_forgivingly), then
+use `_call_forgivingly` instead, specifying args and kwargs as tuple and
+dict.
+
+```pycon
+>>> def foo(a, b: int = 0, c=None) -> int:
+...     return "foo", (a, b, c)
+>>> call_forgivingly(
+...     foo,  # the function you want to call
+...     "input for a",  # meant for a -- the first (and only) argument foo requires
+...     c=42,  # skiping b and giving c a non-default value
+...     intruder="argument",  # but wait, this argument name doesn't exist! Oh no!
+... )  # well, as it happens, nothing bad -- the intruder argument is just ignored
+('foo', ('input for a', 0, 42))
+```
+
+An example of what happens when variadic kinds are involved:
+
+```pycon
+>>> def bar(x, *args1, y=1, **kwargs1):
+...     return x, args1, y, kwargs1
+>>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
+(1, (2, 3), 4, {'z': 5})
+```
+
+### dol.sig_recipes.call_somewhat_forgivingly(func, args, kwargs, enforce_sig=None)
+
+Call function on given args and kwargs, but with controllable argument leniency.
+By default, the function will only pick from args and kwargs what matches it’s
+signature, ignoring anything else in args and kwargs.
+
+But the real use of `call_somewhat_forgivingly` kicks in when you specify a
+`enforce_sig`: A signature (or any object that can be resolved into a signature
+through `Sig(enforce_sig)`) that will be used to bind the inputs, thus validating
+them against the `enforce_sig` signature (including extra arguments, defaults,
+etc.).
+
+`call_somewhat_forgivingly` helps you do this kind of thing systematically.
+
+```pycon
+>>> f = lambda a: a * 11
+>>> assert call_somewhat_forgivingly(f, (2,), {}) == f(2)
+```
+
+In the above, we have no `enforce_sig`. The real use of call_somewhat_forgivingly
+is when we ask it to enforce a signature. Let’s do this by specifying a function
+(no need for it to do anything: Only the signature is used.
+
+```pycon
+>>> g = lambda a, b=None: ...
+```
+
+Calling `f` on it’s normal set of inputs (one input in this case) gives you the
+same thing as `f`:
+
+```pycon
+>>> assert call_somewhat_forgivingly(f, (2,), {}, enforce_sig=g) == f(2)
+>>> assert call_somewhat_forgivingly(f, (), {'a': 2}, enforce_sig=g) == f(2)
+```
+
+If you call with an extra positional argument, it will just be ignored.
+
+```pycon
+>>> assert call_somewhat_forgivingly(f, (2, 'ignored'), {}, enforce_sig=g) == f(2)
+```
+
+If you call with a `b` keyword-argument (which matches `g`’s signature,
+it will also be ignored.
+
+```pycon
+>>> assert call_somewhat_forgivingly(
+... f, (2,), {'b': 'ignored'}, enforce_sig=g
+... ) == f(2)
+>>> assert call_somewhat_forgivingly(
+...     f, (), {'a': 2, 'b': 'ignored'}, enforce_sig=g
+... ) == f(2)
+```
+
+But if you call with three positional arguments (one more than g allows),
+or call with a keyword argument that is not in `g`’s signature, it will
+raise a `TypeError`:
+
+```pycon
+>>> call_somewhat_forgivingly(f,
+...     (2, 'ignored', 'does_not_fit_g_signature_anymore'), {}, enforce_sig=g
+... )
+Traceback (most recent call last):
+    ...
+TypeError: too many positional arguments
+>>> call_somewhat_forgivingly(f,
+...     (2,), {'this_argname': 'is not in g'}, enforce_sig=g
+... )
+Traceback (most recent call last):
+    ...
+TypeError: got an unexpected keyword argument 'this_argname'
+```
+
+### dol.sig_recipes.ch_func_to_all_pk(func)
+
+Returns a decorated function where all arguments are of the PK kind.
+(PK: Positional_or_keyword)
+
+* **Parameters:**
+  **func** – A callable
+* **Returns:**
+
+```pycon
+>>> def f(a, /, b, *, c=None, **kwargs):
+...     return a + b * c
+...
+>>> print(Sig(f))
+(a, /, b, *, c=None, **kwargs)
+>>> ff = ch_func_to_all_pk(f)
+>>> print(Sig(ff))
+(a, b, c=None, **kwargs)
+>>> ff(1, 2, 3)
+7
+>>>
+>>> def g(x, y=1, *args, **kwargs):
+...     ...
+...
+>>> print(Sig(g))
+(x, y=1, *args, **kwargs)
+>>> gg = ch_func_to_all_pk(g)
+>>> print(Sig(gg))
+(x, y=1, args=(), **kwargs)
+```
+
+### dol.sig_recipes.ch_signature_to_all_pk(callable_or_signature)
+
+Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
+
+Wrapping a function with the resulting signature doesn’t make that function callable
+with PK kinds in itself.
+It just gives it a signature without position and keyword ONLY kinds.
+It should be used to wrap such a function that actually carries out the
+implementation though!
+
+```pycon
+>>> def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs):
+...     ...
+>>> def bar(*args, **kwargs):
+...     ...
+...
+>>> from inspect import signature
+>>> new_foo = all_pk_signature(foo)
+>>> Sig(new_foo)
+<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
+>>> all_pk_signature(signature(foo))
+<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
+```
+
+But note that the variadic arguments `*args` and `**kwargs` remain variadic:
+
+```pycon
+>>> all_pk_signature(signature(bar))
+<Signature (*args, **kwargs)>
+```
+
+It works with `Sig` too (since Sig is a Signature), and maintains it’s other
+attributes (like name).
+
+```pycon
+>>> sig = all_pk_signature(Sig(bar))
+>>> sig
+<Sig (*args, **kwargs)>
+>>> sig.name
+'bar'
+```
+
+#### SEE ALSO
+`i2.signatures.kind_forgiving_func`
+
+### dol.sig_recipes.ch_variadics_to_non_variadic_kind(func, , ch_variadic_keyword_to_keyword=True)
+
+A decorator that will change a VAR_POSITIONAL (`*args`) argument to a tuple (args)
+argument of the same name.
+
+Essentially, given a `func(a, *b, c, **d)` function want to get a
+`new_func(a, b=(), c=None, d={})` that has the same functionality
+(in fact, calls the original `func` function behind the scenes), but without
+where the variadic arguments `*b` and `**d` are replaced with a `b` expecting an
+iterable (e.g. tuple/list) and `d` expecting a `dict` to contain the
+desired inputs.
+
+Besides this, the decorator tries to be as conservative as possible, making only
+the minimum changes needed to meet the goal of getting to a variadic-less
+interface. When it doubt, and error will be raised.
+
+```pycon
+>>> def foo(a, *args, bar, **kwargs):
+...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
+>>> assert str(Sig(foo)) == '(a, *args, bar, **kwargs)'
+>>> wfoo = ch_variadics_to_non_variadic_kind(foo)
+>>> str(Sig(wfoo))
+'(a, args=(), *, bar, kwargs={})'
+```
+
+And now to do this:
+
+```pycon
+>>> foo(1, 2, 3, bar=4, hello="world")
+"a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
+```
+
+We can do it like this instead:
+
+```pycon
+>>> wfoo(1, (2, 3), bar=4, kwargs=dict(hello="world"))
+"a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
+```
+
+Note, the outputs are the same. It’s just the way we call our function that has
+changed.
+
+```pycon
+>>> assert wfoo(1, (2, 3), bar=4, kwargs=dict(hello="world")
+... ) == foo(1, 2, 3, bar=4, hello="world")
+>>> assert wfoo(1, (2, 3), bar=4) == foo(1, 2, 3, bar=4)
+>>> assert wfoo(1, (), bar=4) == foo(1, bar=4)
+```
+
+Note that if there is not variadic positional arguments, the variadic keyword
+will still be a keyword-only kind.
+
+```pycon
+>>> @ch_variadics_to_non_variadic_kind
+... def func(a, bar=None, **kwargs):
+...     return f"{a=}, {bar=}, {kwargs=}"
+>>> str(Sig(func))
+'(a, bar=None, *, kwargs={})'
+>>> assert func(1, bar=4, kwargs=dict(hello="world")
+...     ) == "a=1, bar=4, kwargs={'hello': 'world'}"
+```
+
+If the function has neither variadic kinds, it will remain untouched.
+
+```pycon
+>>> def func(a, /, b, *, c=3):
+...     return a + b + c
+>>> ch_variadics_to_non_variadic_kind(func) == func
+True
+```
+
+If you only want the variadic positional to be handled, but leave leave any
+VARIADIC_KEYWORD kinds (`**kwargs`) alone, you can do so by setting
+`ch_variadic_keyword_to_keyword=False`.
+If you’ll need to use `ch_variadics_to_non_variadic_kind` in such a way
+repeatedly, we suggest you use `functools.partial` to not have to specify this
+configuration repeatedly.
+
+```pycon
+>>> from functools import partial
+>>> tuple_the_args = partial(ch_variadics_to_non_variadic_kind,
+...     ch_variadic_keyword_to_keyword=False
+... )
+>>> @tuple_the_args
+... def foo(a, *args, bar=None, **kwargs):
+...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
+>>> Sig(foo)
+<Sig (a, args=(), *, bar=None, **kwargs)>
+>>> foo(1, (2, 3), bar=4, hello="world")
+"a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
+```
+
+### dol.sig_recipes.common_and_diff_argnames(func1, func2)
+
+Get list of argument names that are common to two functions, as well as the two
+lists of names that are different
+
+* **Parameters:**
+  * **func1** (`callable`) – First function
+  * **func2** (`callable`) – Second function
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+* **Returns:**
+  A dict with fields ‘common’, ‘func1_not_func2’, and ‘func2_not_func1’
+
+```pycon
+>>> def f(t, h, i, n, k):
+...     ...
+...
+>>> def g(t, w, i, c, e):
+...     ...
+...
+>>> common_and_diff_argnames(f, g)
+{'common': ['t', 'i'], 'func1_not_func2': ['h', 'n', 'k'], 'func2_not_func1': ['w', 'c', 'e']}
+>>> common_and_diff_argnames(g, f)
+{'common': ['t', 'i'], 'func1_not_func2': ['w', 'c', 'e'], 'func2_not_func1': ['h', 'n', 'k']}
+```
+
+### dol.sig_recipes.copy_func(f)
+
+Copy a function (not sure it works with all types of callables)
+
+### dol.sig_recipes.has_signature(obj, robust=False)
+
+Check if an object has a signature – i.e. is callable and inspect.signature(
+obj) returns something.
+
+This can be used to more easily get signatures in bulk without having to write
+try/catches:
+
+```pycon
+>>> from functools import partial
+>>> len(
+...     list(
+...         filter(
+...             None,
+...             map(
+...                 partial(has_signature, robust=False),
+...                 (Sig, print, map, filter, Sig.wrap),
+...             ),
+...         )
+...     )
+... )
+2
+```
+
+If robust is set to True, `has_signature` will use `Sig` to get the signature,
+so will return True in most cases.
+
+### dol.sig_recipes.insert_annotations(s, , , return_annotation, \*\*annotations)
+
+Insert annotations in a signature.
+(Note: not really insert but returns a copy of input signature)
+
+```pycon
+>>> from inspect import signature
+>>> s = signature(lambda a, b, c=1, d="bar": 0)
+>>> s
+<Signature (a, b, c=1, d='bar')>
+>>> ss = insert_annotations(s, b=int, d=str)
+>>> ss
+<Signature (a, b: int, c=1, d: str = 'bar')>
+>>> insert_annotations(s, b=int, d=str, e=list)
+Traceback (most recent call last):
+...
+AssertionError: These argument names weren't found in the signature: {'e'}
+```
+
+### dol.sig_recipes.kind_forgiving_func(func, kinds_modifier=<function convert_to_PK>)
+
+Wraps the func, changing the argument kinds according to kinds_modifier.
+The default behaviour is to change all kinds to POSITIONAL_OR_KEYWORD kinds.
+The original purpose of this function is to remove argument-kind restriction
+annoyances when doing functional manipulations such as:
+
+```pycon
+>>> from functools import partial
+>>> isinstance_of_str = partial(isinstance, class_or_tuple=str)
+>>> isinstance_of_str('I am a string')
+Traceback (most recent call last):
+  ...
+TypeError: isinstance() takes no keyword arguments
+```
+
+Here, instead, we can just get a kinder version of the function and do what we
+want to do:
+
+```pycon
+>>> _isinstance = kind_forgiving_func(isinstance)
+>>> isinstance_of_str = partial(_isinstance, class_or_tuple=str)
+>>> isinstance_of_str('I am a string')
+True
+>>> isinstance_of_str(42)
+False
+```
+
+#### SEE ALSO
+`i2.signatures.all_pk_signature`
+
+### dol.sig_recipes.mk_sig_from_args(\*args_without_default, \*\*args_with_defaults)
+
+Make a Signature instance by specifying args_without_default and
+args_with_defaults.
+
+```pycon
+>>> mk_sig_from_args("a", "b", c=1, d="bar")
+<Signature (a, b, c=1, d='bar')>
+```
+
+### dol.sig_recipes.replace_kwargs_using(sig)
+
+Decorator that replaces the variadic keyword argument of the target function using
+the `sig`, the signature of a source function.
+It essentially injects the difference between `sig` and the target function’s
+signature into the target function’s signature. That is, it replaces the
+variadic keyword argument (a.k.a. “kwargs”) with those parameters that are in `sig`
+but not in the target function’s signature.
+
+This is meant to be used when a `targ_func` (the function you’ll apply the
+decorator to) has a variadict keyword argument that is just used to forward “extra”
+arguments to another function, and you want to make sure that the signature of the
+`targ_func` is consistent with the `sig` signature.
+(Also, you don’t want to copy the signatures around manually.)
+
+In the following, `sauce` (the target function) has a variadic keyword argument,
+`sauce_kwargs`, that is used to forward extra arguments to `apple` (the source
+function).
+
+```pycon
+>>> def apple(a, x: int, y=2, *, z=3, **extra_apple_options):
+...     return a + x + y + z
+>>> @replace_kwargs_using(apple)
+... def sauce(a, b, c, **sauce_kwargs):
+...     return b * c + apple(a, **sauce_kwargs)
+```
+
+The function will works:
+
+```pycon
+>>> sauce(1, 2, 3, x=4, z=5)  # func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3
+18
+```
+
+But the signature now doesn’t have the `**sauce_kwargs`, but more informative
+signature elements sourced from `apple`:
+
+```pycon
+>>> Sig(sauce)
+<Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)>
+```
+
+One thing to note is that the order of the arguments in the signature of `apple`
+may change to accomodate for the python parameter order rules
+(see [https://docs.python.org/3/reference/compound_stmts.html#function-definitions](https://docs.python.org/3/reference/compound_stmts.html#function-definitions)).
+The new order will try to conserve the order of the original arguments of `sauce`
+in-so-far as it doesn’t violate the python parameter order rules, though.
+See examples below:
+
+```pycon
+>>> @Sig.replace_kwargs_using(apple)
+... def sauce(a, b=2, c=3, **sauce_kwargs):
+...     return b * c + apple(a, **sauce_kwargs)
+>>> Sig(sauce)
+<Sig (a, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)>
+```
+
+```pycon
+>>> @Sig.replace_kwargs_using(apple)
+... def sauce(a=1, b=2, c=3, **sauce_kwargs):
+...     return b * c + apple(a, **sauce_kwargs)
+>>> Sig(sauce)
+<Sig (a=1, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)>
+```
+
+### dol.sig_recipes.set_signature_of_func(func, parameters, , return_annotation, \_\_validate_parameters_\_=True)
+
+Set the signature of a function, with sugar.
+
+* **Parameters:**
+  * **func** – Function whose signature you want to set
+  * **signature** – A list of parameter specifications. This could be an
+  * **that** (*inspect.Parameter object* *or* *anything*) – the mk_param function can resolve into an inspect.Parameter object.
+  * **return_annotation** – Passed on to inspect.Signature.
+  * **\_\_validate_parameters_\_** – Passed on to inspect.Signature.
+* **Returns:**
+  None (but sets the signature of the input function)
+
+```pycon
+>>> import inspect
+>>> def foo(*args, **kwargs):
+...     pass
+...
+>>> inspect.signature(foo)
+<Signature (*args, **kwargs)>
+>>> set_signature_of_func(foo, ["a", "b", "c"])
+>>> inspect.signature(foo)
+<Signature (a, b, c)>
+>>> set_signature_of_func(
+...     foo, ["a", ("b", None), ("c", 42, int)]
+... )  # specifying defaults and annotations
+>>> inspect.signature(foo)
+<Signature (a, b=None, c: int = 42)>
+>>> set_signature_of_func(
+...     foo, ["a", "b", "c"], return_annotation=str
+... )  # specifying return annotation
+>>> inspect.signature(foo)
+<Signature (a, b, c) -> str>
+>>> # But you can always specify parameters the "long" way
+>>> set_signature_of_func(
+...     foo,
+...     [inspect.Parameter(name="kws", kind=inspect.Parameter.VAR_KEYWORD)],
+...     return_annotation=str,
+... )
+>>> inspect.signature(foo)
+<Signature (**kws) -> str>
+```
+
+### dol.sig_recipes.sig_to_dataclass(sig, , cls_name=None, bases=(), module=None, \*\*kwargs)
+
+Make a `class` (through `make_dataclass`) from the given signature.
+
+* **Parameters:**
+  * **sig** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
+    resolve into an `inspect.Signature` object, including a signature object
+    itself, but also most callables, a list or params, etc.
+  * **cls_name** – The same as `cls_name` of `dataclasses.make_dataclass`
+  * **bases** – The same as `bases` of `dataclasses.make_dataclass`
+  * **module** – Set to module (usually `__name__` to specify ther module of
+    caller) so that the class and instances can be pickle-able.
+  * **kwargs** – Passed on to `dataclasses.make_dataclass`
+* **Returns:**
+  A dataclass
+
+```pycon
+>>> def foo(a, /, b : int=2, *, c=3):
+...     pass
+...
+>>> K = sig_to_dataclass(foo, cls_name='K')
+>>> str(Sig(K))
+'(a, b: int = 2, c=3) -> None'
+>>> k = K(1,2,3)
+>>> (k.a, k.b, k.c)
+(1, 2, 3)
+```
+
+Would also work with any of these (and more):
+
+```pycon
+>>> K = sig_to_dataclass(Sig(foo), cls_name='K')
+>>> K = sig_to_dataclass(Sig(foo).params, cls_name='K')
+```
+
+#### NOTE
+`cls_name` is not required (we’ll try to figure out a good default for you),
+but it’s advised to only use this convenience in extreme mode.
+Choosing your own name might make for a safer future if you’re reusing your class.
+
+### dol.sig_recipes.tuple_the_args(func, , ch_variadic_keyword_to_keyword=False)
+
+A decorator that will change a VAR_POSITIONAL (\*args) argument to a tuple (args)
+argument of the same name.
+
+### dol.sig_recipes.use_interface(interface_sig)
+
+Use interface_sig as (enforced/validated) signature of the decorated function.
+That is, the decorated function will use the original function has the backend,
+the function actually doing the work, but with a frontend specified
+(in looks and in argument validation) `interface_sig`
+
+consider the situation where are functionality is parametrized by a
+function `g` taking two inputs, `a`, and `b`.
+Now you want to carry out this functionality using a function `f` that does what
+`g` should do, but doesn’t use `a`, and doesn’t even have it in it’s arguments.
+
+The solution to this is to \_adapt_ `f` to the `g` interface:
+
+```python
+def my_g(a, b):
+    return f(a)
+```
+
+and use `my_g`.
+
+```pycon
+>>> f = lambda a: a * 11
+>>> interface = lambda a, b=None: ...
+>>>
+>>> new_f = use_interface(interface)(f)
+```
+
+See how only the first argument, or `a` keyword argument, is taken into account
+in `new_f`:
+
+```pycon
+>>> assert new_f(2) == f(2)
+>>> assert new_f(2, 3) == f(2)
+>>> assert new_f(2, b=3) == f(2)
+>>> assert new_f(b=3, a=2) == f(2)
+```
+
+But if we add more positional arguments than `interface` allows,
+or any keyword arguments that `interface` doesn’t recognize…
+
+```pycon
+>>> new_f(1,2,3)
+Traceback (most recent call last):
+  ...
+TypeError: too many positional arguments
+>>> new_f(1, c=2)
+Traceback (most recent call last):
+  ...
+TypeError: got an unexpected keyword argument 'c'
+```
+
+
 # _autosummary/dol.signatures.html.md
 
 # dol.signatures
@@ -6912,62 +8209,28 @@ Both in the code and in the docs, we’ll use short hands for parameter (argumen
 
 ### Functions
 
-| [`all_pk_signature`](_autosummary/dol.signatures.html.md#dol.signatures.all_pk_signature)(callable_or_signature)            | Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.                                                  |
-|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
-| `assure_callable`(obj)                                                                              |                                                                                                                                   |
-| [`assure_params`](_autosummary/dol.signatures.html.md#dol.signatures.assure_params)([obj])                               | Get an interable of Parameter instances from an object.                                                                           |
-| `assure_signature`(obj)                                                                             |                                                                                                                                   |
-| [`call_forgivingly`](_autosummary/dol.signatures.html.md#dol.signatures.call_forgivingly)(func, \*args, \*\*kwargs)         | Call function on given args and kwargs, but only taking what the function needs (not choking if they're extras variables)         |
-| [`call_somewhat_forgivingly`](_autosummary/dol.signatures.html.md#dol.signatures.call_somewhat_forgivingly)(func, args, kwargs)      | Call function on given args and kwargs, but with controllable argument leniency.                                                  |
-| [`ch_func_to_all_pk`](_autosummary/dol.signatures.html.md#dol.signatures.ch_func_to_all_pk)(func)                            | Returns a decorated function where all arguments are of the PK kind.                                                              |
-| [`ch_signature_to_all_pk`](_autosummary/dol.signatures.html.md#dol.signatures.ch_signature_to_all_pk)(callable_or_signature)      | Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.                                                  |
-| [`ch_variadics_to_non_variadic_kind`](_autosummary/dol.signatures.html.md#dol.signatures.ch_variadics_to_non_variadic_kind)(func, \*[, ...]) | A decorator that will change a VAR_POSITIONAL (`*args`) argument to a tuple (args) argument of the same name.                     |
-| [`common_and_diff_argnames`](_autosummary/dol.signatures.html.md#dol.signatures.common_and_diff_argnames)(func1, func2)             | Get list of argument names that are common to two functions, as well as the two lists of names that are different                 |
-| `compare_signatures`(func1, func2[, ...])                                                           |                                                                                                                                   |
-| `convert_to_PK`(kinds)                                                                              |                                                                                                                                   |
-| [`copy_func`](_autosummary/dol.signatures.html.md#dol.signatures.copy_func)(f)                                       | Copy a function (not sure it works with all types of callables)                                                                   |
-| [`defaults_are_the_same_when_not_empty`](_autosummary/dol.signatures.html.md#dol.signatures.defaults_are_the_same_when_not_empty)(dflt1, ...)   | Check if two defaults are the same when they are not empty.                                                                       |
-| `deprecation_of`(func, old_name)                                                                    |                                                                                                                                   |
-| [`dflt1_is_empty_or_dflt2_is_not`](_autosummary/dol.signatures.html.md#dol.signatures.dflt1_is_empty_or_dflt2_is_not)(dflt1, dflt2)       | Why such a strange default comparison function?                                                                                   |
-| [`dict_of_attribute_signatures`](_autosummary/dol.signatures.html.md#dol.signatures.dict_of_attribute_signatures)(cls)                  | A function that extracts the signatures of all callable attributes of a class.                                                    |
-| `ensure_callable`(obj)                                                                              |                                                                                                                                   |
-| `ensure_param`(p)                                                                                   |                                                                                                                                   |
-| [`ensure_params`](_autosummary/dol.signatures.html.md#dol.signatures.ensure_params)([obj])                               | Get an interable of Parameter instances from an object.                                                                           |
-| `ensure_signature`(obj)                                                                             |                                                                                                                                   |
-| `expand_nested_key`(d, k)                                                                           |                                                                                                                                   |
-| [`extract_arguments`](_autosummary/dol.signatures.html.md#dol.signatures.extract_arguments)(params, \*[, ...])               | Extract arguments needed to satisfy the params of a callable, dealing with the dirty details.                                     |
-| `flatten_if_var_kw`(kvs, var_kw_name)                                                               |                                                                                                                                   |
-| `function_caller`(func, args, kwargs)                                                               |                                                                                                                                   |
-| [`has_signature`](_autosummary/dol.signatures.html.md#dol.signatures.has_signature)(obj[, robust])                       | Check if an object has a signature -- i.e. is callable and inspect.signature( obj) returns something.                             |
-| `ignore_any_differences`(x, y)                                                                      |                                                                                                                                   |
-| [`insert_annotations`](_autosummary/dol.signatures.html.md#dol.signatures.insert_annotations)(s, /, \*, ...)                  | Insert annotations in a signature.                                                                                                |
-| [`is_call_compatible_with`](_autosummary/dol.signatures.html.md#dol.signatures.is_call_compatible_with)(sig1, sig2, \*[, ...])     | Return True if `sig1` is compatible with `sig2`.                                                                                  |
-| [`is_signature_error`](_autosummary/dol.signatures.html.md#dol.signatures.is_signature_error)(e)                              | Check if an exception is a signature error                                                                                        |
-| [`keyed_comparator`](_autosummary/dol.signatures.html.md#dol.signatures.keyed_comparator)(comparator, key)                  | Create a key-function enabled binary operator.                                                                                    |
-| [`kind_forgiving_func`](_autosummary/dol.signatures.html.md#dol.signatures.kind_forgiving_func)(func[, kinds_modifier])        | Wraps the func, changing the argument kinds according to kinds_modifier.                                                          |
-| `maybe_first`(items)                                                                                |                                                                                                                                   |
-| `mk_func_comparator_based_on_signature_comparator`(...)                                             |                                                                                                                                   |
-| [`mk_sig_from_args`](_autosummary/dol.signatures.html.md#dol.signatures.mk_sig_from_args)(\*args_without_default, ...)      | Make a Signature instance by specifying args_without_default and args_with_defaults.                                              |
-| [`name_of_obj`](_autosummary/dol.signatures.html.md#dol.signatures.name_of_obj)(o, \*[, base_name_of_obj, ...])        | Tries to find the (or "a") name for an object, even if `__name__` doesn't exist.                                                  |
-| `name_of_var_kw_argument`(sig)                                                                      |                                                                                                                                   |
-| `normalized_func`(func)                                                                             |                                                                                                                                   |
-| `param_attribute_dict`(...)                                                                         |                                                                                                                                   |
-| [`param_binary_func`](_autosummary/dol.signatures.html.md#dol.signatures.param_binary_func)(param1, param2, \*[, name, ...]) | Compare two parameters.                                                                                                           |
-| [`param_comparator`](_autosummary/dol.signatures.html.md#dol.signatures.param_comparator)(param1, param2, \*[, name, ...])  | Compare two parameters.                                                                                                           |
-| [`param_differences_dict`](_autosummary/dol.signatures.html.md#dol.signatures.param_differences_dict)(param1, param2, \*[, ...])  | Makes a dictionary exibiting the differences between two parameters.                                                              |
-| [`param_for_kind`](_autosummary/dol.signatures.html.md#dol.signatures.param_for_kind)([name, kind, with_default])         | Function to easily and flexibly make inspect.Parameter objects for testing.                                                       |
-| `param_has_default_or_is_var_kind`(p)                                                               |                                                                                                                                   |
-| `parameter_to_dict`(p)                                                                              |                                                                                                                                   |
-| `params_of`(obj)                                                                                    |                                                                                                                                   |
-| [`postprocess`](_autosummary/dol.signatures.html.md#dol.signatures.postprocess)(egress)                                | A decorator that will process the output of the wrapped function with egress                                                      |
-| [`replace_kwargs_using`](_autosummary/dol.signatures.html.md#dol.signatures.replace_kwargs_using)(sig)                          | Decorator that replaces the variadic keyword argument of the target function using the `sig`, the signature of a source function. |
-| [`resolve_function`](_autosummary/dol.signatures.html.md#dol.signatures.resolve_function)(obj)                              | Get the underlying function of a property or cached_property                                                                      |
-| `return_tuple`(x, y)                                                                                |                                                                                                                                   |
-| [`set_signature_of_func`](_autosummary/dol.signatures.html.md#dol.signatures.set_signature_of_func)(func, parameters, \*, ...)   | Set the signature of a function, with sugar.                                                                                      |
-| [`sig_to_dataclass`](_autosummary/dol.signatures.html.md#dol.signatures.sig_to_dataclass)(sig, \*[, cls_name, bases, ...])  | Make a `class` (through `make_dataclass`) from the given signature.                                                               |
-| [`sort_params`](_autosummary/dol.signatures.html.md#dol.signatures.sort_params)(params)                                |                                                                                                                                   |
-| [`use_interface`](_autosummary/dol.signatures.html.md#dol.signatures.use_interface)(interface_sig)                       | Use interface_sig as (enforced/validated) signature of the decorated function.                                                    |
-| [`validate_signature`](_autosummary/dol.signatures.html.md#dol.signatures.validate_signature)(func)                           | Validates the signature of a function.                                                                                            |
+| `assure_callable`(obj)                                                                       |                                                                                               |
+|----------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|
+| [`assure_params`](_autosummary/dol.signatures.html.md#dol.signatures.assure_params)([obj])                        | Get an interable of Parameter instances from an object.                                       |
+| `assure_signature`(obj)                                                                      |                                                                                               |
+| `deprecation_of`(func, old_name)                                                             |                                                                                               |
+| `ensure_callable`(obj)                                                                       |                                                                                               |
+| `ensure_param`(p)                                                                            |                                                                                               |
+| [`ensure_params`](_autosummary/dol.signatures.html.md#dol.signatures.ensure_params)([obj])                        | Get an interable of Parameter instances from an object.                                       |
+| `ensure_signature`(obj)                                                                      |                                                                                               |
+| `expand_nested_key`(d, k)                                                                    |                                                                                               |
+| [`extract_arguments`](_autosummary/dol.signatures.html.md#dol.signatures.extract_arguments)(params, \*[, ...])        | Extract arguments needed to satisfy the params of a callable, dealing with the dirty details. |
+| `flatten_if_var_kw`(kvs, var_kw_name)                                                        |                                                                                               |
+| `function_caller`(func, args, kwargs)                                                        |                                                                                               |
+| [`is_signature_error`](_autosummary/dol.signatures.html.md#dol.signatures.is_signature_error)(e)                       | Check if an exception is a signature error                                                    |
+| `maybe_first`(items)                                                                         |                                                                                               |
+| [`name_of_obj`](_autosummary/dol.signatures.html.md#dol.signatures.name_of_obj)(o, \*[, base_name_of_obj, ...]) | Tries to find the (or "a") name for an object, even if `__name__` doesn't exist.              |
+| `name_of_var_kw_argument`(sig)                                                               |                                                                                               |
+| [`param_for_kind`](_autosummary/dol.signatures.html.md#dol.signatures.param_for_kind)([name, kind, with_default])  | Function to easily and flexibly make inspect.Parameter objects for testing.                   |
+| `param_has_default_or_is_var_kind`(p)                                                        |                                                                                               |
+| `parameter_to_dict`(p)                                                                       |                                                                                               |
+| [`sort_params`](_autosummary/dol.signatures.html.md#dol.signatures.sort_params)(params)                         |                                                                                               |
+| [`validate_signature`](_autosummary/dol.signatures.html.md#dol.signatures.validate_signature)(func)                    | Validates the signature of a function.                                                        |
 
 ### Classes
 
@@ -6976,7 +8239,6 @@ Both in the code and in the docs, we’ll use short hands for parameter (argumen
 | [`P`](_autosummary/dol.signatures.html.md#dol.signatures.P)                                            |                                                                                                                                                                        |
 | [`Param`](_autosummary/dol.signatures.html.md#dol.signatures.Param)(name[, kind])                          | A thin wrap of Parameters: Adds shorter aliases to argument kinds and a POSITIONAL_OR_KEYWORD default to the argument kind to make it faster to make Parameter objects |
 | [`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)([obj, name, \_\_validate_parameters_\_]) | A subclass of inspect.Signature that has a lot of extra api sugar, such as                                                                                             |
-| [`SigPair`](_autosummary/dol.signatures.html.md#dol.signatures.SigPair)(sig1, sig2)                          | Class that operates on a pair of signatures.                                                                                                                           |
 
 ### Exceptions
 
@@ -8385,7 +9647,7 @@ Get an object that pairs with another signature for comparison, merging, etc.
 See `SigPair` for more details.
 
 * **Return type:**
-  [`SigPair`](_autosummary/dol.signatures.html.md#dol.signatures.SigPair)
+  [`SigPair`](_autosummary/dol.sig_compare.html.md#dol.sig_compare.SigPair)
 
 #### *property* params
 
@@ -8927,262 +10189,6 @@ Traceback (most recent call last):
 TypeError: f() takes from 0 to 3 positional arguments but 4 were given
 ```
 
-### *class* dol.signatures.SigPair(sig1, sig2)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-Class that operates on a pair of signatures.
-
-For example, offers methods to compare two signatures in various ways.
-
-* **Parameters:**
-  * **sig1** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – First signature or signature-able object.
-  * **sig2** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – Second signature or signature-able object.
-
-```pycon
->>> from pprint import pprint
->>> def three(a, b: int, c=3): ...
->>> def little(a, *, b=2, d=4) -> int: ...
->>> def pigs(a, b) -> int: ...
->>> sig_pair = SigPair(three, little)
->>>
->>> sig_pair.shared_names
-['a', 'b']
->>> sig_pair.names_missing_in_sig1
-['d']
->>> sig_pair.names_missing_in_sig2
-['c']
->>> sig_pair.param_comparison()
-False
->>> pprint(sig_pair.diff())
-{'names_missing_in_sig1': ['d'],
-'names_missing_in_sig2': ['c'],
-'param_differences': {'b': {'annotation': (<class 'int'>,
-                                            <class 'inspect._empty'>),
-                            'default': (<class 'inspect._empty'>, 2),
-                            'kind': (<_ParameterKind.POSITIONAL_OR_KEYWORD: 1>,
-                                    <_ParameterKind.KEYWORD_ONLY: 3>)}},
-'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
-```
-
-Call compatibility says that any arguments leading to a valid call to a function
-having the first signature, will also lead to a valid call to a function having the
-second signature. This is not the case for the signatures of `three` and `little`:
-
-```pycon
->>> sig_pair.are_call_compatible()
-False
-```
-
-But we don’t need to have equal signatures to have call compatibility. For example,
-
-```pycon
->>> SigPair(three, lambda a, b=2, c=30: None).are_call_compatible()
-True
-```
-
-Note that call-compatibility is not symmetric. For example, `pigs` is call
-compatible with `three`, since any arguments that are valid for `pigs` are valid
-for `three`:
-
-```pycon
->>> SigPair(pigs, three).are_call_compatible()
-True
-```
-
-But `three` is not call-compatible with `pigs` since `three` requires could include
-a `c` argument, which `pigs` would choke on.
-
-```pycon
->>> SigPair(three, pigs).are_call_compatible()
-False
-```
-
-#### are_call_compatible(param_comparator=None)
-
-Check if the signatures are call-compatible.
-
-Returns True if sig1 can be used to call sig2 or vice versa.
-
-```pycon
->>> sig1 = Sig(lambda a, b, c=3: None)
->>> sig2 = Sig(lambda a, b: None)
->>> comp = SigPair(sig1, sig2)
->>> comp.are_call_compatible()
-False
-```
-
-```pycon
->>> comp = SigPair(sig2, sig1)
->>> comp.are_call_compatible()
-True
-```
-
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
-#### diff()
-
-Get a dictionary of differences between the two signatures.
-
-```pycon
->>> from pprint import pprint
->>> def three(a, b: int, c=3): ...
->>> def little(a, *, b=2, d=4) -> int: ...
->>> def pigs(a, b: int = 2) -> int: ...
->>> pprint(SigPair(three, little).diff())
-{'names_missing_in_sig1': ['d'],
-'names_missing_in_sig2': ['c'],
-'param_differences': {'b': {'annotation': (<class 'int'>,
-                                            <class 'inspect._empty'>),
-                            'default': (<class 'inspect._empty'>, 2),
-                            'kind': (<_ParameterKind.POSITIONAL_OR_KEYWORD: 1>,
-                                    <_ParameterKind.KEYWORD_ONLY: 3>)}},
-'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
->>> pprint(SigPair(three, pigs).diff())
-{'names_missing_in_sig2': ['c'],
-'param_differences': {'b': {'default': (<class 'inspect._empty'>, 2)}},
-'return_annotation': (<class 'inspect._empty'>, <class 'int'>)}
->>> pprint(SigPair(three, three).diff())
-{}
-```
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-
-#### diff_str()
-
-Get a string representation of the differences between the two signatures.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
-#### *property* names_missing_in_sig1
-
-List of names that are in the sig2 signature but not in sig1.
-
-```pycon
->>> sig1 = Sig(lambda a, b, c: None)
->>> sig2 = Sig(lambda b, c, d: None)
->>> comp = SigPair(sig1, sig2)
->>> comp.names_missing_in_sig1
-['d']
-```
-
-#### *property* names_missing_in_sig2
-
-List of names that are in the sig1 signature but not in sig2.
-
-```pycon
->>> sig1 = Sig(lambda a, b, c: None)
->>> sig2 = Sig(lambda b, c, d: None)
->>> comp = SigPair(sig1, sig2)
->>> comp.names_missing_in_sig2
-['a']
-```
-
-#### param_comparison(comparator=<function param_comparator>, aggregation=<built-in function all>)
-
-Compare parameters between the two signatures using the provided comparator function.
-
-* **Parameters:**
-  * **comparator** – A function to compare two parameters.
-  * **aggregation** – A function to aggregate the results of the comparisons.
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-* **Returns:**
-  Boolean result of the aggregated comparisons.
-
-```pycon
->>> sig1 = Sig('(a, b: int, c=3)')
->>> sig2 = Sig('(a, *, b=2, d=4)')
->>> comp = SigPair(sig1, sig2)
->>> comp.param_comparison()
-False
-```
-
-#### param_differences()
-
-Get a dictionary of parameter differences between the two signatures.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-* **Returns:**
-  A dict containing differences for each shared param that has any.
-
-```pycon
->>> sig1 = Sig('(a, b: int, c=3)')
->>> sig2 = Sig('(a, *, b=2, d=4)')
->>> comp = SigPair(sig1, sig2)
->>> result = comp.param_differences()
->>> expected = {
-...     'b': {
-...         'kind': (Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY),
-...         'default': (Parameter.empty, 2),
-...         'annotation': (int, Parameter.empty),
-...     }
-... }
->>> result == expected
-True
-```
-
-#### *property* shared_names
-
-List of names that are common to both signatures, in the order of sig1.
-
-```pycon
->>> sig1 = Sig(lambda a, b, c: None)
->>> sig2 = Sig(lambda b, c, d: None)
->>> comp = SigPair(sig1, sig2)
->>> comp.shared_names
-['b', 'c']
-```
-
-### dol.signatures.all_pk_signature(callable_or_signature)
-
-Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
-
-Wrapping a function with the resulting signature doesn’t make that function callable
-with PK kinds in itself.
-It just gives it a signature without position and keyword ONLY kinds.
-It should be used to wrap such a function that actually carries out the
-implementation though!
-
-```pycon
->>> def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs):
-...     ...
->>> def bar(*args, **kwargs):
-...     ...
-...
->>> from inspect import signature
->>> new_foo = all_pk_signature(foo)
->>> Sig(new_foo)
-<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
->>> all_pk_signature(signature(foo))
-<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
-```
-
-But note that the variadic arguments `*args` and `**kwargs` remain variadic:
-
-```pycon
->>> all_pk_signature(signature(bar))
-<Signature (*args, **kwargs)>
-```
-
-It works with `Sig` too (since Sig is a Signature), and maintains it’s other
-attributes (like name).
-
-```pycon
->>> sig = all_pk_signature(Sig(bar))
->>> sig
-<Sig (*args, **kwargs)>
->>> sig.name
-'bar'
-```
-
-#### SEE ALSO
-`i2.signatures.kind_forgiving_func`
-
 ### dol.signatures.assure_params(obj=None)
 
 Get an interable of Parameter instances from an object.
@@ -9226,370 +10232,6 @@ If no input is given, an empty list is returned.
 ```pycon
 >>> ensure_params()  # equivalent to ensure_params(None)
 []
-```
-
-### dol.signatures.call_forgivingly(func, \*args, \*\*kwargs)
-
-Call function on given args and kwargs, but only taking what the function needs
-(not choking if they’re extras variables)
-
-#### TIP
-If you into trouble because your kwargs has a ‘func’ key,
-(which would then clash with the `func` param of call_forgivingly), then
-use `_call_forgivingly` instead, specifying args and kwargs as tuple and
-dict.
-
-```pycon
->>> def foo(a, b: int = 0, c=None) -> int:
-...     return "foo", (a, b, c)
->>> call_forgivingly(
-...     foo,  # the function you want to call
-...     "input for a",  # meant for a -- the first (and only) argument foo requires
-...     c=42,  # skiping b and giving c a non-default value
-...     intruder="argument",  # but wait, this argument name doesn't exist! Oh no!
-... )  # well, as it happens, nothing bad -- the intruder argument is just ignored
-('foo', ('input for a', 0, 42))
-```
-
-An example of what happens when variadic kinds are involved:
-
-```pycon
->>> def bar(x, *args1, y=1, **kwargs1):
-...     return x, args1, y, kwargs1
->>> call_forgivingly(bar, 1, 2, 3, y=4, z=5)
-(1, (2, 3), 4, {'z': 5})
-```
-
-### dol.signatures.call_somewhat_forgivingly(func, args, kwargs, enforce_sig=None)
-
-Call function on given args and kwargs, but with controllable argument leniency.
-By default, the function will only pick from args and kwargs what matches it’s
-signature, ignoring anything else in args and kwargs.
-
-But the real use of `call_somewhat_forgivingly` kicks in when you specify a
-`enforce_sig`: A signature (or any object that can be resolved into a signature
-through `Sig(enforce_sig)`) that will be used to bind the inputs, thus validating
-them against the `enforce_sig` signature (including extra arguments, defaults,
-etc.).
-
-`call_somewhat_forgivingly` helps you do this kind of thing systematically.
-
-```pycon
->>> f = lambda a: a * 11
->>> assert call_somewhat_forgivingly(f, (2,), {}) == f(2)
-```
-
-In the above, we have no `enforce_sig`. The real use of call_somewhat_forgivingly
-is when we ask it to enforce a signature. Let’s do this by specifying a function
-(no need for it to do anything: Only the signature is used.
-
-```pycon
->>> g = lambda a, b=None: ...
-```
-
-Calling `f` on it’s normal set of inputs (one input in this case) gives you the
-same thing as `f`:
-
-```pycon
->>> assert call_somewhat_forgivingly(f, (2,), {}, enforce_sig=g) == f(2)
->>> assert call_somewhat_forgivingly(f, (), {'a': 2}, enforce_sig=g) == f(2)
-```
-
-If you call with an extra positional argument, it will just be ignored.
-
-```pycon
->>> assert call_somewhat_forgivingly(f, (2, 'ignored'), {}, enforce_sig=g) == f(2)
-```
-
-If you call with a `b` keyword-argument (which matches `g`’s signature,
-it will also be ignored.
-
-```pycon
->>> assert call_somewhat_forgivingly(
-... f, (2,), {'b': 'ignored'}, enforce_sig=g
-... ) == f(2)
->>> assert call_somewhat_forgivingly(
-...     f, (), {'a': 2, 'b': 'ignored'}, enforce_sig=g
-... ) == f(2)
-```
-
-But if you call with three positional arguments (one more than g allows),
-or call with a keyword argument that is not in `g`’s signature, it will
-raise a `TypeError`:
-
-```pycon
->>> call_somewhat_forgivingly(f,
-...     (2, 'ignored', 'does_not_fit_g_signature_anymore'), {}, enforce_sig=g
-... )
-Traceback (most recent call last):
-    ...
-TypeError: too many positional arguments
->>> call_somewhat_forgivingly(f,
-...     (2,), {'this_argname': 'is not in g'}, enforce_sig=g
-... )
-Traceback (most recent call last):
-    ...
-TypeError: got an unexpected keyword argument 'this_argname'
-```
-
-### dol.signatures.ch_func_to_all_pk(func)
-
-Returns a decorated function where all arguments are of the PK kind.
-(PK: Positional_or_keyword)
-
-* **Parameters:**
-  **func** – A callable
-* **Returns:**
-
-```pycon
->>> def f(a, /, b, *, c=None, **kwargs):
-...     return a + b * c
-...
->>> print(Sig(f))
-(a, /, b, *, c=None, **kwargs)
->>> ff = ch_func_to_all_pk(f)
->>> print(Sig(ff))
-(a, b, c=None, **kwargs)
->>> ff(1, 2, 3)
-7
->>>
->>> def g(x, y=1, *args, **kwargs):
-...     ...
-...
->>> print(Sig(g))
-(x, y=1, *args, **kwargs)
->>> gg = ch_func_to_all_pk(g)
->>> print(Sig(gg))
-(x, y=1, args=(), **kwargs)
-```
-
-### dol.signatures.ch_signature_to_all_pk(callable_or_signature)
-
-Changes all (non-variadic) arguments to be of the PK (POSITION_OR_KEYWORD) kind.
-
-Wrapping a function with the resulting signature doesn’t make that function callable
-with PK kinds in itself.
-It just gives it a signature without position and keyword ONLY kinds.
-It should be used to wrap such a function that actually carries out the
-implementation though!
-
-```pycon
->>> def foo(w, /, x: float, y=1, *, z: int = 1, **kwargs):
-...     ...
->>> def bar(*args, **kwargs):
-...     ...
-...
->>> from inspect import signature
->>> new_foo = all_pk_signature(foo)
->>> Sig(new_foo)
-<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
->>> all_pk_signature(signature(foo))
-<Sig (w, x: float, y=1, z: int = 1, **kwargs)>
-```
-
-But note that the variadic arguments `*args` and `**kwargs` remain variadic:
-
-```pycon
->>> all_pk_signature(signature(bar))
-<Signature (*args, **kwargs)>
-```
-
-It works with `Sig` too (since Sig is a Signature), and maintains it’s other
-attributes (like name).
-
-```pycon
->>> sig = all_pk_signature(Sig(bar))
->>> sig
-<Sig (*args, **kwargs)>
->>> sig.name
-'bar'
-```
-
-#### SEE ALSO
-`i2.signatures.kind_forgiving_func`
-
-### dol.signatures.ch_variadics_to_non_variadic_kind(func, , ch_variadic_keyword_to_keyword=True)
-
-A decorator that will change a VAR_POSITIONAL (`*args`) argument to a tuple (args)
-argument of the same name.
-
-Essentially, given a `func(a, *b, c, **d)` function want to get a
-`new_func(a, b=(), c=None, d={})` that has the same functionality
-(in fact, calls the original `func` function behind the scenes), but without
-where the variadic arguments `*b` and `**d` are replaced with a `b` expecting an
-iterable (e.g. tuple/list) and `d` expecting a `dict` to contain the
-desired inputs.
-
-Besides this, the decorator tries to be as conservative as possible, making only
-the minimum changes needed to meet the goal of getting to a variadic-less
-interface. When it doubt, and error will be raised.
-
-```pycon
->>> def foo(a, *args, bar, **kwargs):
-...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
->>> assert str(Sig(foo)) == '(a, *args, bar, **kwargs)'
->>> wfoo = ch_variadics_to_non_variadic_kind(foo)
->>> str(Sig(wfoo))
-'(a, args=(), *, bar, kwargs={})'
-```
-
-And now to do this:
-
-```pycon
->>> foo(1, 2, 3, bar=4, hello="world")
-"a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
-```
-
-We can do it like this instead:
-
-```pycon
->>> wfoo(1, (2, 3), bar=4, kwargs=dict(hello="world"))
-"a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
-```
-
-Note, the outputs are the same. It’s just the way we call our function that has
-changed.
-
-```pycon
->>> assert wfoo(1, (2, 3), bar=4, kwargs=dict(hello="world")
-... ) == foo(1, 2, 3, bar=4, hello="world")
->>> assert wfoo(1, (2, 3), bar=4) == foo(1, 2, 3, bar=4)
->>> assert wfoo(1, (), bar=4) == foo(1, bar=4)
-```
-
-Note that if there is not variadic positional arguments, the variadic keyword
-will still be a keyword-only kind.
-
-```pycon
->>> @ch_variadics_to_non_variadic_kind
-... def func(a, bar=None, **kwargs):
-...     return f"{a=}, {bar=}, {kwargs=}"
->>> str(Sig(func))
-'(a, bar=None, *, kwargs={})'
->>> assert func(1, bar=4, kwargs=dict(hello="world")
-...     ) == "a=1, bar=4, kwargs={'hello': 'world'}"
-```
-
-If the function has neither variadic kinds, it will remain untouched.
-
-```pycon
->>> def func(a, /, b, *, c=3):
-...     return a + b + c
->>> ch_variadics_to_non_variadic_kind(func) == func
-True
-```
-
-If you only want the variadic positional to be handled, but leave leave any
-VARIADIC_KEYWORD kinds (`**kwargs`) alone, you can do so by setting
-`ch_variadic_keyword_to_keyword=False`.
-If you’ll need to use `ch_variadics_to_non_variadic_kind` in such a way
-repeatedly, we suggest you use `functools.partial` to not have to specify this
-configuration repeatedly.
-
-```pycon
->>> from functools import partial
->>> tuple_the_args = partial(ch_variadics_to_non_variadic_kind,
-...     ch_variadic_keyword_to_keyword=False
-... )
->>> @tuple_the_args
-... def foo(a, *args, bar=None, **kwargs):
-...     return f"{a=}, {args=}, {bar=}, {kwargs=}"
->>> Sig(foo)
-<Sig (a, args=(), *, bar=None, **kwargs)>
->>> foo(1, (2, 3), bar=4, hello="world")
-"a=1, args=(2, 3), bar=4, kwargs={'hello': 'world'}"
-```
-
-### dol.signatures.common_and_diff_argnames(func1, func2)
-
-Get list of argument names that are common to two functions, as well as the two
-lists of names that are different
-
-* **Parameters:**
-  * **func1** (`callable`) – First function
-  * **func2** (`callable`) – Second function
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-* **Returns:**
-  A dict with fields ‘common’, ‘func1_not_func2’, and ‘func2_not_func1’
-
-```pycon
->>> def f(t, h, i, n, k):
-...     ...
-...
->>> def g(t, w, i, c, e):
-...     ...
-...
->>> common_and_diff_argnames(f, g)
-{'common': ['t', 'i'], 'func1_not_func2': ['h', 'n', 'k'], 'func2_not_func1': ['w', 'c', 'e']}
->>> common_and_diff_argnames(g, f)
-{'common': ['t', 'i'], 'func1_not_func2': ['w', 'c', 'e'], 'func2_not_func1': ['h', 'n', 'k']}
-```
-
-### dol.signatures.copy_func(f)
-
-Copy a function (not sure it works with all types of callables)
-
-### dol.signatures.defaults_are_the_same_when_not_empty(dflt1, dflt2)
-
-Check if two defaults are the same when they are not empty.
-
-```pycon
->>> defaults_are_the_same_when_not_empty(1, 1)
-True
->>> defaults_are_the_same_when_not_empty(1, 2)
-False
->>> defaults_are_the_same_when_not_empty(1, None)
-False
->>> defaults_are_the_same_when_not_empty(1, Parameter.empty)
-True
-```
-
-### dol.signatures.dflt1_is_empty_or_dflt2_is_not(dflt1, dflt2)
-
-Why such a strange default comparison function?
-
-This is to be used as a default in is_call_compatible_with.
-
-Consider two functions func1 and func2 with a parameter p with default values
-dflt1 and dflt2 respectively.
-If dflt1 was not empty and dflt2 was, this would mean that func1 could be called
-without specifying p, but func2 couldn’t.
-
-So to avoid this situation, we use dflt1_is_empty_or_dflt2_is_not as the default
-
-### dol.signatures.dflt1_is_empty_or_dflt2_is_not_param_comparator(param1, param2, \*, name=<function ignore_any_differences>, kind=<function ignore_any_differences>, default=<function dflt1_is_empty_or_dflt2_is_not>, annotation=<function ignore_any_differences>, aggreg=<built-in function all>)
-
-Permissive version of param_comparator that ignores any differences of parameter
-attributes.
-
-It is meant to be used with partial, but with a permissive base, contrary to the
-base param_comparator which requires strict equality (`eq`) for all attributes.
-
-* **Return type:**
-  `Comparison`
-
-### dol.signatures.dict_of_attribute_signatures(cls)
-
-A function that extracts the signatures of all callable attributes of a class.
-
-* **Parameters:**
-  **cls** ([`type`](https://docs.python.org/3/builtins/functions.html#type)) – The class that holds the the `(name, func)` pairs we want to extract.
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature)]
-* **Returns:**
-  A dict of `(name, signature(func))` pairs extracted from class.
-
-One of the intended applications is to use `dict_of_attribute_signatures` as a
-decorator, like so:
-
-```pycon
->>> @dict_of_attribute_signatures
-... class names_and_signatures:
-...     def foo(x: str, *, y=2) -> tuple: ...
-...     def bar(z, /) -> float: ...
->>> names_and_signatures
-{'foo': <Signature (x: str, *, y=2) -> tuple>, 'bar': <Signature (z, /) -> float>}
 ```
 
 ### dol.signatures.ensure_params(obj=None)
@@ -10210,175 +10852,12 @@ in the remainder
 * **Returns:**
   A (param_args, param_kwargs, remaining_kwargs) tuple.
 
-### dol.signatures.has_signature(obj, robust=False)
-
-Check if an object has a signature – i.e. is callable and inspect.signature(
-obj) returns something.
-
-This can be used to more easily get signatures in bulk without having to write
-try/catches:
-
-```pycon
->>> from functools import partial
->>> len(
-...     list(
-...         filter(
-...             None,
-...             map(
-...                 partial(has_signature, robust=False),
-...                 (Sig, print, map, filter, Sig.wrap),
-...             ),
-...         )
-...     )
-... )
-2
-```
-
-If robust is set to True, `has_signature` will use `Sig` to get the signature,
-so will return True in most cases.
-
-### dol.signatures.insert_annotations(s, , , return_annotation, \*\*annotations)
-
-Insert annotations in a signature.
-(Note: not really insert but returns a copy of input signature)
-
-```pycon
->>> from inspect import signature
->>> s = signature(lambda a, b, c=1, d="bar": 0)
->>> s
-<Signature (a, b, c=1, d='bar')>
->>> ss = insert_annotations(s, b=int, d=str)
->>> ss
-<Signature (a, b: int, c=1, d: str = 'bar')>
->>> insert_annotations(s, b=int, d=str, e=list)
-Traceback (most recent call last):
-...
-AssertionError: These argument names weren't found in the signature: {'e'}
-```
-
-### dol.signatures.is_call_compatible_with(sig1, sig2, , param_comparator=None)
-
-Return True if `sig1` is compatible with `sig2`. Meaning that all valid ways
-to call `sig1` are valid for `sig2`.
-
-* **Parameters:**
-  * **sig1** ([`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – The main signature.
-  * **sig2** ([`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – The signature to be compared with.
-  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], `Comparison`] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
-```pycon
->>> is_call_compatible_with(
-...     Sig('(a, /, b, *, c)'),
-...     Sig('(a, b, c)')
-... )
-True
->>> is_call_compatible_with(
-...     Sig('()'),
-...     Sig('(a)')
-... )
-False
->>> is_call_compatible_with(
-...     Sig('()'),
-...     Sig('(a=0)')
-... )
-True
->>> is_call_compatible_with(
-...     Sig('(a, /, *, c)'),
-...     Sig('(a, /, b, *, c)')
-... )
-False
->>> is_call_compatible_with(
-...     Sig('(a, /, *, c)'),
-...     Sig('(a, /, b=0, *, c)')
-... )
-True
->>> is_call_compatible_with(
-...     Sig('(a, /, b)'),
-...     Sig('(a, /, b, *, c)')
-... )
-False
->>> is_call_compatible_with(
-...     Sig('(a, /, b)'),
-...     Sig('(a, /, b, *, c=0)')
-... )
-True
->>> is_call_compatible_with(
-...     Sig('(a, /, b, *, c)'),
-...     Sig('(*args, **kwargs)')
-... )
-True
-```
-
 ### dol.signatures.is_signature_error(e)
 
 Check if an exception is a signature error
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
-### dol.signatures.keyed_comparator(comparator, key)
-
-Create a key-function enabled binary operator.
-
-In various places in python functionality is extended by allowing a key function.
-For example, the `sorted` function allows a key function to be passed, which is
-applied to each element before sorting. The keyed_comparator function allows a
-comparator to be extended in the same way. The returned comparator will apply the
-key function toeach input before applying the original comparator.
-
-```pycon
->>> from operator import eq
->>> parity = lambda x: x % 2
->>> comparator = keyed_comparator(eq, parity)
->>> list(map(comparator, [1, 1, 2, 2], [3, 4, 5, 6]))
-[True, False, False, True]
-```
-
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]
-
-### dol.signatures.kind_forgiving_func(func, kinds_modifier=<function convert_to_PK>)
-
-Wraps the func, changing the argument kinds according to kinds_modifier.
-The default behaviour is to change all kinds to POSITIONAL_OR_KEYWORD kinds.
-The original purpose of this function is to remove argument-kind restriction
-annoyances when doing functional manipulations such as:
-
-```pycon
->>> from functools import partial
->>> isinstance_of_str = partial(isinstance, class_or_tuple=str)
->>> isinstance_of_str('I am a string')
-Traceback (most recent call last):
-  ...
-TypeError: isinstance() takes no keyword arguments
-```
-
-Here, instead, we can just get a kinder version of the function and do what we
-want to do:
-
-```pycon
->>> _isinstance = kind_forgiving_func(isinstance)
->>> isinstance_of_str = partial(_isinstance, class_or_tuple=str)
->>> isinstance_of_str('I am a string')
-True
->>> isinstance_of_str(42)
-False
-```
-
-#### SEE ALSO
-`i2.signatures.all_pk_signature`
-
-### dol.signatures.mk_sig_from_args(\*args_without_default, \*\*args_with_defaults)
-
-Make a Signature instance by specifying args_without_default and
-args_with_defaults.
-
-```pycon
->>> mk_sig_from_args("a", "b", c=1, d="bar")
-<Signature (a, b, c=1, d='bar')>
-```
 
 ### dol.signatures.name_of_obj(o, \*, base_name_of_obj=operator.attrgetter('_\_name_\_'), caught_exceptions=(<class 'AttributeError'>, ), default_factory=<function \_return_none>)
 
@@ -10431,111 +10910,6 @@ If you want to get the fully qualified name of an object, you can do:
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### dol.signatures.param_binary_func(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>, aggreg=<built-in function all>)
-
-Compare two parameters.
-
-Note that by default, this function is strict, and will return False if
-any of the parameters are not equal. This is because the default
-aggregation function is `all` and the default comparison functions of the
-parameter’s attributes are `eq` (meaning equality, not identity).
-
-But you can change that by passing different comparison functions and/or
-aggregation functions.
-
-In fact, the real purpose of this function is to be used as a factory of parameter
-binary functions, through parametrizing it with `functools.partial`.
-
-The parameter binary functions themselves are meant to be used to make signature
-binary functions.
-
-* **Parameters:**
-  * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
-  * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
-  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
-  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
-  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
-  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
-* **Return type:**
-  `Comparison`
-
-```pycon
->>> from inspect import Parameter
->>> param1 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
->>> param2 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
->>> param_binary_func(param1, param2)
-True
-```
-
-See [https://github.com/i2mint/i2/issues/50#issuecomment-1381686812](https://github.com/i2mint/i2/issues/50#issuecomment-1381686812) for discussion.
-
-### dol.signatures.param_comparator(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>, aggreg=<built-in function all>)
-
-Compare two parameters.
-
-Note that by default, this function is strict, and will return False if
-any of the parameters are not equal. This is because the default
-aggregation function is `all` and the default comparison functions of the
-parameter’s attributes are `eq` (meaning equality, not identity).
-
-But you can change that by passing different comparison functions and/or
-aggregation functions.
-
-In fact, the real purpose of this function is to be used as a factory of parameter
-binary functions, through parametrizing it with `functools.partial`.
-
-The parameter binary functions themselves are meant to be used to make signature
-binary functions.
-
-* **Parameters:**
-  * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
-  * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
-  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
-  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
-  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
-  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
-* **Return type:**
-  `Comparison`
-
-```pycon
->>> from inspect import Parameter
->>> param1 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
->>> param2 = Parameter('x', Parameter.POSITIONAL_OR_KEYWORD)
->>> param_binary_func(param1, param2)
-True
-```
-
-See [https://github.com/i2mint/i2/issues/50#issuecomment-1381686812](https://github.com/i2mint/i2/issues/50#issuecomment-1381686812) for discussion.
-
-### dol.signatures.param_comparison_dict(param1, param2, \*, name=<function return_tuple>, kind=<function return_tuple>, default=<function return_tuple>, annotation=<function return_tuple>, aggreg=<function param_attribute_dict>)
-
-A ParamComparator that returns a dictionary with pairs parameter attributes.
-
-```pycon
->>> param1 = Sig('(a: int = 1)')['a']
->>> param2 = Sig('(a: str = 2)')['a']
->>> param_comparison_dict(param1, param2)
-{'name': ('a', 'a'), 'kind': ..., 'default': (1, 2), 'annotation': (<class 'int'>, <class 'str'>)}
-```
-
-* **Return type:**
-  `Comparison`
-
-### dol.signatures.param_differences_dict(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>)
-
-Makes a dictionary exibiting the differences between two parameters.
-
-```pycon
->>> param1 = Sig('(a: int = 1)')['a']
->>> param2 = Sig('(a: str = 2)')['a']
->>> param_differences_dict(param1, param2)
-{'default': (1, 2), 'annotation': (<class 'int'>, <class 'str'>)}
->>> param_differences_dict(param1, param2, default=lambda x, y: isinstance(x, type(y)))
-{'annotation': (<class 'int'>, <class 'str'>)}
-```
-
 ### dol.signatures.param_for_kind(name=None, kind='positional_or_keyword', with_default=False, annotation)
 
 Function to easily and flexibly make inspect.Parameter objects for testing.
@@ -10555,228 +10929,6 @@ This tool should help making it less annoying.
 >>> param_for_kind.keyword_only("baz", with_default=True)
 <Parameter "baz='dflt_keyword_only'">
 ```
-
-### dol.signatures.permissive_param_comparator(param1, param2, \*, name=<function ignore_any_differences>, kind=<function ignore_any_differences>, default=<function ignore_any_differences>, annotation=<function ignore_any_differences>, aggreg=<built-in function all>)
-
-Permissive version of param_comparator that ignores any differences of parameter
-attributes.
-
-It is meant to be used with partial, but with a permissive base, contrary to the
-base param_comparator which requires strict equality (`eq`) for all attributes.
-
-* **Return type:**
-  `Comparison`
-
-### dol.signatures.postprocess(egress)
-
-A decorator that will process the output of the wrapped function with egress
-
-### dol.signatures.replace_kwargs_using(sig)
-
-Decorator that replaces the variadic keyword argument of the target function using
-the `sig`, the signature of a source function.
-It essentially injects the difference between `sig` and the target function’s
-signature into the target function’s signature. That is, it replaces the
-variadic keyword argument (a.k.a. “kwargs”) with those parameters that are in `sig`
-but not in the target function’s signature.
-
-This is meant to be used when a `targ_func` (the function you’ll apply the
-decorator to) has a variadict keyword argument that is just used to forward “extra”
-arguments to another function, and you want to make sure that the signature of the
-`targ_func` is consistent with the `sig` signature.
-(Also, you don’t want to copy the signatures around manually.)
-
-In the following, `sauce` (the target function) has a variadic keyword argument,
-`sauce_kwargs`, that is used to forward extra arguments to `apple` (the source
-function).
-
-```pycon
->>> def apple(a, x: int, y=2, *, z=3, **extra_apple_options):
-...     return a + x + y + z
->>> @replace_kwargs_using(apple)
-... def sauce(a, b, c, **sauce_kwargs):
-...     return b * c + apple(a, **sauce_kwargs)
-```
-
-The function will works:
-
-```pycon
->>> sauce(1, 2, 3, x=4, z=5)  # func still works? Should be: 1 + 4 + 2 + 5 + 2 * 3
-18
-```
-
-But the signature now doesn’t have the `**sauce_kwargs`, but more informative
-signature elements sourced from `apple`:
-
-```pycon
->>> Sig(sauce)
-<Sig (a, b, c, *, x: int, y=2, z=3, **extra_apple_options)>
-```
-
-One thing to note is that the order of the arguments in the signature of `apple`
-may change to accomodate for the python parameter order rules
-(see [https://docs.python.org/3/reference/compound_stmts.html#function-definitions](https://docs.python.org/3/reference/compound_stmts.html#function-definitions)).
-The new order will try to conserve the order of the original arguments of `sauce`
-in-so-far as it doesn’t violate the python parameter order rules, though.
-See examples below:
-
-```pycon
->>> @Sig.replace_kwargs_using(apple)
-... def sauce(a, b=2, c=3, **sauce_kwargs):
-...     return b * c + apple(a, **sauce_kwargs)
->>> Sig(sauce)
-<Sig (a, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)>
-```
-
-```pycon
->>> @Sig.replace_kwargs_using(apple)
-... def sauce(a=1, b=2, c=3, **sauce_kwargs):
-...     return b * c + apple(a, **sauce_kwargs)
->>> Sig(sauce)
-<Sig (a=1, b=2, c=3, *, x: int, y=2, z=3, **extra_apple_options)>
-```
-
-### dol.signatures.resolve_function(obj)
-
-Get the underlying function of a property or cached_property
-
-Note that if all conditions fail, the object itself is returned.
-
-The problem this function solves is that sometimes there’s a function behind an
-object, but it’s not always easy to get to it. For example, in a class, you might
-want to get the source of the code decorated with `@property`, a
-`@cached_property`, or a `partial` function.
-
-Consider the following example:
-
-```pycon
->>> from functools import cached_property, partial
->>> class C:
-...     @property
-...     def prop(self):
-...         pass
-...     @cached_property
-...     def cached_prop(self):
-...         pass
-...     partial_func = partial(partial)
-```
-
-Note that `prop` is not callable, and you can’t get its source.
-
-```pycon
->>> import inspect
->>> callable(C.prop)
-False
->>> inspect.getsource(C.prop)
-Traceback (most recent call last):
-...
-TypeError: <property object at 0x...> is not a module, class, method, function, traceback, frame, or code object
-```
-
-But if you grab the underlying function, you can get the source:
-
-```pycon
->>> func = resolve_function(C.prop)
->>> callable(func)
-True
->>> isinstance(inspect.getsource(func), str)
-True
-```
-
-Same goes with `cached_property` and `partial`:
-
-```pycon
->>> isinstance(inspect.getsource(resolve_function(C.cached_prop)), str)
-True
->>> isinstance(inspect.getsource(resolve_function(C.partial_func)), str)
-True
-```
-
-* **Return type:**
-  [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`T`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
-
-### dol.signatures.set_signature_of_func(func, parameters, , return_annotation, \_\_validate_parameters_\_=True)
-
-Set the signature of a function, with sugar.
-
-* **Parameters:**
-  * **func** – Function whose signature you want to set
-  * **signature** – A list of parameter specifications. This could be an
-  * **that** (*inspect.Parameter object* *or* *anything*) – the mk_param function can resolve into an inspect.Parameter object.
-  * **return_annotation** – Passed on to inspect.Signature.
-  * **\_\_validate_parameters_\_** – Passed on to inspect.Signature.
-* **Returns:**
-  None (but sets the signature of the input function)
-
-```pycon
->>> import inspect
->>> def foo(*args, **kwargs):
-...     pass
-...
->>> inspect.signature(foo)
-<Signature (*args, **kwargs)>
->>> set_signature_of_func(foo, ["a", "b", "c"])
->>> inspect.signature(foo)
-<Signature (a, b, c)>
->>> set_signature_of_func(
-...     foo, ["a", ("b", None), ("c", 42, int)]
-... )  # specifying defaults and annotations
->>> inspect.signature(foo)
-<Signature (a, b=None, c: int = 42)>
->>> set_signature_of_func(
-...     foo, ["a", "b", "c"], return_annotation=str
-... )  # specifying return annotation
->>> inspect.signature(foo)
-<Signature (a, b, c) -> str>
->>> # But you can always specify parameters the "long" way
->>> set_signature_of_func(
-...     foo,
-...     [inspect.Parameter(name="kws", kind=inspect.Parameter.VAR_KEYWORD)],
-...     return_annotation=str,
-... )
->>> inspect.signature(foo)
-<Signature (**kws) -> str>
-```
-
-### dol.signatures.sig_to_dataclass(sig, , cls_name=None, bases=(), module=None, \*\*kwargs)
-
-Make a `class` (through `make_dataclass`) from the given signature.
-
-* **Parameters:**
-  * **sig** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
-    resolve into an `inspect.Signature` object, including a signature object
-    itself, but also most callables, a list or params, etc.
-  * **cls_name** – The same as `cls_name` of `dataclasses.make_dataclass`
-  * **bases** – The same as `bases` of `dataclasses.make_dataclass`
-  * **module** – Set to module (usually `__name__` to specify ther module of
-    caller) so that the class and instances can be pickle-able.
-  * **kwargs** – Passed on to `dataclasses.make_dataclass`
-* **Returns:**
-  A dataclass
-
-```pycon
->>> def foo(a, /, b : int=2, *, c=3):
-...     pass
-...
->>> K = sig_to_dataclass(foo, cls_name='K')
->>> str(Sig(K))
-'(a, b: int = 2, c=3) -> None'
->>> k = K(1,2,3)
->>> (k.a, k.b, k.c)
-(1, 2, 3)
-```
-
-Would also work with any of these (and more):
-
-```pycon
->>> K = sig_to_dataclass(Sig(foo), cls_name='K')
->>> K = sig_to_dataclass(Sig(foo).params, cls_name='K')
-```
-
-#### NOTE
-`cls_name` is not required (we’ll try to figure out a good default for you),
-but it’s advised to only use this convenience in extreme mode.
-Choosing your own name might make for a safer future if you’re reusing your class.
 
 ### dol.signatures.sort_params(params)
 
@@ -10801,63 +10953,6 @@ the `sort_params` function is more than twice as fast.
 ...     Parameter('c', kind=Parameter.POSITIONAL_OR_KEYWORD)]
 ... )
 [<Parameter "b">, <Parameter "c">, <Parameter "a=1">]
-```
-
-### dol.signatures.tuple_the_args(func, , ch_variadic_keyword_to_keyword=False)
-
-A decorator that will change a VAR_POSITIONAL (\*args) argument to a tuple (args)
-argument of the same name.
-
-### dol.signatures.use_interface(interface_sig)
-
-Use interface_sig as (enforced/validated) signature of the decorated function.
-That is, the decorated function will use the original function has the backend,
-the function actually doing the work, but with a frontend specified
-(in looks and in argument validation) `interface_sig`
-
-consider the situation where are functionality is parametrized by a
-function `g` taking two inputs, `a`, and `b`.
-Now you want to carry out this functionality using a function `f` that does what
-`g` should do, but doesn’t use `a`, and doesn’t even have it in it’s arguments.
-
-The solution to this is to \_adapt_ `f` to the `g` interface:
-
-```python
-def my_g(a, b):
-    return f(a)
-```
-
-and use `my_g`.
-
-```pycon
->>> f = lambda a: a * 11
->>> interface = lambda a, b=None: ...
->>>
->>> new_f = use_interface(interface)(f)
-```
-
-See how only the first argument, or `a` keyword argument, is taken into account
-in `new_f`:
-
-```pycon
->>> assert new_f(2) == f(2)
->>> assert new_f(2, 3) == f(2)
->>> assert new_f(2, b=3) == f(2)
->>> assert new_f(b=3, a=2) == f(2)
-```
-
-But if we add more positional arguments than `interface` allows,
-or any keyword arguments that `interface` doesn’t recognize…
-
-```pycon
->>> new_f(1,2,3)
-Traceback (most recent call last):
-  ...
-TypeError: too many positional arguments
->>> new_f(1, c=2)
-Traceback (most recent call last):
-  ...
-TypeError: got an unexpected keyword argument 'c'
 ```
 
 ### dol.signatures.validate_signature(func)
@@ -17411,7 +17506,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 18:38 UTC** from commit <a href="https://github.com/i2mint/dol/commit/63b120088c21b944bcc224a69fe2779dd462de06"><code>63b1200</code></a> on branch <code>master</code>, for **dol 0.3.93** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 19:03 UTC** from commit <a href="https://github.com/i2mint/dol/commit/da40c55541bd1ce443e343f5c8136d7c12b2e9f4"><code>da40c55</code></a> on branch <code>master</code>, for **dol 0.3.94** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17420,9 +17515,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/63b120088c21b944bcc224a69fe2779dd462de06"><code>63b120088c21b944bcc224a69fe2779dd462de06</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/da40c55541bd1ce443e343f5c8136d7c12b2e9f4"><code>da40c55541bd1ce443e343f5c8136d7c12b2e9f4</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.93</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.94</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17431,9 +17526,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39476213099">39476213099</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39479770649">39479770649</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>52e31de8b3059941b45c3f23d84543029f6256ef</code> (in the history of the built commit) |
+| Event commit | <code>c9ba7af15a6a66638895d351ab9211b2376a1e02</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17458,13 +17553,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.93/">0.3.93</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.94/">0.3.94</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 63b120088c21b944bcc224a69fe2779dd462de06
+git checkout da40c55541bd1ce443e343f5c8136d7c12b2e9f4
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
