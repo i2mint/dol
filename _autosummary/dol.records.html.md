@@ -19,6 +19,10 @@ collection facade with CRUD and query, the Python mirror of zodal’s `DataProvi
 - [`Capabilities`](#dol.records.Capabilities) — what a provider can do and push down, so callers degrade.
 - [`MappingProvider`](#dol.records.MappingProvider) — the reference provider over any `MutableMapping` of
   `id -> record` (a `dict`, or any dol store of dicts, e.g. JSON files).
+- [`BifurcatedProvider`](#dol.records.BifurcatedProvider) — records in a provider, their large fields in a
+  `dol.content` store, with [`ContentRef`](dol.content.html.md#dol.content.ContentRef) s in their place.
+- [`wrap_provider()`](#dol.records.wrap_provider) — a provider seen through a record codec (`encode` /
+  `decode`), the records analog of `dol.wrap_kvs()`.
 
 Stdlib only, like the rest of dol’s core.
 
@@ -43,10 +47,11 @@ Stdlib only, like the rest of dol’s core.
 
 ### Functions
 
-| [`filter_to_function`](#dol.records.filter_to_function)(filter, \*[, operators])   | A predicate on records from a zodal `FilterExpression`.                     |
-|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [`matches_search`](#dol.records.matches_search)(record, search[, fields])      | Case-insensitive substring search over `fields` (default: every str field). |
-| [`apply_query`](#dol.records.apply_query)(records[, params, ...])           | Filter, search, sort and page `records` client-side (zodal `applyQuery`).   |
+| [`wrap_provider`](#dol.records.wrap_provider)(provider, \*[, encode, decode])   | `provider` seen through a record codec; see [`WrappedProvider`](#dol.records.WrappedProvider).   |
+|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| [`filter_to_function`](#dol.records.filter_to_function)(filter, \*[, operators])     | A predicate on records from a zodal `FilterExpression`.                                                         |
+| [`matches_search`](#dol.records.matches_search)(record, search[, fields])        | Case-insensitive substring search over `fields` (default: every str field).                                     |
+| [`apply_query`](#dol.records.apply_query)(records[, params, ...])             | Filter, search, sort and page `records` client-side (zodal `applyQuery`).                                       |
 
 ### Classes
 
@@ -58,12 +63,58 @@ Stdlib only, like the rest of dol’s core.
 | [`Capabilities`](#dol.records.Capabilities)(\*[, can_create, can_update, ...])    | What a provider supports (zodal `ProviderCapabilities`).                                                     |
 | [`DataProvider`](#dol.records.DataProvider)(\*args, \*\*kwargs)                   | CRUD + query over a collection of records (zodal `DataProvider`, sync).                                      |
 | [`MappingProvider`](#dol.records.MappingProvider)(store, \*[, id_field, ...])        | A [`DataProvider`](#dol.records.DataProvider) over any `MutableMapping` of `id -> record`. |
+| [`BifurcatedProvider`](#dol.records.BifurcatedProvider)(metadata, content_store, ...)   | Records in a metadata provider, their large fields in a content store.                                       |
+| [`WrappedProvider`](#dol.records.WrappedProvider)(provider, \*[, encode, decode])    | A provider seen through a record codec (zodal's `wrapProvider`).                                             |
 
 ### Exceptions
 
 | [`RecordNotFound`](#dol.records.RecordNotFound)   | No record has this id.                                            |
 |-------------------------------------------------------------------|-------------------------------------------------------------------|
 | [`RecordExists`](#dol.records.RecordExists)     | A record with this id already exists (`create` never overwrites). |
+
+### *class* dol.records.BifurcatedProvider(metadata, content_store, \*, content_fields, id_field='id', content_key=<function \_default_content_key>)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Records in a metadata provider, their large fields in a content store.
+
+The record half of the content-metadata bifurcation: on write, the
+`content_fields` of a record go to `content_store` (bytes, via
+[`dol.content.put_content()`](dol.content.html.md#dol.content.put_content)) and the record keeps a
+[`ContentRef`](dol.content.html.md#dol.content.ContentRef) (its wire-form dict) in their place; on read the
+refs come back, light enough to list, and [`get_content()`](#dol.records.BifurcatedProvider.get_content) (or
+`get_one(id, resolve_content=True)`) fetches the bytes.
+
+The metadata record is the commit point: content is written before the record
+that refers to it is (for a new record, the record is created first to learn its
+id, then compensated by deletion if a content write fails), and deleted after the
+record is gone (a failed content delete leaves an orphan blob, never a dangling
+ref).
+
+```pycon
+>>> from dol.content import ContentRef
+>>> clips = BifurcatedProvider(MappingProvider({}), {}, content_fields=["audio"])
+>>> rec = clips.create({"title": "take 1", "audio": b"RIFF..."})
+>>> ContentRef.from_json(rec["audio"]).item_id
+'1.audio'
+>>> clips.get_content(rec["id"], "audio")
+b'RIFF...'
+>>> clips.get_one("1", resolve_content=True)["audio"]
+b'RIFF...'
+```
+
+* **Parameters:**
+  * **metadata** ([`DataProvider`](#dol.records.DataProvider)) – the [`DataProvider`](#dol.records.DataProvider) holding the records.
+  * **content_store** ([`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]) – a `MutableMapping` of bytes (a dict, a dol `Files`, S3…).
+  * **content_fields** ([`Sequence`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – the record fields whose values are bytes to offload.
+  * **content_key** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – `(record id, field) -> content store key`.
+
+#### get_content(id, field)
+
+The bytes of one content field of record `id`.
+
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ### *class* dol.records.Capabilities(, can_create=True, can_update=True, can_delete=True, can_bulk_update=True, can_bulk_delete=True, can_upsert=False, server_sort=False, server_filter=False, server_search=False, server_pagination=False, filter_operators=None, pagination_style='offset', realtime=False, bifurcated=False, content_fields=())
 
@@ -164,6 +215,33 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Sort by `field` (zodal `SortingState`: `{id, desc}`).
 
+### *class* dol.records.WrappedProvider(provider, \*, encode=<function \_identity>, decode=<function \_identity>)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A provider seen through a record codec (zodal’s `wrapProvider`).
+
+`decode` turns a stored record into the app’s shape on the way out
+(`get_list`, `get_one` and every write’s result); `encode` turns the app’s
+(possibly partial) record into the stored shape on the way in. Queries
+(`ListParams`) are passed through unchanged, so they name stored fields.
+The analog of `dol.wrap_kvs()` for records.
+
+```pycon
+>>> stored = MappingProvider({})
+>>> app = wrap_provider(
+...     stored,
+...     encode=lambda r: {("tags_csv" if k == "tags" else k): (",".join(v) if k == "tags" else v)
+...                       for k, v in r.items()},
+...     decode=lambda r: {("tags" if k == "tags_csv" else k): (v.split(",") if k == "tags_csv" else v)
+...                       for k, v in r.items()},
+... )
+>>> app.create({"id": "a", "tags": ["x", "y"]})["tags"]
+['x', 'y']
+>>> stored.get_one("a")["tags_csv"]
+'x,y'
+```
+
 ### dol.records.apply_query(records, params=None, , search_fields=None, skip=())
 
 Filter, search, sort and page `records` client-side (zodal `applyQuery`).
@@ -198,3 +276,10 @@ Case-insensitive substring search over `fields` (default: every str field).
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### dol.records.wrap_provider(provider, \*, encode=<function \_identity>, decode=<function \_identity>)
+
+`provider` seen through a record codec; see [`WrappedProvider`](#dol.records.WrappedProvider).
+
+* **Return type:**
+  [`WrappedProvider`](#dol.records.WrappedProvider)

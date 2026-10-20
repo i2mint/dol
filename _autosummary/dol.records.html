@@ -290,6 +290,10 @@ backend that cannot push a predicate, a sort or a page down.</p></li>
 <li><p><a class="reference internal" href="#dol.records.Capabilities" title="dol.records.Capabilities"><code class="xref py py-class docutils literal notranslate"><span class="pre">Capabilities</span></code></a> — what a provider can do and push down, so callers degrade.</p></li>
 <li><p><a class="reference internal" href="#dol.records.MappingProvider" title="dol.records.MappingProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">MappingProvider</span></code></a> — the reference provider over any <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code> of
 <code class="docutils literal notranslate"><span class="pre">id</span> <span class="pre">-&gt;</span> <span class="pre">record</span></code> (a <code class="docutils literal notranslate"><span class="pre">dict</span></code>, or any dol store of dicts, e.g. JSON files).</p></li>
+<li><p><a class="reference internal" href="#dol.records.BifurcatedProvider" title="dol.records.BifurcatedProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">BifurcatedProvider</span></code></a> — records in a provider, their large fields in a
+<code class="docutils literal notranslate"><span class="pre">dol.content</span></code> store, with <a class="reference internal" href="dol.content.html#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> s in their place.</p></li>
+<li><p><a class="reference internal" href="#dol.records.wrap_provider" title="dol.records.wrap_provider"><code class="xref py py-func docutils literal notranslate"><span class="pre">wrap_provider()</span></code></a> — a provider seen through a record codec (<code class="docutils literal notranslate"><span class="pre">encode</span></code> /
+<code class="docutils literal notranslate"><span class="pre">decode</span></code>), the records analog of <code class="xref py py-func docutils literal notranslate"><span class="pre">dol.wrap_kvs()</span></code>.</p></li>
 </ul>
 <p>Stdlib only, like the rest of dol’s core.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">people</span> <span class="o">=</span> <span class="n">MappingProvider</span><span class="p">({})</span>
@@ -319,13 +323,16 @@ backend that cannot push a predicate, a sort or a page down.</p></li>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.records.filter_to_function" title="dol.records.filter_to_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_to_function</span></code></a>(filter, *[, operators])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.records.wrap_provider" title="dol.records.wrap_provider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_provider</span></code></a>(provider, *[, encode, decode])</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> seen through a record codec; see <a class="reference internal" href="#dol.records.WrappedProvider" title="dol.records.WrappedProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrappedProvider</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.records.filter_to_function" title="dol.records.filter_to_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_to_function</span></code></a>(filter, *[, operators])</p></td>
 <td><p>A predicate on records from a zodal <code class="docutils literal notranslate"><span class="pre">FilterExpression</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.records.matches_search" title="dol.records.matches_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matches_search</span></code></a>(record, search[, fields])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.records.matches_search" title="dol.records.matches_search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matches_search</span></code></a>(record, search[, fields])</p></td>
 <td><p>Case-insensitive substring search over <code class="docutils literal notranslate"><span class="pre">fields</span></code> (default: every str field).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.records.apply_query" title="dol.records.apply_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_query</span></code></a>(records[, params, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.records.apply_query" title="dol.records.apply_query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_query</span></code></a>(records[, params, ...])</p></td>
 <td><p>Filter, search, sort and page <code class="docutils literal notranslate"><span class="pre">records</span></code> client-side (zodal <code class="docutils literal notranslate"><span class="pre">applyQuery</span></code>).</p></td>
 </tr>
 </tbody>
@@ -356,6 +363,12 @@ backend that cannot push a predicate, a sort or a page down.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.records.MappingProvider" title="dol.records.MappingProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MappingProvider</span></code></a>(store, *[, id_field, ...])</p></td>
 <td><p>A <a class="reference internal" href="#dol.records.DataProvider" title="dol.records.DataProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataProvider</span></code></a> over any <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code> of <code class="docutils literal notranslate"><span class="pre">id</span> <span class="pre">-&gt;</span> <span class="pre">record</span></code>.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.records.BifurcatedProvider" title="dol.records.BifurcatedProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BifurcatedProvider</span></code></a>(metadata, content_store, ...)</p></td>
+<td><p>Records in a metadata provider, their large fields in a content store.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.records.WrappedProvider" title="dol.records.WrappedProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrappedProvider</span></code></a>(provider, *[, encode, decode])</p></td>
+<td><p>A provider seen through a record codec (zodal's <code class="docutils literal notranslate"><span class="pre">wrapProvider</span></code>).</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -372,6 +385,56 @@ backend that cannot push a predicate, a sort or a page down.</p></li>
 </tbody>
 </table>
 </div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.records.BifurcatedProvider">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.records.</span></span><span class="sig-name descname"><span class="pre">BifurcatedProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metadata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_fields</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'id'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_default_content_key&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/records.html#BifurcatedProvider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.records.BifurcatedProvider" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Records in a metadata provider, their large fields in a content store.</p>
+<p>The record half of the content-metadata bifurcation: on write, the
+<code class="docutils literal notranslate"><span class="pre">content_fields</span></code> of a record go to <code class="docutils literal notranslate"><span class="pre">content_store</span></code> (bytes, via
+<a class="reference internal" href="dol.content.html#dol.content.put_content" title="dol.content.put_content"><code class="xref py py-func docutils literal notranslate"><span class="pre">dol.content.put_content()</span></code></a>) and the record keeps a
+<a class="reference internal" href="dol.content.html#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> (its wire-form dict) in their place; on read the
+refs come back, light enough to list, and <a class="reference internal" href="#dol.records.BifurcatedProvider.get_content" title="dol.records.BifurcatedProvider.get_content"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_content()</span></code></a> (or
+<code class="docutils literal notranslate"><span class="pre">get_one(id,</span> <span class="pre">resolve_content=True)</span></code>) fetches the bytes.</p>
+<p>The metadata record is the commit point: content is written before the record
+that refers to it is (for a new record, the record is created first to learn its
+id, then compensated by deletion if a content write fails), and deleted after the
+record is gone (a failed content delete leaves an orphan blob, never a dangling
+ref).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol.content</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContentRef</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clips</span> <span class="o">=</span> <span class="n">BifurcatedProvider</span><span class="p">(</span><span class="n">MappingProvider</span><span class="p">({}),</span> <span class="p">{},</span> <span class="n">content_fields</span><span class="o">=</span><span class="p">[</span><span class="s2">"audio"</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rec</span> <span class="o">=</span> <span class="n">clips</span><span class="o">.</span><span class="n">create</span><span class="p">({</span><span class="s2">"title"</span><span class="p">:</span> <span class="s2">"take 1"</span><span class="p">,</span> <span class="s2">"audio"</span><span class="p">:</span> <span class="sa">b</span><span class="s2">"RIFF..."</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ContentRef</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">"audio"</span><span class="p">])</span><span class="o">.</span><span class="n">item_id</span>
+<span class="go">'1.audio'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clips</span><span class="o">.</span><span class="n">get_content</span><span class="p">(</span><span class="n">rec</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span> <span class="s2">"audio"</span><span class="p">)</span>
+<span class="go">b'RIFF...'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clips</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="n">resolve_content</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="s2">"audio"</span><span class="p">]</span>
+<span class="go">b'RIFF...'</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metadata</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.records.DataProvider" title="dol.records.DataProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataProvider</span></code></a></span>) – the <a class="reference internal" href="#dol.records.DataProvider" title="dol.records.DataProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataProvider</span></code></a> holding the records.</p></li>
+<li><p><strong>content_store</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableMapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>]</span>) – a <code class="docutils literal notranslate"><span class="pre">MutableMapping</span></code> of bytes (a dict, a dol <code class="docutils literal notranslate"><span class="pre">Files</span></code>, S3…).</p></li>
+<li><p><strong>content_fields</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – the record fields whose values are bytes to offload.</p></li>
+<li><p><strong>content_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – <code class="docutils literal notranslate"><span class="pre">(record</span> <span class="pre">id,</span> <span class="pre">field)</span> <span class="pre">-&gt;</span> <span class="pre">content</span> <span class="pre">store</span> <span class="pre">key</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.records.BifurcatedProvider.get_content">
+<span class="sig-name descname"><span class="pre">get_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/records.html#BifurcatedProvider.get_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.records.BifurcatedProvider.get_content" title="Link to this definition">¶</a></dt>
+<dd><p>The bytes of one content field of record <code class="docutils literal notranslate"><span class="pre">id</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.records.Capabilities">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.records.</span></span><span class="sig-name descname"><span class="pre">Capabilities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_delete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_bulk_update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_bulk_delete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">can_upsert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_search</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">server_pagination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_operators</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagination_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'offset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realtime</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bifurcated</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/records.html#Capabilities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.records.Capabilities" title="Link to this definition">¶</a></dt>
@@ -508,6 +571,34 @@ given (generated ones are strings).</p>
 </dl>
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.records.WrappedProvider">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.records.</span></span><span class="sig-name descname"><span class="pre">WrappedProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_identity&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_identity&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/records.html#WrappedProvider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.records.WrappedProvider" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A provider seen through a record codec (zodal’s <code class="docutils literal notranslate"><span class="pre">wrapProvider</span></code>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">decode</span></code> turns a stored record into the app’s shape on the way out
+(<code class="docutils literal notranslate"><span class="pre">get_list</span></code>, <code class="docutils literal notranslate"><span class="pre">get_one</span></code> and every write’s result); <code class="docutils literal notranslate"><span class="pre">encode</span></code> turns the app’s
+(possibly partial) record into the stored shape on the way in. Queries
+(<code class="docutils literal notranslate"><span class="pre">ListParams</span></code>) are passed through unchanged, so they name stored fields.
+The analog of <code class="xref py py-func docutils literal notranslate"><span class="pre">dol.wrap_kvs()</span></code> for records.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stored</span> <span class="o">=</span> <span class="n">MappingProvider</span><span class="p">({})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span> <span class="o">=</span> <span class="n">wrap_provider</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">stored</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">encode</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">{(</span><span class="s2">"tags_csv"</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"tags"</span> <span class="k">else</span> <span class="n">k</span><span class="p">):</span> <span class="p">(</span><span class="s2">","</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"tags"</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span>
+<span class="gp">... </span>                      <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+<span class="gp">... </span>    <span class="n">decode</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="p">{(</span><span class="s2">"tags"</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"tags_csv"</span> <span class="k">else</span> <span class="n">k</span><span class="p">):</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"tags_csv"</span> <span class="k">else</span> <span class="n">v</span><span class="p">)</span>
+<span class="gp">... </span>                      <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">app</span><span class="o">.</span><span class="n">create</span><span class="p">({</span><span class="s2">"id"</span><span class="p">:</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"tags"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">]})[</span><span class="s2">"tags"</span><span class="p">]</span>
+<span class="go">['x', 'y']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stored</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)[</span><span class="s2">"tags_csv"</span><span class="p">]</span>
+<span class="go">'x,y'</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.records.apply_query">
 <span class="sig-prename descclassname"><span class="pre">dol.records.</span></span><span class="sig-name descname"><span class="pre">apply_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">records</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">search_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/records.html#apply_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.records.apply_query" title="Link to this definition">¶</a></dt>
@@ -548,6 +639,17 @@ loud keeps a typo from returning the whole collection).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.records.wrap_provider">
+<span class="sig-prename descclassname"><span class="pre">dol.records.</span></span><span class="sig-name descname"><span class="pre">wrap_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_identity&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">_identity&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/records.html#wrap_provider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.records.wrap_provider" title="Link to this definition">¶</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">provider</span></code> seen through a record codec; see <a class="reference internal" href="#dol.records.WrappedProvider" title="dol.records.WrappedProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrappedProvider</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.records.WrappedProvider" title="dol.records.WrappedProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">WrappedProvider</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -606,6 +708,10 @@ loud keeps a typo from returning the whole collection).</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dol.records</a><ul>
+<li><a class="reference internal" href="#dol.records.BifurcatedProvider"><code class="docutils literal notranslate"><span class="pre">BifurcatedProvider</span></code></a><ul>
+<li><a class="reference internal" href="#dol.records.BifurcatedProvider.get_content"><code class="docutils literal notranslate"><span class="pre">BifurcatedProvider.get_content()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#dol.records.Capabilities"><code class="docutils literal notranslate"><span class="pre">Capabilities</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.DataProvider"><code class="docutils literal notranslate"><span class="pre">DataProvider</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.FILTER_OPERATORS"><code class="docutils literal notranslate"><span class="pre">FILTER_OPERATORS</span></code></a></li>
@@ -623,9 +729,11 @@ loud keeps a typo from returning the whole collection).</p>
 <li><a class="reference internal" href="#dol.records.RecordExists"><code class="docutils literal notranslate"><span class="pre">RecordExists</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.RecordNotFound"><code class="docutils literal notranslate"><span class="pre">RecordNotFound</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.Sort"><code class="docutils literal notranslate"><span class="pre">Sort</span></code></a></li>
+<li><a class="reference internal" href="#dol.records.WrappedProvider"><code class="docutils literal notranslate"><span class="pre">WrappedProvider</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.apply_query"><code class="docutils literal notranslate"><span class="pre">apply_query()</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.filter_to_function"><code class="docutils literal notranslate"><span class="pre">filter_to_function()</span></code></a></li>
 <li><a class="reference internal" href="#dol.records.matches_search"><code class="docutils literal notranslate"><span class="pre">matches_search()</span></code></a></li>
+<li><a class="reference internal" href="#dol.records.wrap_provider"><code class="docutils literal notranslate"><span class="pre">wrap_provider()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -637,7 +745,7 @@ loud keeps a typo from returning the whole collection).</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=fa54de70"></script>
+</div><script src="../_static/documentation_options.js?v=5314aa16"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

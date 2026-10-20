@@ -1,4 +1,4 @@
-> built 2026-10-20 16:06 UTC from f6dd19e (master) · dol 0.3.90. Details: build_info.json
+> built 2026-10-20 16:34 UTC from ea98517 (master) · dol 0.3.91. Details: build_info.json
 
 # index.html.md
 
@@ -7110,6 +7110,10 @@ collection facade with CRUD and query, the Python mirror of zodal’s `DataProvi
 - [`Capabilities`](_autosummary/dol.records.html.md#dol.records.Capabilities) — what a provider can do and push down, so callers degrade.
 - [`MappingProvider`](_autosummary/dol.records.html.md#dol.records.MappingProvider) — the reference provider over any `MutableMapping` of
   `id -> record` (a `dict`, or any dol store of dicts, e.g. JSON files).
+- [`BifurcatedProvider`](_autosummary/dol.records.html.md#dol.records.BifurcatedProvider) — records in a provider, their large fields in a
+  `dol.content` store, with [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef) s in their place.
+- [`wrap_provider()`](_autosummary/dol.records.html.md#dol.records.wrap_provider) — a provider seen through a record codec (`encode` /
+  `decode`), the records analog of `dol.wrap_kvs()`.
 
 Stdlib only, like the rest of dol’s core.
 
@@ -7134,10 +7138,11 @@ Stdlib only, like the rest of dol’s core.
 
 ### Functions
 
-| [`filter_to_function`](_autosummary/dol.records.html.md#dol.records.filter_to_function)(filter, \*[, operators])   | A predicate on records from a zodal `FilterExpression`.                     |
-|------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [`matches_search`](_autosummary/dol.records.html.md#dol.records.matches_search)(record, search[, fields])      | Case-insensitive substring search over `fields` (default: every str field). |
-| [`apply_query`](_autosummary/dol.records.html.md#dol.records.apply_query)(records[, params, ...])           | Filter, search, sort and page `records` client-side (zodal `applyQuery`).   |
+| [`wrap_provider`](_autosummary/dol.records.html.md#dol.records.wrap_provider)(provider, \*[, encode, decode])   | `provider` seen through a record codec; see [`WrappedProvider`](_autosummary/dol.records.html.md#dol.records.WrappedProvider).   |
+|--------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| [`filter_to_function`](_autosummary/dol.records.html.md#dol.records.filter_to_function)(filter, \*[, operators])     | A predicate on records from a zodal `FilterExpression`.                                                         |
+| [`matches_search`](_autosummary/dol.records.html.md#dol.records.matches_search)(record, search[, fields])        | Case-insensitive substring search over `fields` (default: every str field).                                     |
+| [`apply_query`](_autosummary/dol.records.html.md#dol.records.apply_query)(records[, params, ...])             | Filter, search, sort and page `records` client-side (zodal `applyQuery`).                                       |
 
 ### Classes
 
@@ -7149,12 +7154,58 @@ Stdlib only, like the rest of dol’s core.
 | [`Capabilities`](_autosummary/dol.records.html.md#dol.records.Capabilities)(\*[, can_create, can_update, ...])    | What a provider supports (zodal `ProviderCapabilities`).                                                     |
 | [`DataProvider`](_autosummary/dol.records.html.md#dol.records.DataProvider)(\*args, \*\*kwargs)                   | CRUD + query over a collection of records (zodal `DataProvider`, sync).                                      |
 | [`MappingProvider`](_autosummary/dol.records.html.md#dol.records.MappingProvider)(store, \*[, id_field, ...])        | A [`DataProvider`](_autosummary/dol.records.html.md#dol.records.DataProvider) over any `MutableMapping` of `id -> record`. |
+| [`BifurcatedProvider`](_autosummary/dol.records.html.md#dol.records.BifurcatedProvider)(metadata, content_store, ...)   | Records in a metadata provider, their large fields in a content store.                                       |
+| [`WrappedProvider`](_autosummary/dol.records.html.md#dol.records.WrappedProvider)(provider, \*[, encode, decode])    | A provider seen through a record codec (zodal's `wrapProvider`).                                             |
 
 ### Exceptions
 
 | [`RecordNotFound`](_autosummary/dol.records.html.md#dol.records.RecordNotFound)   | No record has this id.                                            |
 |-------------------------------------------------------------------|-------------------------------------------------------------------|
 | [`RecordExists`](_autosummary/dol.records.html.md#dol.records.RecordExists)     | A record with this id already exists (`create` never overwrites). |
+
+### *class* dol.records.BifurcatedProvider(metadata, content_store, \*, content_fields, id_field='id', content_key=<function \_default_content_key>)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Records in a metadata provider, their large fields in a content store.
+
+The record half of the content-metadata bifurcation: on write, the
+`content_fields` of a record go to `content_store` (bytes, via
+[`dol.content.put_content()`](_autosummary/dol.content.html.md#dol.content.put_content)) and the record keeps a
+[`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef) (its wire-form dict) in their place; on read the
+refs come back, light enough to list, and [`get_content()`](_autosummary/dol.records.html.md#dol.records.BifurcatedProvider.get_content) (or
+`get_one(id, resolve_content=True)`) fetches the bytes.
+
+The metadata record is the commit point: content is written before the record
+that refers to it is (for a new record, the record is created first to learn its
+id, then compensated by deletion if a content write fails), and deleted after the
+record is gone (a failed content delete leaves an orphan blob, never a dangling
+ref).
+
+```pycon
+>>> from dol.content import ContentRef
+>>> clips = BifurcatedProvider(MappingProvider({}), {}, content_fields=["audio"])
+>>> rec = clips.create({"title": "take 1", "audio": b"RIFF..."})
+>>> ContentRef.from_json(rec["audio"]).item_id
+'1.audio'
+>>> clips.get_content(rec["id"], "audio")
+b'RIFF...'
+>>> clips.get_one("1", resolve_content=True)["audio"]
+b'RIFF...'
+```
+
+* **Parameters:**
+  * **metadata** ([`DataProvider`](_autosummary/dol.records.html.md#dol.records.DataProvider)) – the [`DataProvider`](_autosummary/dol.records.html.md#dol.records.DataProvider) holding the records.
+  * **content_store** ([`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]) – a `MutableMapping` of bytes (a dict, a dol `Files`, S3…).
+  * **content_fields** ([`Sequence`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – the record fields whose values are bytes to offload.
+  * **content_key** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – `(record id, field) -> content store key`.
+
+#### get_content(id, field)
+
+The bytes of one content field of record `id`.
+
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ### *class* dol.records.Capabilities(, can_create=True, can_update=True, can_delete=True, can_bulk_update=True, can_bulk_delete=True, can_upsert=False, server_sort=False, server_filter=False, server_search=False, server_pagination=False, filter_operators=None, pagination_style='offset', realtime=False, bifurcated=False, content_fields=())
 
@@ -7255,6 +7306,33 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 Sort by `field` (zodal `SortingState`: `{id, desc}`).
 
+### *class* dol.records.WrappedProvider(provider, \*, encode=<function \_identity>, decode=<function \_identity>)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A provider seen through a record codec (zodal’s `wrapProvider`).
+
+`decode` turns a stored record into the app’s shape on the way out
+(`get_list`, `get_one` and every write’s result); `encode` turns the app’s
+(possibly partial) record into the stored shape on the way in. Queries
+(`ListParams`) are passed through unchanged, so they name stored fields.
+The analog of `dol.wrap_kvs()` for records.
+
+```pycon
+>>> stored = MappingProvider({})
+>>> app = wrap_provider(
+...     stored,
+...     encode=lambda r: {("tags_csv" if k == "tags" else k): (",".join(v) if k == "tags" else v)
+...                       for k, v in r.items()},
+...     decode=lambda r: {("tags" if k == "tags_csv" else k): (v.split(",") if k == "tags_csv" else v)
+...                       for k, v in r.items()},
+... )
+>>> app.create({"id": "a", "tags": ["x", "y"]})["tags"]
+['x', 'y']
+>>> stored.get_one("a")["tags_csv"]
+'x,y'
+```
+
 ### dol.records.apply_query(records, params=None, , search_fields=None, skip=())
 
 Filter, search, sort and page `records` client-side (zodal `applyQuery`).
@@ -7289,6 +7367,13 @@ Case-insensitive substring search over `fields` (default: every str field).
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### dol.records.wrap_provider(provider, \*, encode=<function \_identity>, decode=<function \_identity>)
+
+`provider` seen through a record codec; see [`WrappedProvider`](_autosummary/dol.records.html.md#dol.records.WrappedProvider).
+
+* **Return type:**
+  [`WrappedProvider`](_autosummary/dol.records.html.md#dol.records.WrappedProvider)
 
 
 # _autosummary/dol.signatures.html.md
@@ -17255,7 +17340,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 16:06 UTC** from commit <a href="https://github.com/i2mint/dol/commit/f6dd19ed53c790af7100dace5dbbee0ef2f0a44a"><code>f6dd19e</code></a> on branch <code>master</code>, for **dol 0.3.90** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 16:34 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ea9851731e878d937fb2c393aebbf99cbd30e441"><code>ea98517</code></a> on branch <code>master</code>, for **dol 0.3.91** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17264,9 +17349,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/f6dd19ed53c790af7100dace5dbbee0ef2f0a44a"><code>f6dd19ed53c790af7100dace5dbbee0ef2f0a44a</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/ea9851731e878d937fb2c393aebbf99cbd30e441"><code>ea9851731e878d937fb2c393aebbf99cbd30e441</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.90</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.91</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17275,15 +17360,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39454121505">39454121505</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39458252469">39458252469</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>232e8c86a2e0ee51469bc026a54777108616b621</code> (in the history of the built commit) |
+| Event commit | <code>d78e08ee3b96fa0b714b4dd336c59d3eef4ab770</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.21  |
+| epythet  | 0.2.22  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -17302,14 +17387,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.90/">0.3.90</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.91/">0.3.91</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout f6dd19ed53c790af7100dace5dbbee0ef2f0a44a
-pip install "epythet==0.2.21"
+git checkout ea9851731e878d937fb2c393aebbf99cbd30e441
+pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

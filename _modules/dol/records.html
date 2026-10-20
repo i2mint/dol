@@ -281,6 +281,10 @@
 <span class="sd">- :class:`Capabilities` — what a provider can do and push down, so callers degrade.</span>
 <span class="sd">- :class:`MappingProvider` — the reference provider over any ``MutableMapping`` of</span>
 <span class="sd">  ``id -&gt; record`` (a ``dict``, or any dol store of dicts, e.g. JSON files).</span>
+<span class="sd">- :class:`BifurcatedProvider` — records in a provider, their large fields in a</span>
+<span class="sd">  ``dol.content`` store, with :class:`~dol.content.ContentRef` s in their place.</span>
+<span class="sd">- :func:`wrap_provider` — a provider seen through a record codec (``encode`` /</span>
+<span class="sd">  ``decode``), the records analog of :func:`dol.wrap_kvs`.</span>
 
 <span class="sd">Stdlib only, like the rest of dol's core.</span>
 
@@ -302,7 +306,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Sequence</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">runtime_checkable</span>
 
 <span class="n">Record</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
@@ -317,6 +321,9 @@
     <span class="s2">"Capabilities"</span><span class="p">,</span>
     <span class="s2">"DataProvider"</span><span class="p">,</span>
     <span class="s2">"MappingProvider"</span><span class="p">,</span>
+    <span class="s2">"BifurcatedProvider"</span><span class="p">,</span>
+    <span class="s2">"WrappedProvider"</span><span class="p">,</span>
+    <span class="s2">"wrap_provider"</span><span class="p">,</span>
     <span class="s2">"FILTER_OPERATORS"</span><span class="p">,</span>
     <span class="s2">"filter_to_function"</span><span class="p">,</span>
     <span class="s2">"matches_search"</span><span class="p">,</span>
@@ -760,6 +767,275 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">capabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Capabilities</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Capabilities</span><span class="p">(</span><span class="n">can_upsert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
+
+
+<span class="c1"># ----------------------------------------------------------------- bifurcation</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_default_content_key</span><span class="p">(</span><span class="n">item_id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">item_id</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">field</span><span class="si">}</span><span class="s2">"</span>
+
+
+<div class="viewcode-block" id="BifurcatedProvider">
+<a class="viewcode-back" href="../../_autosummary/dol.records.html#dol.records.BifurcatedProvider">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BifurcatedProvider</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Records in a metadata provider, their large fields in a content store.</span>
+
+<span class="sd">    The record half of the content-metadata bifurcation: on write, the</span>
+<span class="sd">    ``content_fields`` of a record go to ``content_store`` (bytes, via</span>
+<span class="sd">    :func:`dol.content.put_content`) and the record keeps a</span>
+<span class="sd">    :class:`~dol.content.ContentRef` (its wire-form dict) in their place; on read the</span>
+<span class="sd">    refs come back, light enough to list, and :meth:`get_content` (or</span>
+<span class="sd">    ``get_one(id, resolve_content=True)``) fetches the bytes.</span>
+
+<span class="sd">    The metadata record is the commit point: content is written before the record</span>
+<span class="sd">    that refers to it is (for a new record, the record is created first to learn its</span>
+<span class="sd">    id, then compensated by deletion if a content write fails), and deleted after the</span>
+<span class="sd">    record is gone (a failed content delete leaves an orphan blob, never a dangling</span>
+<span class="sd">    ref).</span>
+
+<span class="sd">    &gt;&gt;&gt; from dol.content import ContentRef</span>
+<span class="sd">    &gt;&gt;&gt; clips = BifurcatedProvider(MappingProvider({}), {}, content_fields=["audio"])</span>
+<span class="sd">    &gt;&gt;&gt; rec = clips.create({"title": "take 1", "audio": b"RIFF..."})</span>
+<span class="sd">    &gt;&gt;&gt; ContentRef.from_json(rec["audio"]).item_id</span>
+<span class="sd">    '1.audio'</span>
+<span class="sd">    &gt;&gt;&gt; clips.get_content(rec["id"], "audio")</span>
+<span class="sd">    b'RIFF...'</span>
+<span class="sd">    &gt;&gt;&gt; clips.get_one("1", resolve_content=True)["audio"]</span>
+<span class="sd">    b'RIFF...'</span>
+
+<span class="sd">    :param metadata: the :class:`DataProvider` holding the records.</span>
+<span class="sd">    :param content_store: a ``MutableMapping`` of bytes (a dict, a dol ``Files``, S3...).</span>
+<span class="sd">    :param content_fields: the record fields whose values are bytes to offload.</span>
+<span class="sd">    :param content_key: ``(record id, field) -&gt; content store key``.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">DataProvider</span><span class="p">,</span>
+        <span class="n">content_store</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">content_fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">id_field</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"id"</span><span class="p">,</span>
+        <span class="n">content_key</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_default_content_key</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">content_fields</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"content_fields must name at least one field"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_store</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">content_store</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content_fields</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">content_fields</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id_field</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_key</span> <span class="o">=</span> <span class="n">id_field</span><span class="p">,</span> <span class="n">content_key</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="n">meta</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>  <span class="c1"># a None content field stays in the record as None</span>
+            <span class="p">(</span><span class="n">content</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_fields</span> <span class="ow">and</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">meta</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">meta</span><span class="p">,</span> <span class="n">content</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item_id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dol.content</span><span class="w"> </span><span class="kn">import</span> <span class="n">put_content</span>
+
+        <span class="n">refs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">)):</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"content field </span><span class="si">{</span><span class="n">field_name</span><span class="si">!r}</span><span class="s2"> must be bytes, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span>
+                <span class="p">)</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_key</span><span class="p">(</span><span class="n">item_id</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
+            <span class="n">refs</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">put_content</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">content_store</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">value</span><span class="p">),</span> <span class="n">field</span><span class="o">=</span><span class="n">field_name</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">refs</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_drop_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dol.content</span><span class="w"> </span><span class="kn">import</span> <span class="n">delete_content</span><span class="p">,</span> <span class="n">is_content_ref</span>
+
+        <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_fields</span><span class="p">:</span>
+            <span class="n">ref</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_content_ref</span><span class="p">(</span><span class="n">ref</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">delete_content</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_store</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">pass</span>  <span class="c1"># already gone</span>
+
+    <span class="c1"># -- DataProvider ---------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">ListParams</span> <span class="o">|</span> <span class="n">Mapping</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ListResult</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">resolve_content</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">resolve_content</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_fields</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field_name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">record</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_content</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">field_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">record</span>
+
+<div class="viewcode-block" id="BifurcatedProvider.get_content">
+<a class="viewcode-back" href="../../_autosummary/dol.records.html#dol.records.BifurcatedProvider.get_content">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">field</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The bytes of one content field of record ``id``."""</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">dol.content</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_content</span>
+
+        <span class="n">ref</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ref</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"record </span><span class="si">{</span><span class="nb">id</span><span class="si">!r}</span><span class="s2"> has no </span><span class="si">{</span><span class="n">field</span><span class="si">!r}</span><span class="s2"> content"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_content</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">content_store</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="n">meta</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">created</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">content</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">return</span> <span class="n">created</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="n">created</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">id_field</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">refs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_put</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">refs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_drop_content</span><span class="p">(</span>
+                <span class="p">{</span>
+                    <span class="n">f</span><span class="p">:</span> <span class="p">{</span><span class="s2">"_tag"</span><span class="p">:</span> <span class="s2">"ContentRef"</span><span class="p">,</span> <span class="s2">"itemId"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">content_key</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">f</span><span class="p">)}</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">content</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span>
+                    <span class="nb">id</span>
+                <span class="p">)</span>  <span class="c1"># compensate: the record must not outlive a failure</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="n">meta</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>  <span class="c1"># RecordNotFound before any blob is written</span>
+        <span class="n">refs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_put</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>  <span class="c1"># content first: the record then commits it</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="p">{</span><span class="o">**</span><span class="n">meta</span><span class="p">,</span> <span class="o">**</span><span class="n">refs</span><span class="p">})</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Record</span><span class="p">]:</span>
+        <span class="n">meta</span><span class="p">,</span> <span class="n">content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update_many</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="n">meta</span><span class="p">)</span>
+        <span class="n">updated</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">updated</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+            <span class="k">except</span> <span class="n">RecordNotFound</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># missing ids are skipped, as in update_many</span>
+        <span class="k">return</span> <span class="n">updated</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>  <span class="c1"># the commit point goes first: no dangling ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_drop_content</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">RecordNotFound</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">capabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Capabilities</span><span class="p">:</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="s2">"capabilities"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">caps</span> <span class="o">=</span> <span class="n">base</span><span class="p">()</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">base</span><span class="p">)</span> <span class="k">else</span> <span class="n">Capabilities</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span>
+            <span class="n">caps</span><span class="p">,</span> <span class="n">bifurcated</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">content_fields</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">content_fields</span><span class="p">,</span> <span class="n">can_upsert</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="c1"># ------------------------------------------------------------------ codec layer</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<div class="viewcode-block" id="WrappedProvider">
+<a class="viewcode-back" href="../../_autosummary/dol.records.html#dol.records.WrappedProvider">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">WrappedProvider</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A provider seen through a record codec (zodal's ``wrapProvider``).</span>
+
+<span class="sd">    ``decode`` turns a stored record into the app's shape on the way out</span>
+<span class="sd">    (``get_list``, ``get_one`` and every write's result); ``encode`` turns the app's</span>
+<span class="sd">    (possibly partial) record into the stored shape on the way in. Queries</span>
+<span class="sd">    (``ListParams``) are passed through unchanged, so they name stored fields.</span>
+<span class="sd">    The analog of :func:`dol.wrap_kvs` for records.</span>
+
+<span class="sd">    &gt;&gt;&gt; stored = MappingProvider({})</span>
+<span class="sd">    &gt;&gt;&gt; app = wrap_provider(</span>
+<span class="sd">    ...     stored,</span>
+<span class="sd">    ...     encode=lambda r: {("tags_csv" if k == "tags" else k): (",".join(v) if k == "tags" else v)</span>
+<span class="sd">    ...                       for k, v in r.items()},</span>
+<span class="sd">    ...     decode=lambda r: {("tags" if k == "tags_csv" else k): (v.split(",") if k == "tags_csv" else v)</span>
+<span class="sd">    ...                       for k, v in r.items()},</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; app.create({"id": "a", "tags": ["x", "y"]})["tags"]</span>
+<span class="sd">    ['x', 'y']</span>
+<span class="sd">    &gt;&gt;&gt; stored.get_one("a")["tags_csv"]</span>
+<span class="sd">    'x,y'</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">provider</span><span class="p">:</span> <span class="n">DataProvider</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">encode</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_identity</span><span class="p">,</span>
+        <span class="n">decode</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_identity</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode</span> <span class="o">=</span> <span class="n">provider</span><span class="p">,</span> <span class="n">encode</span><span class="p">,</span> <span class="n">decode</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">ListParams</span> <span class="o">|</span> <span class="n">Mapping</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ListResult</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ListResult</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">r</span><span class="p">))</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">res</span><span class="o">.</span><span class="n">data</span><span class="p">],</span> <span class="n">res</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">get_one</span><span class="p">(</span><span class="nb">id</span><span class="p">)))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">data</span><span class="p">))))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">data</span><span class="p">))))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Record</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">update_many</span><span class="p">(</span><span class="n">ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="o">.</span><span class="n">delete_many</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">upsert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Record</span><span class="p">:</span>
+        <span class="n">upsert</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="p">,</span> <span class="s2">"upsert"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">upsert</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> has no upsert"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">upsert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">data</span><span class="p">))))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">capabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Capabilities</span><span class="p">:</span>
+        <span class="n">caps</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">provider</span><span class="p">,</span> <span class="s2">"capabilities"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">caps</span><span class="p">()</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">caps</span><span class="p">)</span> <span class="k">else</span> <span class="n">Capabilities</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="wrap_provider">
+<a class="viewcode-back" href="../../_autosummary/dol.records.html#dol.records.wrap_provider">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wrap_provider</span><span class="p">(</span>
+    <span class="n">provider</span><span class="p">:</span> <span class="n">DataProvider</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">encode</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_identity</span><span class="p">,</span>
+    <span class="n">decode</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">_identity</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WrappedProvider</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``provider`` seen through a record codec; see :class:`WrappedProvider`."""</span>
+    <span class="k">return</span> <span class="n">WrappedProvider</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">encode</span><span class="o">=</span><span class="n">encode</span><span class="p">,</span> <span class="n">decode</span><span class="o">=</span><span class="n">decode</span><span class="p">)</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -788,7 +1064,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=fa54de70"></script>
+</div><script src="../../_static/documentation_options.js?v=5314aa16"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
