@@ -22,6 +22,7 @@ Main entry points:
     ['hello.txt']
 """
 
+import locale
 import os
 from os import stat as os_stat
 from functools import wraps, partial
@@ -757,11 +758,17 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
     )
     # _make_dirs_if_missing = False
 
-    def __init__(self, *args, delete_func=None, **kwargs):
+    def __init__(self, *args, delete_func=None, write_open_kwargs=None, **kwargs):
         """Initialize FileBytesPersister.
 
         Args:
             *args: Passed to parent classes
+            write_open_kwargs: Optional mapping of keyword arguments for the builtin
+                ``open`` used to write each value file, merged over the class
+                defaults (``_write_open_kwargs``). Use it for e.g. ``opener=`` (to
+                create files with ``0o600``), ``encoding=``, ``errors=`` or
+                ``newline=``. If you override ``mode``, also override the keys that go with
+                it (a binary mode takes no ``encoding``/``errors``/``newline``).
             delete_func: Optional custom deletion function.
                 If None, uses class default (safe trash with fallback).
                 Common options from dol.trash:
@@ -783,6 +790,13 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
         super().__init__(*args, **kwargs)
         if delete_func is not None:
             self._delete_func = delete_func
+        if write_open_kwargs:
+            self._write_open_kwargs = {**self._write_open_kwargs, **write_open_kwargs}
+
+    def _check_value_before_open(self, v):
+        """Raise if ``v`` can't be written, *before* the file is opened (and so
+        truncated). The bytes persister has nothing to check; see
+        ``FileStringPersister``."""
 
     @validate_key_and_raise_key_error_on_exception
     def __setitem__(self, k, v):
@@ -790,6 +804,7 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
         # if self._make_dirs_if_missing:
         #     dirname = os.path.dirname(k)
         #     os.makedirs(dirname, exist_ok=True)
+        self._check_value_before_open(v)
         with open(k, **self._write_open_kwargs) as fp:
             return fp.write(v)
 
@@ -831,6 +846,13 @@ class FileStringReader(FileBytesReader):
     )
 
 
+def _locale_encoding():
+    """The encoding ``open`` falls back to in text mode (``locale.getencoding`` where
+    available, i.e. Python >= 3.11)."""
+    get = getattr(locale, "getencoding", None)
+    return get() if get else locale.getpreferredencoding(False)
+
+
 class FileStringPersister(FileBytesPersister):
     """Persister mapping file paths to the files' text (files opened in text mode).
 
@@ -848,6 +870,23 @@ class FileStringPersister(FileBytesPersister):
     _write_open_kwargs = dict(
         FileBytesPersister._write_open_kwargs, mode="wt", encoding="utf-8"
     )
+
+    def _check_value_before_open(self, v):
+        """Encode ``v`` (and discard the result) before the file is opened.
+
+        Opening for writing truncates, so a value that can't be encoded (a lone
+        surrogate under utf-8, a non-``str``) used to leave the existing file
+        emptied before raising. Now it raises with the file untouched.
+        """
+        kw = self._write_open_kwargs
+        if "b" in kw.get("mode", "wt"):
+            return
+        if not isinstance(v, str):
+            raise TypeError(f"write() argument must be str, not {type(v).__name__}")
+        v.encode(
+            kw.get("encoding") or _locale_encoding(),
+            kw.get("errors") or "strict",
+        )
 
 
 @with_relative_paths(prefix_attr="rootdir")
