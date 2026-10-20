@@ -501,7 +501,7 @@ class ZipFilesReader(FileCollection, KvReader):
     def __init__(
         self,
         rootdir,
-        subpath=r".+\.zip",
+        subpath="{zip_name}.zip",
         pattern_for_field=None,
         max_levels=0,
         zip_reader=ZipReader,
