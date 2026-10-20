@@ -767,7 +767,8 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
                 ``open`` used to write each value file, merged over the class
                 defaults (``_write_open_kwargs``). Use it for e.g. ``opener=`` (to
                 create files with ``0o600``), ``encoding=``, ``errors=`` or
-                ``newline=``. Pass ``mode`` only if you know what you are doing.
+                ``newline=``. If you override ``mode``, also override the keys that go with
+                it (a binary mode takes no ``encoding``/``errors``/``newline``).
             delete_func: Optional custom deletion function.
                 If None, uses class default (safe trash with fallback).
                 Common options from dol.trash:
@@ -845,6 +846,13 @@ class FileStringReader(FileBytesReader):
     )
 
 
+def _locale_encoding():
+    """The encoding ``open`` falls back to in text mode (``locale.getencoding`` where
+    available, i.e. Python >= 3.11)."""
+    get = getattr(locale, "getencoding", None)
+    return get() if get else locale.getpreferredencoding(False)
+
+
 class FileStringPersister(FileBytesPersister):
     """Persister mapping file paths to the files' text (files opened in text mode).
 
@@ -876,7 +884,7 @@ class FileStringPersister(FileBytesPersister):
         if not isinstance(v, str):
             raise TypeError(f"write() argument must be str, not {type(v).__name__}")
         v.encode(
-            kw.get("encoding") or locale.getpreferredencoding(False),
+            kw.get("encoding") or _locale_encoding(),
             kw.get("errors") or "strict",
         )
 
