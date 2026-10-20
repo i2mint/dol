@@ -28,14 +28,19 @@ from typing import Any, Optional, KT, VT, Union, Dict
 from collections.abc import Callable, Iterable, Mapping
 from operator import itemgetter
 
-from dol.trans import (
+# The codec types are defined in the dependency-free ``dol._codecs_core`` (so that
+# ``dol.trans`` can re-export them without loading the ready-made codecs below).
+# This module is their public home: import them from here (i2mint/dol#70).
+from dol._codecs_core import (
+    EncodedType,
+    DecodedType,
     Codec,
     ValueCodec,
     KeyCodec,
     KeyValueCodec,
     affix_key_codec,
-    store_decorator,
 )
+from dol.trans import store_decorator
 from dol.paths import KeyTemplate
 from dol.signatures import Sig
 from dol.util import named_partial, identity_func, single_nest_in_dict, nest_in_dict
