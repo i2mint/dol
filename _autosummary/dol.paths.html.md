@@ -32,7 +32,7 @@ Module for path (and path-like) object manipulation
 | [`handle_prefixes`](#dol.paths.handle_prefixes)([store, prefix, ...])                | A store decorator that handles prefixes.                                                                                                  |
 | [`identity`](#dol.paths.identity)(x)                                          | Return `x`.                                                                                                                               |
 | [`keys_and_indices_path`](#dol.paths.keys_and_indices_path)(str_path, \*[, sep, ...])      | Transforms a string path separated by a specified separator into a tuple of keys and indices.                                             |
-| [`leaf_paths`](#dol.paths.leaf_paths)(d[, sep, parent_path, egress])            | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
+| [`leaf_paths`](#dol.paths.leaf_paths)(d[, sep, parent_path, ...])               | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
 | [`mk_relative_path_store`](#dol.paths.mk_relative_path_store)([store_cls, name, ...])       |                                                                                                                                           |
 | [`path_edit`](#dol.paths.path_edit)(d[, edits])                                | Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs.                                                         |
 | [`path_filter`](#dol.paths.path_filter)(pkv_filt, d, \*[, leafs_only, ...])      | Walk a dict, yielding paths to values that pass the `pkv_filt`                                                                            |
@@ -731,7 +731,7 @@ a new path.
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]
 
-### dol.paths.flatten_dict(d, sep='.', \*, parent_path=None, visit_nested=<function <lambda>>, egress=<class 'dict'>)
+### dol.paths.flatten_dict(d, sep='.', \*, parent_path=None, visit_nested=<function \_is_mapping>, egress=<class 'dict'>)
 
 Flatten a nested dictionary into a flat one, using key-paths as keys.
 
@@ -755,7 +755,7 @@ gives a lazy flat *view* of a store of stores.)
 {'a/b': 2, 'c': 3}
 ```
 
-### dol.paths.flattened_dict_items(d, sep='.', \*, parent_path=None, visit_nested=<function <lambda>>)
+### dol.paths.flattened_dict_items(d, sep='.', \*, parent_path=None, visit_nested=<function \_is_mapping>)
 
 Yield flattened key-value pairs from a nested dictionary.
 
@@ -882,7 +882,7 @@ This function is meant to be used in as the key_transformer argument of path_get
 ('a21-59c', 'message', 2, 'user')
 ```
 
-### dol.paths.leaf_paths(d, sep='.', \*, parent_path=None, egress=<class 'dict'>)
+### dol.paths.leaf_paths(d, sep='.', \*, parent_path=None, visit_nested=<function \_is_mapping>, egress=<class 'dict'>)
 
 Get a dictionary of leaf paths of a nested dictionary.
 
@@ -901,6 +901,8 @@ values are replaced by the paths that would be used to access them in a flat dic
   * **sep** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
   * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[`Path`]) – The path to the parent of the current dict
+  * **visit_nested** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that returns True if a value should be visited
+    (default: any `Mapping`, as for `flatten_dict`)
   * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, `Path`]]

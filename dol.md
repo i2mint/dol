@@ -1,4 +1,4 @@
-> built 2026-10-20 11:11 UTC from b30e560 (master) · dol 0.3.87. Details: build_info.json
+> built 2026-10-20 13:31 UTC from 74c36cc (master) · dol 0.3.88. Details: build_info.json
 
 # index.html.md
 
@@ -5822,7 +5822,7 @@ Module for path (and path-like) object manipulation
 | [`handle_prefixes`](_autosummary/dol.paths.html.md#dol.paths.handle_prefixes)([store, prefix, ...])                | A store decorator that handles prefixes.                                                                                                  |
 | [`identity`](_autosummary/dol.paths.html.md#dol.paths.identity)(x)                                          | Return `x`.                                                                                                                               |
 | [`keys_and_indices_path`](_autosummary/dol.paths.html.md#dol.paths.keys_and_indices_path)(str_path, \*[, sep, ...])      | Transforms a string path separated by a specified separator into a tuple of keys and indices.                                             |
-| [`leaf_paths`](_autosummary/dol.paths.html.md#dol.paths.leaf_paths)(d[, sep, parent_path, egress])            | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
+| [`leaf_paths`](_autosummary/dol.paths.html.md#dol.paths.leaf_paths)(d[, sep, parent_path, ...])               | Get a dictionary of leaf paths of a nested dictionary.                                                                                    |
 | [`mk_relative_path_store`](_autosummary/dol.paths.html.md#dol.paths.mk_relative_path_store)([store_cls, name, ...])       |                                                                                                                                           |
 | [`path_edit`](_autosummary/dol.paths.html.md#dol.paths.path_edit)(d[, edits])                                | Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs.                                                         |
 | [`path_filter`](_autosummary/dol.paths.html.md#dol.paths.path_filter)(pkv_filt, d, \*[, leafs_only, ...])      | Walk a dict, yielding paths to values that pass the `pkv_filt`                                                                            |
@@ -6521,7 +6521,7 @@ a new path.
 * **Return type:**
   [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]
 
-### dol.paths.flatten_dict(d, sep='.', \*, parent_path=None, visit_nested=<function <lambda>>, egress=<class 'dict'>)
+### dol.paths.flatten_dict(d, sep='.', \*, parent_path=None, visit_nested=<function \_is_mapping>, egress=<class 'dict'>)
 
 Flatten a nested dictionary into a flat one, using key-paths as keys.
 
@@ -6545,7 +6545,7 @@ gives a lazy flat *view* of a store of stores.)
 {'a/b': 2, 'c': 3}
 ```
 
-### dol.paths.flattened_dict_items(d, sep='.', \*, parent_path=None, visit_nested=<function <lambda>>)
+### dol.paths.flattened_dict_items(d, sep='.', \*, parent_path=None, visit_nested=<function \_is_mapping>)
 
 Yield flattened key-value pairs from a nested dictionary.
 
@@ -6672,7 +6672,7 @@ This function is meant to be used in as the key_transformer argument of path_get
 ('a21-59c', 'message', 2, 'user')
 ```
 
-### dol.paths.leaf_paths(d, sep='.', \*, parent_path=None, egress=<class 'dict'>)
+### dol.paths.leaf_paths(d, sep='.', \*, parent_path=None, visit_nested=<function \_is_mapping>, egress=<class 'dict'>)
 
 Get a dictionary of leaf paths of a nested dictionary.
 
@@ -6691,6 +6691,8 @@ values are replaced by the paths that would be used to access them in a flat dic
   * **sep** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
   * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[`Path`]) – The path to the parent of the current dict
+  * **visit_nested** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that returns True if a value should be visited
+    (default: any `Mapping`, as for `flatten_dict`)
   * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, `Path`]]
@@ -17030,7 +17032,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 11:11 UTC** from commit <a href="https://github.com/i2mint/dol/commit/b30e5600ea116ae6c916831dbb0b62495e21224e"><code>b30e560</code></a> on branch <code>master</code>, for **dol 0.3.87** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 13:31 UTC** from commit <a href="https://github.com/i2mint/dol/commit/74c36cc348f87f061a0a9bbbfd6bf945de29f313"><code>74c36cc</code></a> on branch <code>master</code>, for **dol 0.3.88** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17039,9 +17041,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/b30e5600ea116ae6c916831dbb0b62495e21224e"><code>b30e5600ea116ae6c916831dbb0b62495e21224e</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/74c36cc348f87f061a0a9bbbfd6bf945de29f313"><code>74c36cc348f87f061a0a9bbbfd6bf945de29f313</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.87</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.88</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17050,15 +17052,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39412958132">39412958132</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39430877143">39430877143</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>21fe91ddaba6de01fc46d66b3cdf243da0147991</code> (in the history of the built commit) |
+| Event commit | <code>220d778ddb0e6934e403585b8062e845d3eda55a</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.19  |
+| epythet  | 0.2.20  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -17077,14 +17079,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.87/">0.3.87</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.88/">0.3.88</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout b30e5600ea116ae6c916831dbb0b62495e21224e
-pip install "epythet==0.2.19"
+git checkout 74c36cc348f87f061a0a9bbbfd6bf945de29f313
+pip install "epythet==0.2.20"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

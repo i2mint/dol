@@ -353,6 +353,37 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_mapping</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The default ``visit_nested``: descend into any ``Mapping``, not only ``dict``."""</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_walk_nested</span><span class="p">(</span>
+    <span class="n">d</span><span class="p">,</span>
+    <span class="n">path_extender</span><span class="p">:</span> <span class="n">PathExtenderFunc</span><span class="p">,</span>
+    <span class="n">parent_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">leaf</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Path</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">nested</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The one recursion behind ``flattened_dict_items`` and ``leaf_paths``.</span>
+
+<span class="sd">    Walks ``d``; for each ``(key, value)`` it computes the value's path, and either</span>
+<span class="sd">    yields ``leaf(key, path, value)``, or, when ``visit_nested(value)``, yields</span>
+<span class="sd">    everything in ``nested(key, &lt;the same walk over value&gt;)``.</span>
+<span class="sd">    """</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path_extender</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="n">sub</span> <span class="o">=</span> <span class="n">_walk_nested</span><span class="p">(</span>
+                <span class="n">v</span><span class="p">,</span> <span class="n">path_extender</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">visit_nested</span><span class="p">,</span> <span class="n">leaf</span><span class="o">=</span><span class="n">leaf</span><span class="p">,</span> <span class="n">nested</span><span class="o">=</span><span class="n">nested</span>
+            <span class="p">)</span>
+            <span class="k">yield from</span> <span class="n">nested</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">leaf</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="flattened_dict_items">
 <a class="viewcode-back" href="../../_autosummary/dol.paths.html#dol.paths.flattened_dict_items">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">flattened_dict_items</span><span class="p">(</span>
@@ -360,21 +391,19 @@
     <span class="n">sep</span><span class="p">:</span> <span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">parent_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">),</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_is_mapping</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyValueGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Yield flattened key-value pairs from a nested dictionary.</span>
 <span class="sd">    """</span>
-    <span class="n">path_extender</span> <span class="o">=</span> <span class="n">ensure_path_extender_func</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
-
-    <span class="n">stable_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sep</span><span class="o">=</span><span class="n">sep</span><span class="p">,</span> <span class="n">visit_nested</span><span class="o">=</span><span class="n">visit_nested</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">new_path</span> <span class="o">=</span> <span class="n">path_extender</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">yield from</span> <span class="n">flattened_dict_items</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">parent_path</span><span class="o">=</span><span class="n">new_path</span><span class="p">,</span> <span class="o">**</span><span class="n">stable_kwargs</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">new_path</span><span class="p">,</span> <span class="n">v</span></div>
+    <span class="k">return</span> <span class="n">_walk_nested</span><span class="p">(</span>
+        <span class="n">d</span><span class="p">,</span>
+        <span class="n">ensure_path_extender_func</span><span class="p">(</span><span class="n">sep</span><span class="p">),</span>
+        <span class="n">parent_path</span><span class="p">,</span>
+        <span class="n">visit_nested</span><span class="p">,</span>
+        <span class="n">leaf</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span>
+        <span class="n">nested</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">sub</span><span class="p">:</span> <span class="n">sub</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -385,7 +414,7 @@
     <span class="n">sep</span><span class="p">:</span> <span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">parent_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">),</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_is_mapping</span><span class="p">,</span>
     <span class="n">egress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KeyValueGenerator</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
@@ -425,6 +454,7 @@
     <span class="n">sep</span><span class="p">:</span> <span class="n">PathExtenderSpec</span> <span class="o">=</span> <span class="s2">"."</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">parent_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">_is_mapping</span><span class="p">,</span>
     <span class="n">egress</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">KeyValueGenerator</span><span class="p">],</span> <span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="n">KT</span><span class="p">,</span> <span class="n">KT</span> <span class="o">|</span> <span class="n">Path</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
@@ -446,6 +476,8 @@
 <span class="sd">            a key and returns a new path.</span>
 
 <span class="sd">        parent_path: The path to the parent of the current dict</span>
+<span class="sd">        visit_nested: A function that returns True if a value should be visited</span>
+<span class="sd">            (default: any ``Mapping``, as for ``flatten_dict``)</span>
 <span class="sd">        egress: A function that takes a generator of key-value pairs and returns a mapping</span>
 
 <span class="sd">    .. rubric:: Example</span>
@@ -459,29 +491,17 @@
 <span class="sd">    &gt;&gt;&gt; leaf_paths({'a': {'b': 2}, 'c': 3}, sep=lambda p, k: f"{p}-{k}" if p else k)</span>
 <span class="sd">    {'a': {'b': 'a-b'}, 'c': 'c'}</span>
 <span class="sd">    """</span>
-    <span class="n">path_extender</span> <span class="o">=</span> <span class="n">ensure_path_extender_func</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">egress</span><span class="p">(</span>
+        <span class="n">_walk_nested</span><span class="p">(</span>
+            <span class="n">d</span><span class="p">,</span>
+            <span class="n">ensure_path_extender_func</span><span class="p">(</span><span class="n">sep</span><span class="p">),</span>
+            <span class="n">parent_path</span><span class="p">,</span>
+            <span class="n">visit_nested</span><span class="p">,</span>
+            <span class="n">leaf</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">path</span><span class="p">),</span>
+            <span class="n">nested</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">sub</span><span class="p">:</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sub</span><span class="p">))],</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
 
-    <span class="k">return</span> <span class="n">egress</span><span class="p">(</span><span class="n">_leaf_paths_recursive</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">path_extender</span><span class="p">,</span> <span class="n">parent_path</span><span class="o">=</span><span class="n">parent_path</span><span class="p">))</span></div>
-
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_leaf_paths_recursive</span><span class="p">(</span>
-    <span class="n">d</span><span class="p">:</span> <span class="n">NestedMapping</span><span class="p">,</span>
-    <span class="n">path_extender</span><span class="p">:</span> <span class="n">PathExtenderFunc</span><span class="p">,</span>
-    <span class="n">parent_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">visit_nested</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">KeyValueGenerator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    A recursive generator that yields (key, value) pairs.</span>
-<span class="sd">    A helper for leaf_paths.</span>
-<span class="sd">    """</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">current_path</span> <span class="o">=</span> <span class="n">path_extender</span><span class="p">(</span><span class="n">parent_path</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">visit_nested</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(</span><span class="n">_leaf_paths_recursive</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">path_extender</span><span class="p">,</span> <span class="n">current_path</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="n">current_path</span>
 
 
 <span class="n">path_sep</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span>
@@ -2661,7 +2681,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=b60f1bd9"></script>
+</div><script src="../../_static/documentation_options.js?v=1478ea9e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
