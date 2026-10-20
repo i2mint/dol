@@ -82,17 +82,7 @@ Cache = Union[MethodName, MutableMapping[KT, VT]]
 KeyType = Union[KT, Callable[[MethodName], KT]]
 
 
-def identity(x: T) -> T:
-    """Identity function that returns its input unchanged.
-
-    >>> identity(42)
-    42
-    >>> identity("hello")
-    'hello'
-    >>> identity([1, 2, 3])
-    [1, 2, 3]
-    """
-    return x
+from dol.util import identity_func as identity  # the one definition (#70)
 
 
 class KeyStrategy(Protocol):
@@ -2610,11 +2600,7 @@ def _mk_cache_method_local_path_key(
     )
 
 
-class HashableMixin:
-    """Mixin making instances hashable by identity (``id(self)``)."""
-
-    def __hash__(self):
-        return id(self)
+from dol.util import HashableMixin  # the one definition (#70)
 
 
 class HashableDict(HashableMixin, dict):

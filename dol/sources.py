@@ -42,8 +42,7 @@ from dol.signatures import Sig
 #     )
 
 
-def identity_func(x):
-    return x
+from dol.util import identity_func  # the one definition (#70)
 
 
 def inclusive_subdict(d, include):

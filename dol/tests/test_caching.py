@@ -1124,7 +1124,7 @@ class TestStackingCacheDecorators:
 #: shadowing copy of the module header silently kills the doctests of whatever
 #: it shadows (pytest collects the *live* object, not the dead source).
 SINGLY_DEFINED_IN_CACHING = (
-    "def identity(",
+    "from dol.util import identity_func as identity",
     "Instance = Any",
     "PropertyFunc = Callable[[Instance], VT]",
     "MethodName = str",
@@ -1146,7 +1146,10 @@ def test_identity_keeps_its_doctests():
     A second, undocumented ``identity`` further down the module used to shadow
     the documented one, so its three doctests were never actually run.
     """
-    assert ">>> identity(42)" in caching_module.identity.__doc__
+    from dol.util import identity_func
+
+    assert caching_module.identity is identity_func  # one definition in dol (#70)
+    assert ">>> identity_func(42)" in caching_module.identity.__doc__
 
 
 if __name__ == "__main__":

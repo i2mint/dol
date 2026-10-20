@@ -1601,9 +1601,7 @@ def _field_names(string_template):
     )
 
 
-def identity(x):
-    """Return ``x``."""
-    return x
+from dol.util import identity_func as identity  # the one definition (#70)
 
 
 from dol.trans import KeyCodec, filt_iter

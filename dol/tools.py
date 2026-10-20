@@ -109,8 +109,7 @@ def save_string_to_filepath(filepath: str, string: str):
     return string
 
 
-def identity(x):
-    return x
+from dol.util import identity_func as identity  # the one definition (#70)
 
 
 Latin1TextFiles = wrap_kvs(Files, value_decoder=decode_as_latin1)
