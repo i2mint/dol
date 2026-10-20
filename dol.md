@@ -1,4 +1,4 @@
-> built 2026-10-20 04:48 UTC from ce7bd4b (master) · dol 0.3.84. Details: build_info.json
+> built 2026-10-20 05:53 UTC from 9a14fee (master) · dol 0.3.85. Details: build_info.json
 
 # index.html.md
 
@@ -3915,32 +3915,32 @@ Main entry points:
 
 ### Classes
 
-| [`DirCollection`](_autosummary/dol.filesys.html.md#dol.filesys.DirCollection)(rootdir[, subpath, ...])     | Collection of the directory paths under `rootdir`.                                                                                     |
-|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| [`DirReader`](_autosummary/dol.filesys.html.md#dol.filesys.DirReader)(rootdir[, subpath, ...])         | Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.                                                                 |
-| [`FileBytesPersister`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesPersister)(\*args[, delete_func])  | File persistence with configurable deletion.                                                                                           |
-| [`FileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesReader)(rootdir[, subpath, ...])   | Reader mapping file paths under `rootdir` to the files' bytes.                                                                         |
-| [`FileCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileCollection)(rootdir[, subpath, ...])    | Collection of the file paths under `rootdir`.                                                                                          |
-| [`FileInfoReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileInfoReader)(rootdir[, subpath, ...])    | Reader mapping file paths to their `os.stat` result.                                                                                   |
-| [`FileStringPersister`](_autosummary/dol.filesys.html.md#dol.filesys.FileStringPersister)(\*args[, delete_func]) | Persister mapping file paths to the files' text (files opened in text mode).                                                           |
-| [`FileStringReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileStringReader)(rootdir[, subpath, ...])  | Reader mapping file paths to the files' text (files opened in text mode).                                                              |
-| [`FileSysCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileSysCollection)(rootdir[, subpath, ...]) | Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.      |
-| [`Files`](_autosummary/dol.filesys.html.md#dol.filesys.Files)(\*args[, delete_func])               | FileBytesPersister with relative paths                                                                                                 |
-| [`FilesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FilesReader)(rootdir[, subpath, ...])       | FileBytesReader with relative paths                                                                                                    |
-| [`JsonFiles`](_autosummary/dol.filesys.html.md#dol.filesys.JsonFiles)(\*args[, delete_func])           | A store of json files                                                                                                                  |
-| [`Jsons`](_autosummary/dol.filesys.html.md#dol.filesys.Jsons)(\*args[, delete_func])               | Like JsonFiles, but with added .json extension handling Namely: filtering for `.json` extensions but not showing the extension in keys |
-| [`LocalFileDeleteMixin`](_autosummary/dol.filesys.html.md#dol.filesys.LocalFileDeleteMixin)()                     | Mixin providing configurable file deletion.                                                                                            |
-| [`MakeMissingDirsStoreMixin`](_autosummary/dol.filesys.html.md#dol.filesys.MakeMissingDirsStoreMixin)()                | Will make a local file store automatically create the directories needed to create a file.                                             |
-| [`PickleFiles`](_autosummary/dol.filesys.html.md#dol.filesys.PickleFiles)(\*args[, delete_func])         | A store of pickles                                                                                                                     |
-| [`PickleStore`](_autosummary/dol.filesys.html.md#dol.filesys.PickleStore)                                |                                                                                                                                        |
-| [`PickleStores`](_autosummary/dol.filesys.html.md#dol.filesys.PickleStores)(rootdir[, subpath, ...])      | Reader mapping each sub-directory of `rootdir` to a `PickleFiles` store of it.                                                         |
-| [`RelPathFileBytesPersister`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileBytesPersister)                  |                                                                                                                                        |
-| [`RelPathFileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileBytesReader)                     |                                                                                                                                        |
-| [`RelPathFileStringPersister`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileStringPersister)                 |                                                                                                                                        |
-| [`RelPathFileStringReader`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileStringReader)                    |                                                                                                                                        |
-| [`ReprMixin`](_autosummary/dol.filesys.html.md#dol.filesys.ReprMixin)()                                | A `__repr__` showing the `_init_kwargs` the instance was created with.                                                                 |
-| [`TextFiles`](_autosummary/dol.filesys.html.md#dol.filesys.TextFiles)(\*args[, delete_func])           | FileStringPersister with relative paths                                                                                                |
-| [`TextFilesReader`](_autosummary/dol.filesys.html.md#dol.filesys.TextFilesReader)(rootdir[, subpath, ...])   | FileStringReader with relative paths                                                                                                   |
+| [`DirCollection`](_autosummary/dol.filesys.html.md#dol.filesys.DirCollection)(rootdir[, subpath, ...])          | Collection of the directory paths under `rootdir`.                                                                                     |
+|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| [`DirReader`](_autosummary/dol.filesys.html.md#dol.filesys.DirReader)(rootdir[, subpath, ...])              | Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.                                                                 |
+| [`FileBytesPersister`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesPersister)(\*args[, delete_func, ...])  | File persistence with configurable deletion.                                                                                           |
+| [`FileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesReader)(rootdir[, subpath, ...])        | Reader mapping file paths under `rootdir` to the files' bytes.                                                                         |
+| [`FileCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileCollection)(rootdir[, subpath, ...])         | Collection of the file paths under `rootdir`.                                                                                          |
+| [`FileInfoReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileInfoReader)(rootdir[, subpath, ...])         | Reader mapping file paths to their `os.stat` result.                                                                                   |
+| [`FileStringPersister`](_autosummary/dol.filesys.html.md#dol.filesys.FileStringPersister)(\*args[, delete_func, ...]) | Persister mapping file paths to the files' text (files opened in text mode).                                                           |
+| [`FileStringReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileStringReader)(rootdir[, subpath, ...])       | Reader mapping file paths to the files' text (files opened in text mode).                                                              |
+| [`FileSysCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileSysCollection)(rootdir[, subpath, ...])      | Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.      |
+| [`Files`](_autosummary/dol.filesys.html.md#dol.filesys.Files)(\*args[, delete_func, write_open_kwargs]) | FileBytesPersister with relative paths                                                                                                 |
+| [`FilesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FilesReader)(rootdir[, subpath, ...])            | FileBytesReader with relative paths                                                                                                    |
+| [`JsonFiles`](_autosummary/dol.filesys.html.md#dol.filesys.JsonFiles)(\*args[, delete_func, ...])           | A store of json files                                                                                                                  |
+| [`Jsons`](_autosummary/dol.filesys.html.md#dol.filesys.Jsons)(\*args[, delete_func, write_open_kwargs]) | Like JsonFiles, but with added .json extension handling Namely: filtering for `.json` extensions but not showing the extension in keys |
+| [`LocalFileDeleteMixin`](_autosummary/dol.filesys.html.md#dol.filesys.LocalFileDeleteMixin)()                          | Mixin providing configurable file deletion.                                                                                            |
+| [`MakeMissingDirsStoreMixin`](_autosummary/dol.filesys.html.md#dol.filesys.MakeMissingDirsStoreMixin)()                     | Will make a local file store automatically create the directories needed to create a file.                                             |
+| [`PickleFiles`](_autosummary/dol.filesys.html.md#dol.filesys.PickleFiles)(\*args[, delete_func, ...])         | A store of pickles                                                                                                                     |
+| [`PickleStore`](_autosummary/dol.filesys.html.md#dol.filesys.PickleStore)                                     |                                                                                                                                        |
+| [`PickleStores`](_autosummary/dol.filesys.html.md#dol.filesys.PickleStores)(rootdir[, subpath, ...])           | Reader mapping each sub-directory of `rootdir` to a `PickleFiles` store of it.                                                         |
+| [`RelPathFileBytesPersister`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileBytesPersister)                       |                                                                                                                                        |
+| [`RelPathFileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileBytesReader)                          |                                                                                                                                        |
+| [`RelPathFileStringPersister`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileStringPersister)                      |                                                                                                                                        |
+| [`RelPathFileStringReader`](_autosummary/dol.filesys.html.md#dol.filesys.RelPathFileStringReader)                         |                                                                                                                                        |
+| [`ReprMixin`](_autosummary/dol.filesys.html.md#dol.filesys.ReprMixin)()                                     | A `__repr__` showing the `_init_kwargs` the instance was created with.                                                                 |
+| [`TextFiles`](_autosummary/dol.filesys.html.md#dol.filesys.TextFiles)(\*args[, delete_func, ...])           | FileStringPersister with relative paths                                                                                                |
+| [`TextFilesReader`](_autosummary/dol.filesys.html.md#dol.filesys.TextFilesReader)(rootdir[, subpath, ...])        | FileStringReader with relative paths                                                                                                   |
 
 ### Exceptions
 
@@ -3959,7 +3959,7 @@ Bases: [`DirCollection`](_autosummary/dol.filesys.html.md#dol.filesys.DirCollect
 
 Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.
 
-### *class* dol.filesys.FileBytesPersister(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.FileBytesPersister(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`LocalFileDeleteMixin`](_autosummary/dol.filesys.html.md#dol.filesys.LocalFileDeleteMixin), [`FileBytesReader`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesReader), [`KvPersister`](_autosummary/dol.base.html.md#dol.base.KvPersister)
 
@@ -3988,7 +3988,7 @@ Bases: [`FileCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileColle
 
 Reader mapping file paths to their `os.stat` result.
 
-### *class* dol.filesys.FileStringPersister(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.FileStringPersister(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`FileBytesPersister`](_autosummary/dol.filesys.html.md#dol.filesys.FileBytesPersister)
 
@@ -4051,7 +4051,7 @@ For methods that build a value from `k` without a full `validate_key`.
 
 Return a copy of self with relative paths
 
-### *class* dol.filesys.Files(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.Files(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`PrefixRelativizationMixin`](_autosummary/dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4079,7 +4079,7 @@ FileBytesReader with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.JsonFiles(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.JsonFiles(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4093,7 +4093,7 @@ A store of json files
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.Jsons(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.Jsons(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4140,7 +4140,7 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 Will make a local file store automatically create the directories needed to create a file.
 Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
 
-### *class* dol.filesys.PickleFiles(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.PickleFiles(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -4194,7 +4194,7 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A `__repr__` showing the `_init_kwargs` the instance was created with.
 
-### *class* dol.filesys.TextFiles(\*args, delete_func=None, \*\*kwargs)
+### *class* dol.filesys.TextFiles(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
 
 Bases: [`PrefixRelativizationMixin`](_autosummary/dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -17002,7 +17002,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-20 04:48 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd"><code>ce7bd4b</code></a> on branch <code>master</code>, for **dol 0.3.84** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 05:53 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9a14feea5d8cf89f4a0629fa7e40a350c009c926"><code>9a14fee</code></a> on branch <code>master</code>, for **dol 0.3.85** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17011,9 +17011,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd"><code>ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/9a14feea5d8cf89f4a0629fa7e40a350c009c926"><code>9a14feea5d8cf89f4a0629fa7e40a350c009c926</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.84</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.85</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17022,9 +17022,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39371357681">39371357681</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39377123430">39377123430</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>ec26413d332f8216857ce6f1f77c65ed5fc9efde</code> (in the history of the built commit) |
+| Event commit | <code>77630ba8a4fc15776962f765aa8a5586bd0cef89</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17049,13 +17049,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.84/">0.3.84</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.85/">0.3.85</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd
+git checkout 9a14feea5d8cf89f4a0629fa7e40a350c009c926
 pip install "epythet==0.2.18"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
