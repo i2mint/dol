@@ -1,37 +1,34 @@
 metric,value
 schema_version,1.0
-timestamp,2026-10-20T18:12:59.231574Z
-commit_sha,a73210e4844b3dd8c3c309b7c1569146c5145389
-commit_message,"Split trans.py: codec types to kv_codecs, add-ons to store_addons (#70) (#147)
+timestamp,2026-10-20T18:13:13.983728Z
+commit_sha,77f41b58eb6a6c2ae2ac7089f2ca66e6d9124478
+commit_message,"Split caching.py: key strategies to cache_keys, store caching to store_caching (#70)
 
-- The codec types (Codec, ValueCodec, KeyCodec, KeyValueCodec, affix_key_codec)
-  move to the dependency-free leaf dol/_codecs_core.py; dol.kv_codecs is their
-  public home. A leaf, not kv_codecs itself, because kv_codecs loads zipfiledol
-  and filesys at import time, and dol.trans must import the codec types eagerly
-  (dependents star-import dol.trans) without changing dol's import order.
-- Path access, flatten, method aliases and insert_hash_method move to the new
-  dol/store_addons.py.
-- dol.trans re-exports every moved name, so every import path keeps working.
-  A new test snapshots each touched module's namespace as it was on master and
-  asserts every name is still importable, and that re-exports are the moved
-  objects themselves.
+- The key-strategy protocol for cache_this (KeyStrategy, ExplicitKey,
+  ApplyToMethodName, InstanceProp, ApplyToInstance, FromMethodArgs,
+  CompositeKey and the key resolvers) moves to dol/cache_keys.py.
+- The store caching layers (cache_vals, mk_sourced_store, store_cached,
+  mk_write_cached_store, WriteBackChainMap, flush_on_exit, ...) move to
+  dol/store_caching.py.
+- dol.caching keeps cache_this and its descriptors, and re-exports every moved
+  name; the back-compat snapshot test covers it.
 
 No behaviour change.
 
-Co-authored-by: Claude Opus 5.5 <noreply@anthropic.com>"
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 python_version,3.10
-metrics.umpyre_stats.num_functions,6006
-metrics.umpyre_stats.num_classes,1535
-metrics.umpyre_stats.total_lines,238138
-metrics.umpyre_stats.empty_lines,29276
-metrics.umpyre_stats.comment_lines,12921
-metrics.umpyre_stats.docs_lines,27105
-metrics.umpyre_stats.function_lines,98475
-metrics.umpyre_stats.empty_lines_ratio,0.12293712049315943
-metrics.umpyre_stats.comment_lines_ratio,0.054258455181449415
-metrics.umpyre_stats.function_lines_ratio,0.41352073167659087
-metrics.umpyre_stats.mean_lines_per_function,16.396103896103895
-metrics.umpyre_stats.files_analyzed,559
+metrics.umpyre_stats.num_functions,5695
+metrics.umpyre_stats.num_classes,1475
+metrics.umpyre_stats.total_lines,231650
+metrics.umpyre_stats.empty_lines,28207
+metrics.umpyre_stats.comment_lines,12428
+metrics.umpyre_stats.docs_lines,26163
+metrics.umpyre_stats.function_lines,93853
+metrics.umpyre_stats.empty_lines_ratio,0.12176559464709691
+metrics.umpyre_stats.comment_lines_ratio,0.05364990287071012
+metrics.umpyre_stats.function_lines_ratio,0.4051500107921433
+metrics.umpyre_stats.mean_lines_per_function,16.479894644424935
+metrics.umpyre_stats.files_analyzed,550
 metrics.umpyre_stats.pypi_version,0.3.91
 metrics.workflow_status.last_run_status,success
 metrics.workflow_status.last_success_timestamp,2026-10-20T17:16:21Z
@@ -49,4 +46,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,3.3515963554382324
+collection_duration_seconds,2.7674288749694824
