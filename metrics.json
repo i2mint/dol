@@ -1,7 +1,7 @@
 {
-  "collection_duration_seconds": 6.609157562255859,
-  "commit_message": "Split caching.py: key strategies to cache_keys, store caching to store_caching (#70) (#148)\n\n- The key-strategy protocol for cache_this (KeyStrategy, ExplicitKey,\n  ApplyToMethodName, InstanceProp, ApplyToInstance, FromMethodArgs,\n  CompositeKey and the key resolvers) moves to dol/cache_keys.py.\n- The store caching layers (cache_vals, mk_sourced_store, store_cached,\n  mk_write_cached_store, WriteBackChainMap, flush_on_exit, ...) move to\n  dol/store_caching.py.\n- dol.caching keeps cache_this and its descriptors, and re-exports every moved\n  name; the back-compat snapshot test covers it.\n\nNo behaviour change.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
-  "commit_sha": "52e31de8b3059941b45c3f23d84543029f6256ef",
+  "collection_duration_seconds": 7.384739637374878,
+  "commit_message": "Split signatures.py: builtin sigs, comparison and recipes out of it (#70)\n\n- Hand-made signatures for builtins inspect can't read, and\n  _robust_signature_of_callable, move to the dependency-free dol/sig_builtins.py\n  (signatures imports it at the top).\n- Signature comparison and call compatibility (compare_signatures,\n  param_comparator, is_call_compatible_with, SigPair, ...) move to\n  dol/sig_compare.py.\n- The recipes built on Sig (call_forgivingly, ch_func_to_all_pk,\n  all_pk_signature, replace_kwargs_using, sig_to_dataclass, ...) move to\n  dol/sig_recipes.py.\n- dol.signatures keeps Sig and re-exports every moved name; the back-compat\n  snapshot test covers it.\n\nNo behaviour change.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "commit_sha": "25f93d89d2136575232de2149ffa456f59b33b51",
   "metrics": {
     "coverage": {
       "branch_coverage": 0.0,
@@ -11,19 +11,19 @@
       "statements_total": 0
     },
     "umpyre_stats": {
-      "comment_lines": 12924,
-      "comment_lines_ratio": 0.054249639007354175,
+      "comment_lines": 12932,
+      "comment_lines_ratio": 0.05424269116228346,
       "docs_lines": 27105,
-      "empty_lines": 29289,
-      "empty_lines_ratio": 0.12294318143658282,
-      "files_analyzed": 561,
+      "empty_lines": 29314,
+      "empty_lines_ratio": 0.12295625183507403,
+      "files_analyzed": 564,
       "function_lines": 98475,
-      "function_lines_ratio": 0.41335756741327784,
+      "function_lines_ratio": 0.4130489492890399,
       "mean_lines_per_function": 16.396103896103895,
       "num_classes": 1535,
       "num_functions": 6006,
       "pypi_version": "0.3.92",
-      "total_lines": 238232
+      "total_lines": 238410
     },
     "wily": {
       "cyclomatic_avg": 0.0,
@@ -42,6 +42,6 @@
   },
   "python_version": "3.10",
   "schema_version": "1.0",
-  "timestamp": "2026-10-20T18:37:37.855293Z",
+  "timestamp": "2026-10-20T18:37:59.812874Z",
   "workflow_status": {}
 }
