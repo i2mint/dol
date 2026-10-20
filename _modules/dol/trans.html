@@ -2483,6 +2483,34 @@
 <span class="sd">    &gt;&gt;&gt; list(b.items())</span>
 <span class="sd">    [('BIG', 'upper letters'), ('small', 'lower text')]</span>
 <span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # Order of the value transforms: on write, ``preset`` runs first and ``data_of_obj``</span>
+<span class="sd">    &gt;&gt;&gt; # gets its output; on read, ``obj_of_data`` runs first and ``postget`` gets *its* output.</span>
+<span class="sd">    &gt;&gt;&gt; raw = {}</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), data_of_obj=lambda o: ('data_of_obj', o))</span>
+<span class="sd">    &gt;&gt;&gt; s['k'] = 1</span>
+<span class="sd">    &gt;&gt;&gt; raw</span>
+<span class="sd">    {'k': ('data_of_obj', ('preset', 1))}</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({'k': 1}, obj_of_data=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))</span>
+<span class="sd">    &gt;&gt;&gt; s['k']</span>
+<span class="sd">    ('postget', ('obj_of_data', 1))</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # ``wrap_kvs`` (and ``filt_iter``, ...) are decorators with keyword options, so</span>
+<span class="sd">    &gt;&gt;&gt; # ``functools.partial`` turns one into a reusable wrapper of your own:</span>
+<span class="sd">    &gt;&gt;&gt; from functools import partial</span>
+<span class="sd">    &gt;&gt;&gt; upper_keys = partial(wrap_kvs, key_of_id=str.upper, id_of_key=str.lower)</span>
+<span class="sd">    &gt;&gt;&gt; d = upper_keys({'a': 1})  # wrap an instance...</span>
+<span class="sd">    &gt;&gt;&gt; list(d)</span>
+<span class="sd">    ['A']</span>
+<span class="sd">    &gt;&gt;&gt; d['B'] = 2</span>
+<span class="sd">    &gt;&gt;&gt; list(d)</span>
+<span class="sd">    ['A', 'B']</span>
+<span class="sd">    &gt;&gt;&gt; UpperDict = upper_keys(dict)  # ...or a class</span>
+<span class="sd">    &gt;&gt;&gt; list(UpperDict(x=1))</span>
+<span class="sd">    ['X']</span>
+<span class="sd">    &gt;&gt;&gt; @upper_keys  # ...or use it as a class decorator</span>
+<span class="sd">    ... class Shout(dict): ...</span>
+<span class="sd">    &gt;&gt;&gt; list(Shout(y=1))</span>
+<span class="sd">    ['Y']</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # Let's try preset and postget. We'll wrap a dict and write the same list of lists object to</span>
 <span class="sd">    &gt;&gt;&gt; # keys ending with .csv, .json, and .pkl, specifying the obvious extension-dependent</span>
@@ -4418,7 +4446,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=1f4f6fbf"></script>
+</div><script src="../../_static/documentation_options.js?v=b60f1bd9"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

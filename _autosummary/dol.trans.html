@@ -2927,6 +2927,34 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
 <span class="go">[('BIG', 'upper letters'), ('small', 'lower text')]</span>
 <span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Order of the value transforms: on write, ``preset`` runs first and ``data_of_obj``</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># gets its output; on read, ``obj_of_data`` runs first and ``postget`` gets *its* output.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">o</span><span class="p">:</span> <span class="p">(</span><span class="s1">'preset'</span><span class="p">,</span> <span class="n">o</span><span class="p">),</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="p">(</span><span class="s1">'data_of_obj'</span><span class="p">,</span> <span class="n">o</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'k'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">raw</span>
+<span class="go">{'k': ('data_of_obj', ('preset', 1))}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({</span><span class="s1">'k'</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="p">(</span><span class="s1">'obj_of_data'</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">postget</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="p">(</span><span class="s1">'postget'</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'k'</span><span class="p">]</span>
+<span class="go">('postget', ('obj_of_data', 1))</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ``wrap_kvs`` (and ``filt_iter``, ...) are decorators with keyword options, so</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ``functools.partial`` turns one into a reusable wrapper of your own:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_keys</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">wrap_kvs</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">upper</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="nb">str</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">upper_keys</span><span class="p">({</span><span class="s1">'a'</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>  <span class="c1"># wrap an instance...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">['A']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s1">'B'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="go">['A', 'B']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">UpperDict</span> <span class="o">=</span> <span class="n">upper_keys</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>  <span class="c1"># ...or a class</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">UpperDict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">['X']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nd">@upper_keys</span>  <span class="c1"># ...or use it as a class decorator</span>
+<span class="gp">... </span><span class="k">class</span><span class="w"> </span><span class="nc">Shout</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span> <span class="o">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">Shout</span><span class="p">(</span><span class="n">y</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="go">['Y']</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Let's try preset and postget. We'll wrap a dict and write the same list of lists object to</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># keys ending with .csv, .json, and .pkl, specifying the obvious extension-dependent</span>
@@ -3125,7 +3153,7 @@ Forms are <code class="code docutils literal notranslate"><span class="pre">obj<
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=1f4f6fbf"></script>
+</div><script src="../_static/documentation_options.js?v=b60f1bd9"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

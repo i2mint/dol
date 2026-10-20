@@ -2545,6 +2545,34 @@ Grammar:
 >>> list(b.items())
 [('BIG', 'upper letters'), ('small', 'lower text')]
 >>>
+>>> # Order of the value transforms: on write, ``preset`` runs first and ``data_of_obj``
+>>> # gets its output; on read, ``obj_of_data`` runs first and ``postget`` gets *its* output.
+>>> raw = {}
+>>> s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), data_of_obj=lambda o: ('data_of_obj', o))
+>>> s['k'] = 1
+>>> raw
+{'k': ('data_of_obj', ('preset', 1))}
+>>> s = wrap_kvs({'k': 1}, obj_of_data=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))
+>>> s['k']
+('postget', ('obj_of_data', 1))
+>>>
+>>> # ``wrap_kvs`` (and ``filt_iter``, ...) are decorators with keyword options, so
+>>> # ``functools.partial`` turns one into a reusable wrapper of your own:
+>>> from functools import partial
+>>> upper_keys = partial(wrap_kvs, key_of_id=str.upper, id_of_key=str.lower)
+>>> d = upper_keys({'a': 1})  # wrap an instance...
+>>> list(d)
+['A']
+>>> d['B'] = 2
+>>> list(d)
+['A', 'B']
+>>> UpperDict = upper_keys(dict)  # ...or a class
+>>> list(UpperDict(x=1))
+['X']
+>>> @upper_keys  # ...or use it as a class decorator
+... class Shout(dict): ...
+>>> list(Shout(y=1))
+['Y']
 >>>
 >>> # Let's try preset and postget. We'll wrap a dict and write the same list of lists object to
 >>> # keys ending with .csv, .json, and .pkl, specifying the obvious extension-dependent
