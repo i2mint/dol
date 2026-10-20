@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="dol.content.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="dol.dig" href="dol.dig.html"><link rel="prev" title="dol.caching" href="dol.caching.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>dol.content - dol</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -486,11 +487,6 @@ a presigned URL — so all S3 knowledge lives in <code class="docutils literal n
 <dd><p>Content-addressed write: the key <em>is</em> the content hash; idempotent (CAS).</p>
 <p>A second call with identical bytes neither rewrites nor produces a different id, so
 identical content is stored once. Returns a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> with <code class="docutils literal notranslate"><span class="pre">hash</span></code> set.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'xyz'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'xyz'</span><span class="p">)</span>
@@ -498,6 +494,11 @@ identical content is stored once. Returns a <a class="reference internal" href="
 <span class="go">True</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -507,17 +508,17 @@ identical content is stored once. Returns a <a class="reference internal" href="
 <p>Truncation trades key length for a higher collision probability (a 16-hex-char
 prefix is 64 bits) — leave <code class="docutils literal notranslate"><span class="pre">length</span></code> unset unless keys must be short and the
 corpus is small.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span> <span class="o">==</span> <span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">content_hash</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">))</span>
 <span class="go">16</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -526,11 +527,6 @@ corpus is small.</p>
 <dd><p>A fetchable URL for content, resolved <strong>on demand</strong>.</p>
 <p>Prefers a URL the ref already carries; otherwise asks the backend’s <code class="docutils literal notranslate"><span class="pre">url_for</span></code>
 (the <a class="reference internal" href="#dol.content.SupportsUrlFor" title="dol.content.SupportsUrlFor"><code class="xref py py-class docutils literal notranslate"><span class="pre">SupportsUrlFor</span></code></a> seam), returning <code class="docutils literal notranslate"><span class="pre">None</span></code> if it has none.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span><span class="w"> </span><span class="nc">Served</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">def</span><span class="w"> </span><span class="nf">url_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span> <span class="k">return</span> <span class="sa">f</span><span class="s1">'https://cdn.example/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">content_url</span><span class="p">(</span><span class="n">Served</span><span class="p">(),</span> <span class="s1">'k1'</span><span class="p">)</span>
@@ -552,17 +548,17 @@ outer key and silently return a URL for a different object:</p>
 <span class="go">'https://cdn.example/a/k1'</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.content.delete_content">
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">delete_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#delete_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.delete_content" title="Link to this definition">¶</a></dt>
 <dd><p>Delete content by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key (<code class="docutils literal notranslate"><span class="pre">del</span> <span class="pre">store[key]</span></code>).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'gone'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">delete_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span>
@@ -570,23 +566,28 @@ outer key and silently return a URL for a different object:</p>
 <span class="go">False</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.content.get_content">
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">get_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_or_key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#get_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.get_content" title="Link to this definition">¶</a></dt>
 <dd><p>Read content bytes by <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a>, wire dict, or bare key.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">add_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'data'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="p">)</span> <span class="o">==</span> <span class="n">get_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">'data'</span>
 <span class="go">True</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -594,28 +595,23 @@ outer key and silently return a URL for a different object:</p>
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">guess_mime_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#guess_mime_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.guess_mime_type" title="Link to this definition">¶</a></dt>
 <dd><p>Guess a mime type from a filename/key by extension (stdlib <code class="docutils literal notranslate"><span class="pre">mimetypes</span></code>).</p>
 <p>Results depend on the platform’s mime registry, so treat them as best-effort.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">'a.json'</span><span class="p">)</span>
 <span class="go">'application/json'</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">guess_mime_type</span><span class="p">(</span><span class="s1">'no-extension'</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
 <span class="go">True</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.content.is_content_ref">
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">is_content_ref</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#is_content_ref"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.is_content_ref" title="Link to this definition">¶</a></dt>
 <dd><p>True for a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> instance or its wire-form dict (<code class="docutils literal notranslate"><span class="pre">_tag</span></code> discriminator).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">(</span><span class="n">ContentRef</span><span class="p">(</span><span class="s1">'id1'</span><span class="p">))</span>
 <span class="go">True</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">is_content_ref</span><span class="p">({</span><span class="s1">'_tag'</span><span class="p">:</span> <span class="s1">'ContentRef'</span><span class="p">,</span> <span class="s1">'itemId'</span><span class="p">:</span> <span class="s1">'id1'</span><span class="p">})</span>
@@ -624,6 +620,11 @@ outer key and silently return a URL for a different object:</p>
 <span class="go">False</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -632,11 +633,6 @@ outer key and silently return a URL for a different object:</p>
 <dd><p>Location-addressed write: store <code class="docutils literal notranslate"><span class="pre">data</span></code> under a caller-supplied <code class="docutils literal notranslate"><span class="pre">item_id</span></code>.</p>
 <p>Backend <code class="docutils literal notranslate"><span class="pre">store</span></code> is injected. Returns a <a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a> (mime guessed from
 <code class="docutils literal notranslate"><span class="pre">name</span></code> if not given; <code class="docutils literal notranslate"><span class="pre">url</span></code> left empty — resolve via <a class="reference internal" href="#dol.content.content_url" title="dol.content.content_url"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_url()</span></code></a>).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span> <span class="o">=</span> <span class="n">put_content</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s1">'clip1'</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'</span><span class="se">\x00\x01</span><span class="s1">'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'clip1.wav'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ref</span><span class="o">.</span><span class="n">item_id</span><span class="p">,</span> <span class="n">ref</span><span class="o">.</span><span class="n">hash</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="s1">'clip1'</span><span class="p">]</span>
@@ -645,22 +641,27 @@ outer key and silently return a URL for a different object:</p>
 <span class="go">True</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentRef" title="dol.content.ContentRef"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentRef</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.content.with_content_addressing">
 <span class="sig-prename descclassname"><span class="pre">dol.content.</span></span><span class="sig-name descname"><span class="pre">with_content_addressing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'content'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/content.html#with_content_addressing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.content.with_content_addressing" title="Link to this definition">¶</a></dt>
 <dd><p>Wrap an injected backend as a <a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a> (<code class="docutils literal notranslate"><span class="pre">dict</span></code> if <code class="docutils literal notranslate"><span class="pre">None</span></code>).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cas</span> <span class="o">=</span> <span class="n">with_content_addressing</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">cas</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="sa">b</span><span class="s1">'abc'</span><span class="p">)</span><span class="o">.</span><span class="n">item_id</span><span class="p">)</span>
 <span class="go">16</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#dol.content.ContentAddressedStore" title="dol.content.ContentAddressedStore"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContentAddressedStore</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -750,7 +751,7 @@ outer key and silently return a URL for a different object:</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=7e9dc082"></script>
+</div><script src="../_static/documentation_options.js?v=96be8132"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -506,8 +506,8 @@ Unlike functools.cached_property (properties only) and lru_cache (memory-only wi
 cache_this provides a unified interface for both use cases with persistent storage options.
 
 * **Parameters:**
-  * **func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]) – The function to be decorated (usually left empty).
-  * **cache** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – 
+  * **func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], `VT`]) – The function to be decorated (usually left empty).
+  * **cache** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – 
 
     The cache storage. Can be:
     - A MutableMapping instance (shared across instances)
@@ -515,7 +515,7 @@ cache_this provides a unified interface for both use cases with persistent stora
     - A callable taking (instance) and returning a MutableMapping
       This enables instance-specific caching, e.g.:
       cache=lambda self: Files(f’/cache/{self.user_id}/’)
-  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – For properties: the key to store the cache value, can be a callable
+  * **key** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], `KT`], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – For properties: the key to store the cache value, can be a callable
     that will be applied to the method name to make a key, or an explicit string.
     For methods: a callable that takes `(self, *args, **kwargs)` and returns a cache key.
   * **pre_cache** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool) | [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)) – Default is False. If True, adds an in-memory cache to the method
@@ -990,9 +990,6 @@ Convenience function to get a cache (whether it’s already an instance, or need
 
 Identity function that returns its input unchanged.
 
-* **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`T`)
-
 ```pycon
 >>> identity(42)
 42
@@ -1001,6 +998,9 @@ Identity function that returns its input unchanged.
 >>> identity([1, 2, 3])
 [1, 2, 3]
 ```
+
+* **Return type:**
+  `T`
 
 ### dol.caching.is_a_cache(obj)
 

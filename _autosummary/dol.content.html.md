@@ -166,9 +166,6 @@ Content-addressed write: the key *is* the content hash; idempotent (CAS).
 A second call with identical bytes neither rewrites nor produces a different id, so
 identical content is stored once. Returns a [`ContentRef`](#dol.content.ContentRef) with `hash` set.
 
-* **Return type:**
-  [`ContentRef`](#dol.content.ContentRef)
-
 ```pycon
 >>> s = {}
 >>> a = add_content(s, b'xyz')
@@ -176,6 +173,9 @@ identical content is stored once. Returns a [`ContentRef`](#dol.content.ContentR
 >>> a.item_id == b.item_id == a.hash and len(s) == 1
 True
 ```
+
+* **Return type:**
+  [`ContentRef`](#dol.content.ContentRef)
 
 ### dol.content.content_hash(data, \*, hasher=<built-in function openssl_sha256>, length=None)
 
@@ -185,9 +185,6 @@ Truncation trades key length for a higher collision probability (a 16-hex-char
 prefix is 64 bits) — leave `length` unset unless keys must be short and the
 corpus is small.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> content_hash(b'abc') == content_hash(b'abc')
 True
@@ -195,15 +192,15 @@ True
 16
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### dol.content.content_url(store, ref_or_key)
 
 A fetchable URL for content, resolved **on demand**.
 
 Prefers a URL the ref already carries; otherwise asks the backend’s `url_for`
 (the [`SupportsUrlFor`](#dol.content.SupportsUrlFor) seam), returning `None` if it has none.
-
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> class Served(dict):
@@ -229,12 +226,12 @@ b'v'
 'https://cdn.example/a/k1'
 ```
 
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 ### dol.content.delete_content(store, ref_or_key)
 
 Delete content by [`ContentRef`](#dol.content.ContentRef), wire dict, or bare key (`del store[key]`).
-
-* **Return type:**
-  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ```pycon
 >>> s = {}
@@ -244,12 +241,12 @@ Delete content by [`ContentRef`](#dol.content.ContentRef), wire dict, or bare ke
 False
 ```
 
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dol.content.get_content(store, ref_or_key)
 
 Read content bytes by [`ContentRef`](#dol.content.ContentRef), wire dict, or bare key.
-
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ```pycon
 >>> s = {}
@@ -258,14 +255,14 @@ Read content bytes by [`ContentRef`](#dol.content.ContentRef), wire dict, or bar
 True
 ```
 
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
+
 ### dol.content.guess_mime_type(name)
 
 Guess a mime type from a filename/key by extension (stdlib `mimetypes`).
 
 Results depend on the platform’s mime registry, so treat them as best-effort.
-
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> guess_mime_type('a.json')
@@ -274,12 +271,12 @@ Results depend on the platform’s mime registry, so treat them as best-effort.
 True
 ```
 
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 ### dol.content.is_content_ref(obj)
 
 True for a [`ContentRef`](#dol.content.ContentRef) instance or its wire-form dict (`_tag` discriminator).
-
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> is_content_ref(ContentRef('id1'))
@@ -290,15 +287,15 @@ True
 False
 ```
 
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 ### dol.content.put_content(store, item_id, data, , field='content', mime_type=None, name=None)
 
 Location-addressed write: store `data` under a caller-supplied `item_id`.
 
 Backend `store` is injected. Returns a [`ContentRef`](#dol.content.ContentRef) (mime guessed from
 `name` if not given; `url` left empty — resolve via [`content_url()`](#dol.content.content_url)).
-
-* **Return type:**
-  [`ContentRef`](#dol.content.ContentRef)
 
 ```pycon
 >>> s = {}
@@ -309,15 +306,18 @@ Backend `store` is injected. Returns a [`ContentRef`](#dol.content.ContentRef) (
 True
 ```
 
+* **Return type:**
+  [`ContentRef`](#dol.content.ContentRef)
+
 ### dol.content.with_content_addressing(store=None, \*, hasher=<built-in function openssl_sha256>, length=None, field='content')
 
 Wrap an injected backend as a [`ContentAddressedStore`](#dol.content.ContentAddressedStore) (`dict` if `None`).
-
-* **Return type:**
-  [`ContentAddressedStore`](#dol.content.ContentAddressedStore)
 
 ```pycon
 >>> cas = with_content_addressing(length=16)
 >>> len(cas.add(b'abc').item_id)
 16
 ```
+
+* **Return type:**
+  [`ContentAddressedStore`](#dol.content.ContentAddressedStore)

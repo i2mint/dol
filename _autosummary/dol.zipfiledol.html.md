@@ -69,7 +69,7 @@ with z[relpath] as fp:
 
 Bases: [`ZipReader`](#dol.zipfiledol.ZipReader)
 
-### *class* dol.zipfiledol.FlatZipFilesReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.FlatZipFilesReader(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
 
 Bases: [`FlatReader`](dol.sources.html.md#dol.sources.FlatReader), [`ZipFilesReader`](#dol.zipfiledol.ZipFilesReader)
 
@@ -114,7 +114,7 @@ merged”.
 
 Bases: [`FileExistsError`](https://docs.python.org/3/builtins/exceptions.html#FileExistsError), [`OverWritesNotAllowedError`](dol.errors.html.md#dol.errors.OverWritesNotAllowedError)
 
-### *class* dol.zipfiledol.ZipFileStreamsReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, \*, zip_reader=<class 'dol.zipfiledol.FileStreamsOfZip'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.ZipFileStreamsReader(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, \*, zip_reader=<class 'dol.zipfiledol.FileStreamsOfZip'>, \*\*zip_reader_kwargs)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -192,14 +192,14 @@ And indeed we have a zip file now:
 >>> assert os.path.isfile(test_zipfile)
 ```
 
-### *class* dol.zipfiledol.ZipFilesReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.ZipFilesReader(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
 
 Bases: [`FileCollection`](dol.filesys.html.md#dol.filesys.FileCollection), [`KvReader`](dol.base.html.md#dol.base.KvReader)
 
 A local file reader whose keys are the zip filepaths of the rootdir and values are
 corresponding ZipReaders.
 
-### *class* dol.zipfiledol.ZipFilesReaderAndBytesWriter(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.ZipFilesReaderAndBytesWriter(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
 
 Bases: [`ZipFilesReader`](#dol.zipfiledol.ZipFilesReader)
 
@@ -372,9 +372,6 @@ Zip input bytes and save to a single-file zip file.
 
 Compress input bytes, returning the compressed bytes
 
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
-
 ```pycon
 >>> b = b'x' * 1000 + b'y' * 1000  # 2000 (quite compressible) bytes
 >>> len(b)
@@ -398,6 +395,9 @@ True
 >>> unzipped_bytes == b  # verify that unzipped bytes are the same as the original
 True
 ```
+
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ### dol.zipfiledol.zip_decompress(b, , allowZip64=True, compresslevel=None, strict_timestamps=True)
 

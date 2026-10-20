@@ -133,10 +133,10 @@ that lazy-load values for keys from an explicit collection.
 Keywords: Lazy-evaluation, Mapping
 
 * **Parameters:**
-  * **src** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`)) – The source where values will be extracted from.
-  * **key_collection** ([`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – A collection of keys that will be used to extract values from `src`.
-  * **getter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]) – A function that takes a source and a key, and returns the value for that key.
-  * **key_error_msg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A function that takes a source and a key, and returns an error message.
+  * **src** (`Source`) – The source where values will be extracted from.
+  * **key_collection** ([`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)[`KT`]) – A collection of keys that will be used to extract values from `src`.
+  * **getter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Source`, `KT`], `VT`]) – A function that takes a source and a key, and returns the value for that key.
+  * **key_error_msg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Source`, `KT`], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A function that takes a source and a key, and returns an error message.
 
 ### Example
 

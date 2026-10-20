@@ -2,7 +2,7 @@
 
 # About this build
 
-This documentation was built on **2026-10-14 00:04 UTC** from commit <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce</code></a> on branch <code>master</code>, for **dol 0.3.83** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 04:48 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd"><code>ce7bd4b</code></a> on branch <code>master</code>, for **dol 0.3.84** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -11,9 +11,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd"><code>ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.83</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.84</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -22,16 +22,16 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38487803166">38487803166</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39371357681">39371357681</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>30ee5ff1a9e856ee5c3afba084c63a1f7cad5108</code> (in the history of the built commit) |
+| Event commit | <code>ec26413d332f8216857ce6f1f77c65ed5fc9efde</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.17  |
-| Sphinx   | 9.1.0   |
+| epythet  | 0.2.18  |
+| Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
 
@@ -49,14 +49,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.83/">0.3.83</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.84/">0.3.84</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d
-pip install "epythet==0.2.17"
+git checkout ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd
+pip install "epythet==0.2.18"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

@@ -472,7 +472,7 @@ On macOS, this is typically ~/.config.
 On Linux, this is typically ~/.config.
 
 * **Parameters:**
-  **folder_kind** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
+  **folder_kind** ([`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'config'`, `'data'`, `'cache'`, `'state'`, `'runtime'`]) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
   Defaults to ‘config’.
   Here are concise explanations for each folder kind:
   **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
@@ -501,7 +501,7 @@ On macOS, this is typically ~/.config.
 On Linux, this is typically ~/.config.
 
 * **Parameters:**
-  **folder_kind** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
+  **folder_kind** ([`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'config'`, `'data'`, `'cache'`, `'state'`, `'runtime'`]) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
   Defaults to ‘config’.
   Here are concise explanations for each folder kind:
   **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
@@ -605,7 +605,7 @@ yielding the groups according to a logic defined by `group_release_cond`
     group_items = group_collector() will be called to make a new empty group collection
     group_items.append(x) will be called to add x to that collection
     The default is `list`
-  * **group_release_cond** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]]) – A boolean function that will be applied, at every iteration,
+  * **group_release_cond** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]]) – A boolean function that will be applied, at every iteration,
     to the accumulated items of the group that was just updated,
     and determines (if True) if the (group_key, group_items) should be yielded.
     The default is False, which results in
@@ -706,9 +706,6 @@ each other.
 
 Get a pair of invertible maps
 
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]
-
 ```pycon
 >>> invertible_maps({1: 11, 2: 22})
 ({1: 11, 2: 22}, {11: 1, 22: 2})
@@ -751,6 +748,9 @@ Traceback (most recent call last):
   ...
 ValueError: You need to specify one or both maps
 ```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]
 
 ### dol.util.is_classmethod(obj)
 
@@ -941,14 +941,14 @@ If the input key is already unique, it’s returned as-is.
 Otherwise, applies a collision_handler until a unique key is found.
 
 * **Parameters:**
-  * **key** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)) – The candidate key to check/modify
-  * **exclude** ([`Container`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Container)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Container of keys to avoid
-  * **collision_handler** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`int`](https://docs.python.org/3/builtins/functions.html#int)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Function taking (key, attempt_number) and returning a modified key.
+  * **key** (`KT`) – The candidate key to check/modify
+  * **exclude** ([`Container`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Container)[`KT`]) – Container of keys to avoid
+  * **collision_handler** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`KT`, [`int`](https://docs.python.org/3/builtins/functions.html#int)], `KT`]) – Function taking (key, attempt_number) and returning a modified key.
     For strings, defaults to appending “ (N)” suffix before extension.
     For other types, must be provided.
   * **max_attempts** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Maximum number of transformation attempts
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)
+  `KT`
 * **Returns:**
   A key not present in the exclude container
 * **Raises:**
@@ -1253,9 +1253,6 @@ A decorator for defining static properties in classes.
 Make a valid python variable string from the input string.
 Left untouched if already valid.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> str_to_var_str('this_is_a_valid_var_name')
 'this_is_a_valid_var_name'
@@ -1264,6 +1261,9 @@ Left untouched if already valid.
 >>> str_to_var_str('99_ballons')
 '_99_ballons'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dol.util.truncate_string_with_marker(s, , left_limit=15, right_limit=15, middle_marker='...')
 
@@ -1316,8 +1316,8 @@ If obj is not given, `write_bytes` will return a “bytes writer” function tha
 takes obj as the first argument, and uses the file_writer to write the bytes.
 
 * **Parameters:**
-  * **file_writer** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), `Union`[[`BytesIO`](https://docs.python.org/3/library/io.html#io.BytesIO), [`StringIO`](https://docs.python.org/3/library/io.html#io.StringIO)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – A function that writes an object to a file-like object.
-  * **obj** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)) – The object to write.
+  * **file_writer** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`VT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`BytesIO`](https://docs.python.org/3/library/io.html#io.BytesIO), [`StringIO`](https://docs.python.org/3/library/io.html#io.StringIO)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – A function that writes an object to a file-like object.
+  * **obj** (`VT`) – The object to write.
 * **Returns:**
   The bytes that would have been written to a file.
 
@@ -1356,9 +1356,9 @@ Writes an object to a key and returns the key.
 If key is not given, a temporary file is created and its path is returned.
 
 * **Parameters:**
-  * **obj** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)) – The object to write.
-  * **writer** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – A function that writes an object to a file.
-  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – The key (by default, filepath) to write to.
+  * **obj** (`VT`) – The object to write.
+  * **writer** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`VT`, `KT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`KT`, `VT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – A function that writes an object to a file.
+  * **key** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – The key (by default, filepath) to write to.
     If None, a temporary file is created.
     If a string starting with ‘\*’, the ‘\*’ is replaced with a unique temporary filename.
     If a string that has a ‘\*’ somewhere in the middle, what’s on the left of if is used as a directory

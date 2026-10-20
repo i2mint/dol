@@ -412,15 +412,15 @@ With `base` (a string prefix of `path`, e.g. a store’s `rootdir`), only the
 whatever `..` it holds. Conservative by design: a `..` after a symlink is
 refused even when the link points back inside `base`.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> dotdot_resolves_lexically('/data/root/a/b.txt')
 True
 >>> dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical
 True
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.filesys.ensure_dir(dirpath, , max_dirs_to_make=None, verbose=False)
 
@@ -535,9 +535,6 @@ A `startswith` check is not enough: `'/data/root/../secret'` starts with
 lexical (`os.path.normpath`, not `realpath`), so a symlinked sub-directory of
 the root still counts as inside it.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> path_is_under('/data/root/a/b.txt', '/data/root/')
 True
@@ -554,6 +551,9 @@ True
 >>> path_is_under('root/../a', 'root/..'), path_is_under('root/../../a', 'root/..')
 (True, False)
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 

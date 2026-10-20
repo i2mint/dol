@@ -12,7 +12,7 @@ Recipes using dol
 Walk a dict, yielding paths to values that pass the `pkv_filt`
 
 * **Parameters:**
-  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
+  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
     `True` if the path should be yielded, and `False` otherwise
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The `Mapping` to walk (scan through)
   * **leafs_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to yield only paths to leafs (default), or to yield
@@ -20,7 +20,7 @@ Walk a dict, yielding paths to values that pass the `pkv_filt`
   * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
 * **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[`PT`]
 * **Returns:**
   An iterator of paths to values that pass the `pkv_filt`
 

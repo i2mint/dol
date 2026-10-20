@@ -1,4 +1,4 @@
-> built 2026-10-14 00:04 UTC from a5901ce (master) · dol 0.3.83. Details: build_info.json
+> built 2026-10-20 04:48 UTC from ce7bd4b (master) · dol 0.3.84. Details: build_info.json
 
 # index.html.md
 
@@ -762,7 +762,7 @@ For more, see: [https://github.com/i2mint/dol/wiki/Mapping-Views](https://github
 #### get(k, default=None)
 
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Val`)
+  `Val`
 
 #### head()
 
@@ -1145,16 +1145,16 @@ Walks a nested structure of mappings, yielding stuff on the way.
 
 * **Parameters:**
   * **v** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – A nested structure of mappings
-  * **leaf_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, what you want to yield when you encounter
+  * **leaf_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, what you want to yield when you encounter
     a leaf node (as define by walk_filt resolving to False)
-  * **walk_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – (p, k, vv) -> (bool) whether to explore the nested structure v further
-  * **pkv_to_pv** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – (p, k, v) -> (pp, vv)
+  * **walk_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – (p, k, vv) -> (bool) whether to explore the nested structure v further
+  * **pkv_to_pv** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`PT`, `VT`]]) – (p, k, v) -> (pp, vv)
     where pp is a form of p + k (update of the path with the new node k)
     and vv is the value that will be used by both walk_filt and leaf_yield
-  * **p** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)) – The path to v (used internally, mainly, to keep track of the path)
+  * **p** (`PT`) – The path to v (used internally, mainly, to keep track of the path)
   * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
-  * **branch_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, optional yield function to yield before
+  * **branch_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, optional yield function to yield before
     the recursive walk of a branch. This is useful if you want to yield something
     for every branch, not just the leaves.
 * **Return type:**
@@ -1292,7 +1292,7 @@ Small callbacks for `Stream`: an always-true filter, a no-op, and rewind (`skip_
 Extend the path `p` with the key `k` and return `(new_path, v)` (the default `kv_walk` `pkv_to_pv`).
 
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`PT`, `VT`]
 
 ### dol.base.val_is_mapping(p, k, v)
 
@@ -1323,9 +1323,6 @@ the wrappers is returned (ambiguous but never raw/None). This does not arise for
 class-wraps (each construction builds its own inner) nor for `copy.copy` (whose copies
 are transform-equivalent, so either answer is correct).
 
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
 ```pycon
 >>> import math
 >>> from dol import wrap_kvs, wrapped_self
@@ -1345,6 +1342,9 @@ are transform-equivalent, so either answer is correct).
 >>> s.via_wrapped_self('2')                # wrapped_self recovers the transformed value
 2.0
 ```
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
 
 
 # _autosummary/dol.caching.html.md
@@ -1857,8 +1857,8 @@ Unlike functools.cached_property (properties only) and lru_cache (memory-only wi
 cache_this provides a unified interface for both use cases with persistent storage options.
 
 * **Parameters:**
-  * **func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]) – The function to be decorated (usually left empty).
-  * **cache** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – 
+  * **func** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], `VT`]) – The function to be decorated (usually left empty).
+  * **cache** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – 
 
     The cache storage. Can be:
     - A MutableMapping instance (shared across instances)
@@ -1866,7 +1866,7 @@ cache_this provides a unified interface for both use cases with persistent stora
     - A callable taking (instance) and returning a MutableMapping
       This enables instance-specific caching, e.g.:
       cache=lambda self: Files(f’/cache/{self.user_id}/’)
-  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – For properties: the key to store the cache value, can be a callable
+  * **key** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], `KT`], [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – For properties: the key to store the cache value, can be a callable
     that will be applied to the method name to make a key, or an explicit string.
     For methods: a callable that takes `(self, *args, **kwargs)` and returns a cache key.
   * **pre_cache** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool) | [`MutableMapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping)) – Default is False. If True, adds an in-memory cache to the method
@@ -2341,9 +2341,6 @@ Convenience function to get a cache (whether it’s already an instance, or need
 
 Identity function that returns its input unchanged.
 
-* **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`T`)
-
 ```pycon
 >>> identity(42)
 42
@@ -2352,6 +2349,9 @@ Identity function that returns its input unchanged.
 >>> identity([1, 2, 3])
 [1, 2, 3]
 ```
+
+* **Return type:**
+  `T`
 
 ### dol.caching.is_a_cache(obj)
 
@@ -2948,9 +2948,6 @@ Content-addressed write: the key *is* the content hash; idempotent (CAS).
 A second call with identical bytes neither rewrites nor produces a different id, so
 identical content is stored once. Returns a [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef) with `hash` set.
 
-* **Return type:**
-  [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef)
-
 ```pycon
 >>> s = {}
 >>> a = add_content(s, b'xyz')
@@ -2958,6 +2955,9 @@ identical content is stored once. Returns a [`ContentRef`](_autosummary/dol.cont
 >>> a.item_id == b.item_id == a.hash and len(s) == 1
 True
 ```
+
+* **Return type:**
+  [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef)
 
 ### dol.content.content_hash(data, \*, hasher=<built-in function openssl_sha256>, length=None)
 
@@ -2967,9 +2967,6 @@ Truncation trades key length for a higher collision probability (a 16-hex-char
 prefix is 64 bits) — leave `length` unset unless keys must be short and the
 corpus is small.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> content_hash(b'abc') == content_hash(b'abc')
 True
@@ -2977,15 +2974,15 @@ True
 16
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### dol.content.content_url(store, ref_or_key)
 
 A fetchable URL for content, resolved **on demand**.
 
 Prefers a URL the ref already carries; otherwise asks the backend’s `url_for`
 (the [`SupportsUrlFor`](_autosummary/dol.content.html.md#dol.content.SupportsUrlFor) seam), returning `None` if it has none.
-
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> class Served(dict):
@@ -3011,12 +3008,12 @@ b'v'
 'https://cdn.example/a/k1'
 ```
 
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 ### dol.content.delete_content(store, ref_or_key)
 
 Delete content by [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef), wire dict, or bare key (`del store[key]`).
-
-* **Return type:**
-  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ```pycon
 >>> s = {}
@@ -3026,12 +3023,12 @@ Delete content by [`ContentRef`](_autosummary/dol.content.html.md#dol.content.Co
 False
 ```
 
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dol.content.get_content(store, ref_or_key)
 
 Read content bytes by [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef), wire dict, or bare key.
-
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ```pycon
 >>> s = {}
@@ -3040,14 +3037,14 @@ Read content bytes by [`ContentRef`](_autosummary/dol.content.html.md#dol.conten
 True
 ```
 
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
+
 ### dol.content.guess_mime_type(name)
 
 Guess a mime type from a filename/key by extension (stdlib `mimetypes`).
 
 Results depend on the platform’s mime registry, so treat them as best-effort.
-
-* **Return type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ```pycon
 >>> guess_mime_type('a.json')
@@ -3056,12 +3053,12 @@ Results depend on the platform’s mime registry, so treat them as best-effort.
 True
 ```
 
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 ### dol.content.is_content_ref(obj)
 
 True for a [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef) instance or its wire-form dict (`_tag` discriminator).
-
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ```pycon
 >>> is_content_ref(ContentRef('id1'))
@@ -3072,15 +3069,15 @@ True
 False
 ```
 
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 ### dol.content.put_content(store, item_id, data, , field='content', mime_type=None, name=None)
 
 Location-addressed write: store `data` under a caller-supplied `item_id`.
 
 Backend `store` is injected. Returns a [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef) (mime guessed from
 `name` if not given; `url` left empty — resolve via [`content_url()`](_autosummary/dol.content.html.md#dol.content.content_url)).
-
-* **Return type:**
-  [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef)
 
 ```pycon
 >>> s = {}
@@ -3091,18 +3088,21 @@ Backend `store` is injected. Returns a [`ContentRef`](_autosummary/dol.content.h
 True
 ```
 
+* **Return type:**
+  [`ContentRef`](_autosummary/dol.content.html.md#dol.content.ContentRef)
+
 ### dol.content.with_content_addressing(store=None, \*, hasher=<built-in function openssl_sha256>, length=None, field='content')
 
 Wrap an injected backend as a [`ContentAddressedStore`](_autosummary/dol.content.html.md#dol.content.ContentAddressedStore) (`dict` if `None`).
-
-* **Return type:**
-  [`ContentAddressedStore`](_autosummary/dol.content.html.md#dol.content.ContentAddressedStore)
 
 ```pycon
 >>> cas = with_content_addressing(length=16)
 >>> len(cas.add(b'abc').item_id)
 16
 ```
+
+* **Return type:**
+  [`ContentAddressedStore`](_autosummary/dol.content.html.md#dol.content.ContentAddressedStore)
 
 
 # _autosummary/dol.dig.html.md
@@ -3238,9 +3238,6 @@ enters that layer\*, which is what `store[k] = v` would do, then `_id_of_key` ma
 for the layer below. A leaf that has an `is_valid_key` method (e.g. `Files`) is asked
 about the innermost key last.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> from dol import filt_iter, KeyCodecs
 >>> s = KeyCodecs.prefixed('data/')(filt_iter(dict, filt=lambda k: k.endswith('.txt')))()
@@ -3268,6 +3265,9 @@ Limits (the probe reads what the layers *declare*): a layer that maps keys but h
 means while keeping the do-nothing `_id_of_key` (`add_path_access`, `flatten`, whose
 keys are tuples walked through the inner store) gets a silently wrong answer; so does a
 subclass that changes the key inside `__setitem__` before calling `super()`.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.dig.store_trans_path(store, arg, method)
 
@@ -3804,10 +3804,10 @@ that lazy-load values for keys from an explicit collection.
 Keywords: Lazy-evaluation, Mapping
 
 * **Parameters:**
-  * **src** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`)) – The source where values will be extracted from.
-  * **key_collection** ([`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – A collection of keys that will be used to extract values from `src`.
-  * **getter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]) – A function that takes a source and a key, and returns the value for that key.
-  * **key_error_msg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Source`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A function that takes a source and a key, and returns an error message.
+  * **src** (`Source`) – The source where values will be extracted from.
+  * **key_collection** ([`Collection`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Collection)[`KT`]) – A collection of keys that will be used to extract values from `src`.
+  * **getter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Source`, `KT`], `VT`]) – A function that takes a source and a key, and returns the value for that key.
+  * **key_error_msg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Source`, `KT`], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A function that takes a source and a key, and returns an error message.
 
 ### Example
 
@@ -4277,15 +4277,15 @@ With `base` (a string prefix of `path`, e.g. a store’s `rootdir`), only the
 whatever `..` it holds. Conservative by design: a `..` after a symlink is
 refused even when the link points back inside `base`.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> dotdot_resolves_lexically('/data/root/a/b.txt')
 True
 >>> dotdot_resolves_lexically('/no/such/dir/../file')  # nothing to follow: lexical
 True
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.filesys.ensure_dir(dirpath, , max_dirs_to_make=None, verbose=False)
 
@@ -4400,9 +4400,6 @@ A `startswith` check is not enough: `'/data/root/../secret'` starts with
 lexical (`os.path.normpath`, not `realpath`), so a symlinked sub-directory of
 the root still counts as inside it.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> path_is_under('/data/root/a/b.txt', '/data/root/')
 True
@@ -4419,6 +4416,9 @@ True
 >>> path_is_under('root/../a', 'root/..'), path_is_under('root/../../a', 'root/..')
 (True, False)
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 
@@ -4804,9 +4804,6 @@ See also `dol.KeyTemplate` for more general key-based views.
 
 Compress input bytes, returning the compressed bytes
 
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
-
 ```pycon
 >>> b = b'x' * 1000 + b'y' * 1000  # 2000 (quite compressible) bytes
 >>> len(b)
@@ -4831,6 +4828,9 @@ True
 True
 ```
 
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
+
 #### zip_decompress(, allowZip64=True, compresslevel=None, strict_timestamps=True)
 
 Decompress input bytes of a single file zip, returning the uncompressed bytes
@@ -4852,11 +4852,11 @@ Make a `cls` codec factory from an `encoder` and a `decoder`, with the merged si
 
 Transforms keys of mapping to omit the longest prefix they have in common
 
-### dol.kv_codecs.csv_decode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False)
+### dol.kv_codecs.csv_decode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False)
 
 Decode a CSV string into a list of rows (`csv.reader` arguments accepted).
 
-### dol.kv_codecs.csv_dict_decode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
+### dol.kv_codecs.csv_dict_decode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
 
 Decode a csv string into a list of dicts.
 
@@ -4891,7 +4891,7 @@ each field)
 [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]
 ```
 
-### dol.kv_codecs.csv_dict_encode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
+### dol.kv_codecs.csv_dict_encode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
 
 Encode a list of dicts into a csv string.
 
@@ -4902,7 +4902,7 @@ Encode a list of dicts into a csv string.
 'a,b\r\n1,2\r\n3,4\r\n'
 ```
 
-### dol.kv_codecs.csv_encode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False)
+### dol.kv_codecs.csv_encode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False)
 
 Encode rows (an iterable of iterables) into a CSV string (`csv.writer` arguments accepted).
 
@@ -6094,9 +6094,6 @@ NamedTuple(i01_='life', ver=42)
 
 Generates a string from the dictionary values based on the template.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -6105,12 +6102,12 @@ Generates a string from the dictionary values based on the template.
 'root/life/v_042.json'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### dict_to_tuple(params)
 
 Generates a tuple from the dictionary values based on the template.
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -6119,6 +6116,9 @@ Generates a tuple from the dictionary values based on the template.
 >>> st.str_to_tuple('root/life/v_42.json')
 ('life', 42)
 ```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 #### filt_iter(field_type='str')
 
@@ -6189,9 +6189,6 @@ filter out keys that don’t fit the format, before you wrap the store with
 
 Returns True iff the string matches the template.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -6201,6 +6198,9 @@ True
 >>> st.match_str('this/does/not_match')
 False
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 #### namedtuple_to_dict(nt)
 
@@ -6245,9 +6245,6 @@ Converts a simple character-delimited string to a dict.
 
 Generates a string from the single value based on the template.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -6256,12 +6253,12 @@ Generates a string from the single value based on the template.
 'root/life/v_042.json'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### str_to_dict(s)
 
 Parses the input string and returns a dictionary of extracted values.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -6271,6 +6268,9 @@ Parses the input string and returns a dictionary of extracted values.
 >>> st.str_to_dict('root/life/v_30.json')
 {'i01_': 'life', 'ver': 30}
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 #### str_to_namedtuple(s)
 
@@ -6304,9 +6304,6 @@ Converts a string to a simple string (i.e. a simple character-delimited string).
 
 Parses the input string and returns a single value.
 
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -6315,12 +6312,12 @@ Parses the input string and returns a single value.
 42
 ```
 
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
 #### str_to_tuple(s)
 
 Parses the input string and returns a tuple of extracted values.
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -6330,12 +6327,12 @@ Parses the input string and returns a tuple of extracted values.
 ('life', 42)
 ```
 
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
+
 #### tuple_to_dict(param_vals)
 
 Generates a dictionary from the tuple values based on the template.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -6345,12 +6342,12 @@ Generates a dictionary from the tuple values based on the template.
 {'i01_': 'life', 'ver': 42}
 ```
 
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
 #### tuple_to_str(param_vals)
 
 Generates a string from the tuple values based on the template.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -6359,6 +6356,9 @@ Generates a string from the tuple values based on the template.
 >>> st.tuple_to_str(('life', 42))
 'root/life/v_042.json'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### *class* dol.paths.PathKeyTypes(\*values)
 
@@ -6519,7 +6519,7 @@ Ensure that the path_extender is a function that takes a path and a key and retu
 a new path.
 
 * **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]
 
 ### dol.paths.flatten_dict(d, sep='.', \*, parent_path=None, visit_nested=<function <lambda>>, egress=<class 'dict'>)
 
@@ -6531,11 +6531,11 @@ gives a lazy flat *view* of a store of stores.)
 
 * **Parameters:**
   * **d** – The dictionary to flatten
-  * **sep** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
+  * **sep** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
-  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]) – The path to the parent of the current dict
+  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[`Path`]) – The path to the parent of the current dict
   * **visit_nested** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that returns True if a value should be visited
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 
 ```pycon
 >>> d = {'a': {'b': 2}, 'c': 3}
@@ -6550,7 +6550,7 @@ gives a lazy flat *view* of a store of stores.)
 Yield flattened key-value pairs from a nested dictionary.
 
 * **Return type:**
-  [`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]
+  [`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 ### dol.paths.get_attr_or_item(obj, k)
 
@@ -6687,13 +6687,13 @@ The output is a dict with the same keys and structure as the input, but the leaf
 values are replaced by the paths that would be used to access them in a flat dict.
 
 * **Parameters:**
-  * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), NestedMapping[KT, VT]]]]]) – The nested dictionary to get the leaf paths from
-  * **sep** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
+  * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`VT`, [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`VT`, NestedMapping[KT, VT]]]]]) – The nested dictionary to get the leaf paths from
+  * **sep** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
-  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]) – The path to the parent of the current dict
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
+  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[`Path`]) – The path to the parent of the current dict
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 * **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, `Path`]]
 
 ### Example
 
@@ -6766,7 +6766,7 @@ Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs
 
 * **Parameters:**
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The mapping to edit.
-  * **edits** (`Union`[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]]) – An iterable of `(path, value)` tuples, or `path: value` Mapping.
+  * **edits** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`Path`, `VT`], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`Path`, `VT`]]]) – An iterable of `(path, value)` tuples, or `path: value` Mapping.
 * **Returns:**
   The edited mapping.
 * **Return type:**
@@ -6797,7 +6797,7 @@ You can also pass a dict of edits.
 Walk a dict, yielding paths to values that pass the `pkv_filt`
 
 * **Parameters:**
-  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
+  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
     `True` if the path should be yielded, and `False` otherwise
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The `Mapping` to walk (scan through)
   * **leafs_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to yield only paths to leafs (default), or to yield
@@ -6805,7 +6805,7 @@ Walk a dict, yielding paths to values that pass the `pkv_filt`
   * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
 * **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[`PT`]
 * **Returns:**
   An iterator of paths to values that pass the `pkv_filt`
 
@@ -6862,7 +6862,7 @@ Get elements of a mapping through a path to be called recursively.
 * **Parameters:**
   * **obj** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The object to get the path from
   * **path** – The path to get
-  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
+  * **on_error** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
   * **sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Determines a path is transforms into a tuple of keys.
     If it’s a string, `lambda path: path.split(sep)` is used.
     If not, it should be a function which takes in a path object and returns an iterable of keys.
@@ -6928,7 +6928,7 @@ obj and path are the opposite of path_get.
   * **paths** – The paths to get
   * **obj** – The object to get the paths from
   * **egress** – The egress function to use (default: dict)
-  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
+  * **on_error** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
   * **sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The separator to use if the path is a string
   * **key_transformer** – A function to transform the keys of the path
   * **get_value** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function to get the value of a key in a mapping
@@ -6996,7 +6996,7 @@ backwards compatibility quasi-alias (arguments are flipped)
 Use path_filter instead, since search_paths will be deprecated.
 
 * **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[`PT`]
 
 ### dol.paths.separate_keys_with_separator(obj, sep='.')
 
@@ -7008,7 +7008,7 @@ Extends a given path with a new key using the specified separator.
 If the path is empty, the key is returned as is.
 
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)
+  `Path`
 
 ### dol.paths.split_if_str(obj, sep='.')
 
@@ -7048,7 +7048,7 @@ Recipes using dol
 Walk a dict, yielding paths to values that pass the `pkv_filt`
 
 * **Parameters:**
-  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
+  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
     `True` if the path should be yielded, and `False` otherwise
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The `Mapping` to walk (scan through)
   * **leafs_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to yield only paths to leafs (default), or to yield
@@ -7056,7 +7056,7 @@ Walk a dict, yielding paths to values that pass the `pkv_filt`
   * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
 * **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[`PT`]
 * **Returns:**
   An iterator of paths to values that pass the `pkv_filt`
 
@@ -8370,7 +8370,7 @@ Insofar as it can, given the kind precedence rules, the arguments of self will
 appear first.
 
 * **Parameters:**
-  * **sig** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The signature to merge with.
+  * **sig** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The signature to merge with.
   * **ch_to_all_pk** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to change all kinds of both signatures to PK (
     POSITIONAL_OR_KEYWORD)
 * **Returns:**
@@ -9281,9 +9281,6 @@ Check if the signatures are call-compatible.
 
 Returns True if sig1 can be used to call sig2 or vice versa.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> sig1 = Sig(lambda a, b, c=3: None)
 >>> sig2 = Sig(lambda a, b: None)
@@ -9298,12 +9295,12 @@ False
 True
 ```
 
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 #### diff()
 
 Get a dictionary of differences between the two signatures.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> from pprint import pprint
@@ -9326,6 +9323,9 @@ Get a dictionary of differences between the two signatures.
 >>> pprint(SigPair(three, three).diff())
 {}
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 #### diff_str()
 
@@ -9465,7 +9465,7 @@ attributes (like name).
 Get an interable of Parameter instances from an object.
 
 * **Parameters:**
-  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
+  **obj** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
 * **Returns:**
 
 From a callable:
@@ -9844,7 +9844,7 @@ It is meant to be used with partial, but with a permissive base, contrary to the
 base param_comparator which requires strict equality (`eq`) for all attributes.
 
 * **Return type:**
-  *Comparison*
+  `Comparison`
 
 ### dol.signatures.dict_of_attribute_signatures(cls)
 
@@ -9874,7 +9874,7 @@ decorator, like so:
 Get an interable of Parameter instances from an object.
 
 * **Parameters:**
-  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
+  **obj** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
 * **Returns:**
 
 From a callable:
@@ -10089,7 +10089,7 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
+  * **params** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
@@ -10280,7 +10280,7 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** – Specifies what PO arguments should be extracted.
+  * **params** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
@@ -10471,7 +10471,7 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** – Specifies what PO arguments should be extracted.
+  * **params** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
@@ -10541,7 +10541,7 @@ to call `sig1` are valid for `sig2`.
 * **Parameters:**
   * **sig1** ([`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – The main signature.
   * **sig2** ([`Sig`](_autosummary/dol.signatures.html.md#dol.signatures.Sig)) – The signature to be compared with.
-  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
+  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], `Comparison`] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
@@ -10605,9 +10605,6 @@ applied to each element before sorting. The keyed_comparator function allows a
 comparator to be extended in the same way. The returned comparator will apply the
 key function toeach input before applying the original comparator.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]
-
 ```pycon
 >>> from operator import eq
 >>> parity = lambda x: x % 2
@@ -10615,6 +10612,9 @@ key function toeach input before applying the original comparator.
 >>> list(map(comparator, [1, 1, 2, 2], [3, 4, 5, 6]))
 [True, False, False, True]
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]
 
 ### dol.signatures.kind_forgiving_func(func, kinds_modifier=<function convert_to_PK>)
 
@@ -10661,9 +10661,6 @@ args_with_defaults.
 
 Tries to find the (or “a”) name for an object, even if `__name__` doesn’t exist.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
 ```pycon
 >>> name_of_obj(map)
 'map'
@@ -10708,6 +10705,9 @@ If you want to get the fully qualified name of an object, you can do:
 'Signature.replace'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dol.signatures.param_binary_func(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>, aggreg=<built-in function all>)
 
 Compare two parameters.
@@ -10729,13 +10729,13 @@ binary functions.
 * **Parameters:**
   * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
   * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
-  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare names
-  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare kinds
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare defaults
-  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare annotations
-  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
+  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
+  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
+  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
+  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)
+  `Comparison`
 
 ```pycon
 >>> from inspect import Parameter
@@ -10768,13 +10768,13 @@ binary functions.
 * **Parameters:**
   * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
   * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
-  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare names
-  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare kinds
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare defaults
-  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare annotations
-  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
+  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
+  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
+  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
+  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)
+  `Comparison`
 
 ```pycon
 >>> from inspect import Parameter
@@ -10798,7 +10798,7 @@ A ParamComparator that returns a dictionary with pairs parameter attributes.
 ```
 
 * **Return type:**
-  *Comparison*
+  `Comparison`
 
 ### dol.signatures.param_differences_dict(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>)
 
@@ -10842,7 +10842,7 @@ It is meant to be used with partial, but with a permissive base, contrary to the
 base param_comparator which requires strict equality (`eq`) for all attributes.
 
 * **Return type:**
-  *Comparison*
+  `Comparison`
 
 ### dol.signatures.postprocess(egress)
 
@@ -10926,9 +10926,6 @@ want to get the source of the code decorated with `@property`, a
 
 Consider the following example:
 
-* **Return type:**
-  `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`T`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
-
 ```pycon
 >>> from functools import cached_property, partial
 >>> class C:
@@ -10971,6 +10968,9 @@ True
 >>> isinstance(inspect.getsource(resolve_function(C.partial_func)), str)
 True
 ```
+
+* **Return type:**
+  [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`T`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
 
 ### dol.signatures.set_signature_of_func(func, parameters, , return_annotation, \_\_validate_parameters_\_=True)
 
@@ -11020,7 +11020,7 @@ Set the signature of a function, with sugar.
 Make a `class` (through `make_dataclass`) from the given signature.
 
 * **Parameters:**
-  * **sig** (`Union`[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
+  * **sig** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
     resolve into an `inspect.Signature` object, including a signature object
     itself, but also most callables, a list or params, etc.
   * **cls_name** – The same as `cls_name` of `dataclasses.make_dataclass`
@@ -11141,9 +11141,6 @@ TypeError: got an unexpected keyword argument 'c'
 
 Validates the signature of a function.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)
-
 ```pycon
 >>> @validate_signature
 ... def has_valid_signature(x=Sig.empty, y=2):
@@ -11158,6 +11155,9 @@ Traceback (most recent call last):
 i2.signatures.InvalidSignature: Invalid signature for function <function does_no_have_valid_signature at 0x106a72a70>: non-default argument follows default a
 rgument
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)
 
 
 # _autosummary/dol.sources.html.md
@@ -12347,18 +12347,18 @@ pairs to items (usually text), and (if you specify a filepath as the `egress`)
 saves the aggregate (text) before returning it.
 
 * **Parameters:**
-  * **content_store** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)] | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Path to the folder or dol store to read from.
-  * **kv_to_item** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Item`)]) – Function to convert key-value pairs to an Item (usually a string).
-  * **aggregator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Item`)]], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Aggregate`)]) – The function that will aggregate the items that `kv_to_item` produces.
+  * **content_store** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`KT`, `VT`] | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Path to the folder or dol store to read from.
+  * **kv_to_item** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`KT`, `VT`], `Item`]) – Function to convert key-value pairs to an Item (usually a string).
+  * **aggregator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Item`]], `Aggregate`]) – The function that will aggregate the items that `kv_to_item` produces.
     Defaults to ‘nn’.join.
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Aggregate`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The function that will be called on the aggregate before returning it.
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Aggregate`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)] | [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – The function that will be called on the aggregate before returning it.
     Defaults to identity.
     Note that if you provide a string, the function will save the aggregate
     text to a file, assuming it is indeed text.
-  * **key_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional filter for keys. Defaults to None (no filtering).
-  * **value_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional filter for values. Defaults to None (no filtering).
-  * **kv_filter** ([`None`](https://docs.python.org/3/builtins/constants.html#None) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – Optional filter for key-value pairs. Defaults to None (no filtering).
-  * **local_store_factory** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – Factory function for the local store,
+  * **key_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`KT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional filter for keys. Defaults to None (no filtering).
+  * **value_filter** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional filter for values. Defaults to None (no filtering).
+  * **kv_filter** ([`None`](https://docs.python.org/3/builtins/constants.html#None) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – Optional filter for key-value pairs. Defaults to None (no filtering).
+  * **local_store_factory** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`KT`, `VT`]]) – Factory function for the local store,
     used only if `content_store` is an existing folder path. Defaults to Latin1TextFiles.
 * **Returns:**
   Usually the aggregate object, which is usually the concatenated text.
@@ -15593,7 +15593,7 @@ On macOS, this is typically ~/.config.
 On Linux, this is typically ~/.config.
 
 * **Parameters:**
-  **folder_kind** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
+  **folder_kind** ([`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'config'`, `'data'`, `'cache'`, `'state'`, `'runtime'`]) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
   Defaults to ‘config’.
   Here are concise explanations for each folder kind:
   **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
@@ -15622,7 +15622,7 @@ On macOS, this is typically ~/.config.
 On Linux, this is typically ~/.config.
 
 * **Parameters:**
-  **folder_kind** ([*str*](https://docs.python.org/3/builtins/stdtypes.html#str)) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
+  **folder_kind** ([`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'config'`, `'data'`, `'cache'`, `'state'`, `'runtime'`]) – The kind of folder to get. One of ‘config’, ‘data’, ‘cache’, ‘state’, ‘runtime’.
   Defaults to ‘config’.
   Here are concise explanations for each folder kind:
   **config**: User preferences and settings files (e.g., API keys, theme preferences, editor settings). Files users might edit manually or that define how the app behaves.
@@ -15726,7 +15726,7 @@ yielding the groups according to a logic defined by `group_release_cond`
     group_items = group_collector() will be called to make a new empty group collection
     group_items.append(x) will be called to add x to that collection
     The default is `list`
-  * **group_release_cond** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]]) – A boolean function that will be applied, at every iteration,
+  * **group_release_cond** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`Hashable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]]) – A boolean function that will be applied, at every iteration,
     to the accumulated items of the group that was just updated,
     and determines (if True) if the (group_key, group_items) should be yielded.
     The default is False, which results in
@@ -15827,9 +15827,6 @@ each other.
 
 Get a pair of invertible maps
 
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]
-
 ```pycon
 >>> invertible_maps({1: 11, 2: 22})
 ({1: 11, 2: 22}, {11: 1, 22: 2})
@@ -15872,6 +15869,9 @@ Traceback (most recent call last):
   ...
 ValueError: You need to specify one or both maps
 ```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]
 
 ### dol.util.is_classmethod(obj)
 
@@ -16062,14 +16062,14 @@ If the input key is already unique, it’s returned as-is.
 Otherwise, applies a collision_handler until a unique key is found.
 
 * **Parameters:**
-  * **key** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)) – The candidate key to check/modify
-  * **exclude** ([`Container`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Container)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Container of keys to avoid
-  * **collision_handler** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`int`](https://docs.python.org/3/builtins/functions.html#int)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)]) – Function taking (key, attempt_number) and returning a modified key.
+  * **key** (`KT`) – The candidate key to check/modify
+  * **exclude** ([`Container`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Container)[`KT`]) – Container of keys to avoid
+  * **collision_handler** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`KT`, [`int`](https://docs.python.org/3/builtins/functions.html#int)], `KT`]) – Function taking (key, attempt_number) and returning a modified key.
     For strings, defaults to appending “ (N)” suffix before extension.
     For other types, must be provided.
   * **max_attempts** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – Maximum number of transformation attempts
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)
+  `KT`
 * **Returns:**
   A key not present in the exclude container
 * **Raises:**
@@ -16374,9 +16374,6 @@ A decorator for defining static properties in classes.
 Make a valid python variable string from the input string.
 Left untouched if already valid.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> str_to_var_str('this_is_a_valid_var_name')
 'this_is_a_valid_var_name'
@@ -16385,6 +16382,9 @@ Left untouched if already valid.
 >>> str_to_var_str('99_ballons')
 '_99_ballons'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dol.util.truncate_string_with_marker(s, , left_limit=15, right_limit=15, middle_marker='...')
 
@@ -16437,8 +16437,8 @@ If obj is not given, `write_bytes` will return a “bytes writer” function tha
 takes obj as the first argument, and uses the file_writer to write the bytes.
 
 * **Parameters:**
-  * **file_writer** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), `Union`[[`BytesIO`](https://docs.python.org/3/library/io.html#io.BytesIO), [`StringIO`](https://docs.python.org/3/library/io.html#io.StringIO)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – A function that writes an object to a file-like object.
-  * **obj** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)) – The object to write.
+  * **file_writer** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`VT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`BytesIO`](https://docs.python.org/3/library/io.html#io.BytesIO), [`StringIO`](https://docs.python.org/3/library/io.html#io.StringIO)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – A function that writes an object to a file-like object.
+  * **obj** (`VT`) – The object to write.
 * **Returns:**
   The bytes that would have been written to a file.
 
@@ -16477,9 +16477,9 @@ Writes an object to a key and returns the key.
 If key is not given, a temporary file is created and its path is returned.
 
 * **Parameters:**
-  * **obj** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)) – The object to write.
-  * **writer** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – A function that writes an object to a file.
-  * **key** (`Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – The key (by default, filepath) to write to.
+  * **obj** (`VT`) – The object to write.
+  * **writer** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`VT`, `KT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`KT`, `VT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – A function that writes an object to a file.
+  * **key** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – The key (by default, filepath) to write to.
     If None, a temporary file is created.
     If a string starting with ‘\*’, the ‘\*’ is replaced with a unique temporary filename.
     If a string that has a ‘\*’ somewhere in the middle, what’s on the left of if is used as a directory
@@ -16656,7 +16656,7 @@ with z[relpath] as fp:
 
 Bases: [`ZipReader`](_autosummary/dol.zipfiledol.html.md#dol.zipfiledol.ZipReader)
 
-### *class* dol.zipfiledol.FlatZipFilesReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.FlatZipFilesReader(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
 
 Bases: [`FlatReader`](_autosummary/dol.sources.html.md#dol.sources.FlatReader), [`ZipFilesReader`](_autosummary/dol.zipfiledol.html.md#dol.zipfiledol.ZipFilesReader)
 
@@ -16701,7 +16701,7 @@ merged”.
 
 Bases: [`FileExistsError`](https://docs.python.org/3/builtins/exceptions.html#FileExistsError), [`OverWritesNotAllowedError`](_autosummary/dol.errors.html.md#dol.errors.OverWritesNotAllowedError)
 
-### *class* dol.zipfiledol.ZipFileStreamsReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, \*, zip_reader=<class 'dol.zipfiledol.FileStreamsOfZip'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.ZipFileStreamsReader(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, \*, zip_reader=<class 'dol.zipfiledol.FileStreamsOfZip'>, \*\*zip_reader_kwargs)
 
 Bases: [`PrefixRelativizationMixin`](_autosummary/dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](_autosummary/dol.base.html.md#dol.base.Store)
 
@@ -16779,14 +16779,14 @@ And indeed we have a zip file now:
 >>> assert os.path.isfile(test_zipfile)
 ```
 
-### *class* dol.zipfiledol.ZipFilesReader(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.ZipFilesReader(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
 
 Bases: [`FileCollection`](_autosummary/dol.filesys.html.md#dol.filesys.FileCollection), [`KvReader`](_autosummary/dol.base.html.md#dol.base.KvReader)
 
 A local file reader whose keys are the zip filepaths of the rootdir and values are
 corresponding ZipReaders.
 
-### *class* dol.zipfiledol.ZipFilesReaderAndBytesWriter(rootdir, subpath='.+\\\\.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
+### *class* dol.zipfiledol.ZipFilesReaderAndBytesWriter(rootdir, subpath='{zip_name}.zip', pattern_for_field=None, max_levels=0, zip_reader=<class 'dol.zipfiledol.ZipReader'>, \*\*zip_reader_kwargs)
 
 Bases: [`ZipFilesReader`](_autosummary/dol.zipfiledol.html.md#dol.zipfiledol.ZipFilesReader)
 
@@ -16959,9 +16959,6 @@ Zip input bytes and save to a single-file zip file.
 
 Compress input bytes, returning the compressed bytes
 
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
-
 ```pycon
 >>> b = b'x' * 1000 + b'y' * 1000  # 2000 (quite compressible) bytes
 >>> len(b)
@@ -16986,6 +16983,9 @@ True
 True
 ```
 
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
+
 ### dol.zipfiledol.zip_decompress(b, , allowZip64=True, compresslevel=None, strict_timestamps=True)
 
 Decompress input bytes of a single file zip, returning the uncompressed bytes
@@ -17002,7 +17002,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-14 00:04 UTC** from commit <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce</code></a> on branch <code>master</code>, for **dol 0.3.83** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-20 04:48 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd"><code>ce7bd4b</code></a> on branch <code>master</code>, for **dol 0.3.84** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17011,9 +17011,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d"><code>a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd"><code>ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.83</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.84</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17022,16 +17022,16 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/38487803166">38487803166</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39371357681">39371357681</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>30ee5ff1a9e856ee5c3afba084c63a1f7cad5108</code> (in the history of the built commit) |
+| Event commit | <code>ec26413d332f8216857ce6f1f77c65ed5fc9efde</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.17  |
-| Sphinx   | 9.1.0   |
+| epythet  | 0.2.18  |
+| Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
 
@@ -17049,14 +17049,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.83/">0.3.83</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.84/">0.3.84</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout a5901ce2e7c62d0c5fb9d3a27083c3e1f31fe55d
-pip install "epythet==0.2.17"
+git checkout ce7bd4baaed8c1b8f5bc50b17a3b895444fbdfcd
+pip install "epythet==0.2.18"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
@@ -17088,6 +17088,12 @@ Source: [`.claude/skills/dol-dev-portability`](https://github.com/i2mint/dol/tre
 Understand and safely modify dol’s core wrapping machinery — wrap_kvs, store_decorator, Store.wrap, and how transforms are applied. Use when touching dol/trans.py or dol/base.py; when changing how key/value transforms (key_of_id, id_of_key, obj_of_data, data_of_obj, postget, preset) are called; when a transform passed to wrap_kvs behaves unexpectedly (called with/without the store as first arg); when working Issues #9/#12/#18/#6/#5; or when a wrap_kvs change could ripple through the ~32 ecosystem packages that use it. Covers the signature-conditioning rule (name AND arity), the FirstArgIsMapping marker, the delegation (has-a) architecture and its ‘self is unwrapped’ trap, the subclass-signature-freeze trap, and the mandatory dependents test-gate. For end-user store-building, see the consumer skills; for Windows path issues, see dol-dev-portability.
 
 Source: [`.claude/skills/dol-dev-wrap-kvs`](https://github.com/i2mint/dol/tree/HEAD/.claude/skills/dol-dev-wrap-kvs).
+
+### `dol-facade-authoring`
+
+Author a dol facade over a new storage system: the backend itself, not codecs on top of one. Use when asked to ‘write a dol store for X’, start a ‘new <x>dol package’, ‘make X a MutableMapping’, build a ‘dol facade/backend/adapter for <storage>’, or ‘wrap this DB/API/file format as a dict’; also when adding a read-only reader for a file format or service to an existing dol package. Covers where the code should live (a module bridged into an existing package’s seam vs its own <x>dol package), the layering (connection, raw base store, codecs, one-call factory, malls), the Mapping contract each of the five methods must honour, error translation, why leaf capabilities are free functions or sibling stores and not methods (dol#83), optional backends and system dependencies with check_requirements, and offline testing with a fake source and a tiny generated fixture. For codecs, wrap_kvs, Pipe, filt_iter and caching on an existing backend, see dol-store-building; for dol’s wrapping internals, see dol-dev-wrap-kvs.
+
+Source: [`.claude/skills/dol-facade-authoring`](https://github.com/i2mint/dol/tree/HEAD/.claude/skills/dol-facade-authoring).
 
 ### `dol-store-building`
 

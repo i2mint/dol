@@ -23,6 +23,12 @@ Understand and safely modify dol's core wrapping machinery — wrap_kvs, store_d
 
 Source: [`.claude/skills/dol-dev-wrap-kvs`](https://github.com/i2mint/dol/tree/HEAD/.claude/skills/dol-dev-wrap-kvs).
 
+### `dol-facade-authoring`
+
+Author a dol facade over a new storage system: the backend itself, not codecs on top of one. Use when asked to 'write a dol store for X', start a 'new <x>dol package', 'make X a MutableMapping', build a 'dol facade/backend/adapter for <storage>', or 'wrap this DB/API/file format as a dict'; also when adding a read-only reader for a file format or service to an existing dol package. Covers where the code should live (a module bridged into an existing package's seam vs its own <x>dol package), the layering (connection, raw base store, codecs, one-call factory, malls), the Mapping contract each of the five methods must honour, error translation, why leaf capabilities are free functions or sibling stores and not methods (dol#83), optional backends and system dependencies with check_requirements, and offline testing with a fake source and a tiny generated fixture. For codecs, wrap_kvs, Pipe, filt_iter and caching on an existing backend, see dol-store-building; for dol's wrapping internals, see dol-dev-wrap-kvs.
+
+Source: [`.claude/skills/dol-facade-authoring`](https://github.com/i2mint/dol/tree/HEAD/.claude/skills/dol-facade-authoring).
+
 ### `dol-store-building`
 
 Build a dol store: wrap any storage backend (files, S3, DB, dict, an API) behind a uniform dict-like (MutableMapping) interface, adding key and value transforms/serialization. Use when a user wants to give a backend a dict interface, add JSON/pickle/gzip (or custom) serialization to a store, transform or filter keys, compose codecs, cache a slow store, or asks 'how do I use dol to ...'. Covers wrap_kvs (the core), the ValueCodecs/KeyCodecs namespaces, Pipe composition, the ready-made file stores (Files/TextFiles/JsonFiles/PickleFiles), filt_iter, the test-with-dict-then-swap-backend workflow, and self-aware transforms via FirstArgIsMapping. For authoring interactive scaffolds see the /new-store, /add-codec, /explain-store commands; for modifying dol's internals see dol-dev-wrap-kvs.

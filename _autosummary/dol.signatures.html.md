@@ -1259,7 +1259,7 @@ Insofar as it can, given the kind precedence rules, the arguments of self will
 appear first.
 
 * **Parameters:**
-  * **sig** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The signature to merge with.
+  * **sig** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The signature to merge with.
   * **ch_to_all_pk** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to change all kinds of both signatures to PK (
     POSITIONAL_OR_KEYWORD)
 * **Returns:**
@@ -2170,9 +2170,6 @@ Check if the signatures are call-compatible.
 
 Returns True if sig1 can be used to call sig2 or vice versa.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> sig1 = Sig(lambda a, b, c=3: None)
 >>> sig2 = Sig(lambda a, b: None)
@@ -2187,12 +2184,12 @@ False
 True
 ```
 
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 #### diff()
 
 Get a dictionary of differences between the two signatures.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> from pprint import pprint
@@ -2215,6 +2212,9 @@ Get a dictionary of differences between the two signatures.
 >>> pprint(SigPair(three, three).diff())
 {}
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 #### diff_str()
 
@@ -2354,7 +2354,7 @@ attributes (like name).
 Get an interable of Parameter instances from an object.
 
 * **Parameters:**
-  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
+  **obj** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
 * **Returns:**
 
 From a callable:
@@ -2733,7 +2733,7 @@ It is meant to be used with partial, but with a permissive base, contrary to the
 base param_comparator which requires strict equality (`eq`) for all attributes.
 
 * **Return type:**
-  *Comparison*
+  `Comparison`
 
 ### dol.signatures.dict_of_attribute_signatures(cls)
 
@@ -2763,7 +2763,7 @@ decorator, like so:
 Get an interable of Parameter instances from an object.
 
 * **Parameters:**
-  **obj** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
+  **obj** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)])
 * **Returns:**
 
 From a callable:
@@ -2978,7 +2978,7 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** (`Union`[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
+  * **params** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
@@ -3169,7 +3169,7 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** – Specifies what PO arguments should be extracted.
+  * **params** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
@@ -3360,7 +3360,7 @@ in the remainder
 ```
 
 * **Parameters:**
-  * **params** – Specifies what PO arguments should be extracted.
+  * **params** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – Specifies what PO arguments should be extracted.
     Could be a callable, Signature, iterable of Parameters…
   * **what_to_do_with_remainding** – ‘return’ (default): function will return `param_args`, `param_kwargs`,
     `remaining_kwargs`
@@ -3430,7 +3430,7 @@ to call `sig1` are valid for `sig2`.
 * **Parameters:**
   * **sig1** ([`Sig`](#dol.signatures.Sig)) – The main signature.
   * **sig2** ([`Sig`](#dol.signatures.Sig)) – The signature to be compared with.
-  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
+  * **param_comparator** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], `Comparison`] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The function used to compare two parameters
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
@@ -3494,9 +3494,6 @@ applied to each element before sorting. The keyed_comparator function allows a
 comparator to be extended in the same way. The returned comparator will apply the
 key function toeach input before applying the original comparator.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]
-
 ```pycon
 >>> from operator import eq
 >>> parity = lambda x: x % 2
@@ -3504,6 +3501,9 @@ key function toeach input before applying the original comparator.
 >>> list(map(comparator, [1, 1, 2, 2], [3, 4, 5, 6]))
 [True, False, False, True]
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]
 
 ### dol.signatures.kind_forgiving_func(func, kinds_modifier=<function convert_to_PK>)
 
@@ -3550,9 +3550,6 @@ args_with_defaults.
 
 Tries to find the (or “a”) name for an object, even if `__name__` doesn’t exist.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
-
 ```pycon
 >>> name_of_obj(map)
 'map'
@@ -3597,6 +3594,9 @@ If you want to get the fully qualified name of an object, you can do:
 'Signature.replace'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### dol.signatures.param_binary_func(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>, aggreg=<built-in function all>)
 
 Compare two parameters.
@@ -3618,13 +3618,13 @@ binary functions.
 * **Parameters:**
   * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
   * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
-  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare names
-  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare kinds
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare defaults
-  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare annotations
-  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
+  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
+  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
+  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
+  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)
+  `Comparison`
 
 ```pycon
 >>> from inspect import Parameter
@@ -3657,13 +3657,13 @@ binary functions.
 * **Parameters:**
   * **param1** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – first parameter
   * **param2** ([`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)) – second parameter
-  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare names
-  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare kinds
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare defaults
-  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Compared`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]) – function to compare annotations
-  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
+  * **name** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare names
+  * **kind** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare kinds
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare defaults
+  * **annotation** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Compared`, `Compared`], `Comparison`]) – function to compare annotations
+  * **aggreg** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[`Comparison`]], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – function to aggregate results
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Comparison`)
+  `Comparison`
 
 ```pycon
 >>> from inspect import Parameter
@@ -3687,7 +3687,7 @@ A ParamComparator that returns a dictionary with pairs parameter attributes.
 ```
 
 * **Return type:**
-  *Comparison*
+  `Comparison`
 
 ### dol.signatures.param_differences_dict(param1, param2, \*, name=<built-in function eq>, kind=<built-in function eq>, default=<built-in function eq>, annotation=<built-in function eq>)
 
@@ -3731,7 +3731,7 @@ It is meant to be used with partial, but with a permissive base, contrary to the
 base param_comparator which requires strict equality (`eq`) for all attributes.
 
 * **Return type:**
-  *Comparison*
+  `Comparison`
 
 ### dol.signatures.postprocess(egress)
 
@@ -3815,9 +3815,6 @@ want to get the source of the code decorated with `@property`, a
 
 Consider the following example:
 
-* **Return type:**
-  `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`T`), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
-
 ```pycon
 >>> from functools import cached_property, partial
 >>> class C:
@@ -3860,6 +3857,9 @@ True
 >>> isinstance(inspect.getsource(resolve_function(C.partial_func)), str)
 True
 ```
+
+* **Return type:**
+  [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`T`, [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)]
 
 ### dol.signatures.set_signature_of_func(func, parameters, , return_annotation, \_\_validate_parameters_\_=True)
 
@@ -3909,7 +3909,7 @@ Set the signature of a function, with sugar.
 Make a `class` (through `make_dataclass`) from the given signature.
 
 * **Parameters:**
-  * **sig** (`Union`[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
+  * **sig** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Signature`](https://docs.python.org/3/library/inspect.html#inspect.Signature), [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Parameter`](https://docs.python.org/3/library/inspect.html#inspect.Parameter)], [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – A `SignatureAble`, that is, anything that ensure_signature can
     resolve into an `inspect.Signature` object, including a signature object
     itself, but also most callables, a list or params, etc.
   * **cls_name** – The same as `cls_name` of `dataclasses.make_dataclass`
@@ -4030,9 +4030,6 @@ TypeError: got an unexpected keyword argument 'c'
 
 Validates the signature of a function.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)
-
 ```pycon
 >>> @validate_signature
 ... def has_valid_signature(x=Sig.empty, y=2):
@@ -4047,3 +4044,6 @@ Traceback (most recent call last):
 i2.signatures.InvalidSignature: Invalid signature for function <function does_no_have_valid_signature at 0x106a72a70>: non-default argument follows default a
 rgument
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)

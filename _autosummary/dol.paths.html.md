@@ -304,9 +304,6 @@ NamedTuple(i01_='life', ver=42)
 
 Generates a string from the dictionary values based on the template.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -315,12 +312,12 @@ Generates a string from the dictionary values based on the template.
 'root/life/v_042.json'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### dict_to_tuple(params)
 
 Generates a tuple from the dictionary values based on the template.
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -329,6 +326,9 @@ Generates a tuple from the dictionary values based on the template.
 >>> st.str_to_tuple('root/life/v_42.json')
 ('life', 42)
 ```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 #### filt_iter(field_type='str')
 
@@ -399,9 +399,6 @@ filter out keys that don’t fit the format, before you wrap the store with
 
 Returns True iff the string matches the template.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/{}/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -411,6 +408,9 @@ True
 >>> st.match_str('this/does/not_match')
 False
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 #### namedtuple_to_dict(nt)
 
@@ -455,9 +455,6 @@ Converts a simple character-delimited string to a dict.
 
 Generates a string from the single value based on the template.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -466,12 +463,12 @@ Generates a string from the single value based on the template.
 'root/life/v_042.json'
 ```
 
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### str_to_dict(s)
 
 Parses the input string and returns a dictionary of extracted values.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -481,6 +478,9 @@ Parses the input string and returns a dictionary of extracted values.
 >>> st.str_to_dict('root/life/v_30.json')
 {'i01_': 'life', 'ver': 30}
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 #### str_to_namedtuple(s)
 
@@ -514,9 +514,6 @@ Converts a string to a simple string (i.e. a simple character-delimited string).
 
 Parses the input string and returns a single value.
 
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
 ```pycon
 >>> st = KeyTemplate(
 ...     r'root/life/v_{ver:03.0f:\d+}.json', from_str_funcs={'ver': int},
@@ -525,12 +522,12 @@ Parses the input string and returns a single value.
 42
 ```
 
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
 #### str_to_tuple(s)
 
 Parses the input string and returns a tuple of extracted values.
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -540,12 +537,12 @@ Parses the input string and returns a tuple of extracted values.
 ('life', 42)
 ```
 
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)
+
 #### tuple_to_dict(param_vals)
 
 Generates a dictionary from the tuple values based on the template.
-
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -555,12 +552,12 @@ Generates a dictionary from the tuple values based on the template.
 {'i01_': 'life', 'ver': 42}
 ```
 
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
 #### tuple_to_str(param_vals)
 
 Generates a string from the tuple values based on the template.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ```pycon
 >>> st = KeyTemplate(
@@ -569,6 +566,9 @@ Generates a string from the tuple values based on the template.
 >>> st.tuple_to_str(('life', 42))
 'root/life/v_042.json'
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### *class* dol.paths.PathKeyTypes(\*values)
 
@@ -729,7 +729,7 @@ Ensure that the path_extender is a function that takes a path and a key and retu
 a new path.
 
 * **Return type:**
-  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]
 
 ### dol.paths.flatten_dict(d, sep='.', \*, parent_path=None, visit_nested=<function <lambda>>, egress=<class 'dict'>)
 
@@ -741,11 +741,11 @@ gives a lazy flat *view* of a store of stores.)
 
 * **Parameters:**
   * **d** – The dictionary to flatten
-  * **sep** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
+  * **sep** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
-  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]) – The path to the parent of the current dict
+  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[`Path`]) – The path to the parent of the current dict
   * **visit_nested** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function that returns True if a value should be visited
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 
 ```pycon
 >>> d = {'a': {'b': 2}, 'c': 3}
@@ -760,7 +760,7 @@ gives a lazy flat *view* of a store of stores.)
 Yield flattened key-value pairs from a nested dictionary.
 
 * **Return type:**
-  [`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]
+  [`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 ### dol.paths.get_attr_or_item(obj, k)
 
@@ -897,13 +897,13 @@ The output is a dict with the same keys and structure as the input, but the leaf
 values are replaced by the paths that would be used to access them in a flat dict.
 
 * **Parameters:**
-  * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`), NestedMapping[KT, VT]]]]]) – The nested dictionary to get the leaf paths from
-  * **sep** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`)], [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]) – The separator to use for joining keys, or a function that takes a path and
+  * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`VT`, [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`VT`, NestedMapping[KT, VT]]]]]) – The nested dictionary to get the leaf paths from
+  * **sep** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`Path`, `KT`], `Path`]]) – The separator to use for joining keys, or a function that takes a path and
     a key and returns a new path.
-  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]) – The path to the parent of the current dict
-  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
+  * **parent_path** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[`Path`]) – The path to the parent of the current dict
+  * **egress** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`Generator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Generator)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`KT`, `VT`], [`None`](https://docs.python.org/3/builtins/constants.html#None), [`None`](https://docs.python.org/3/builtins/constants.html#None)]], [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)]) – A function that takes a generator of key-value pairs and returns a mapping
 * **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), `Union`[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)]]
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[`KT`, [`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[`KT`, `Path`]]
 
 ### Example
 
@@ -976,7 +976,7 @@ Make a series of (in place) edits to a Mapping, specifying `(path, value)` pairs
 
 * **Parameters:**
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The mapping to edit.
-  * **edits** (`Union`[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]]) – An iterable of `(path, value)` tuples, or `path: value` Mapping.
+  * **edits** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[`Path`, `VT`], [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`Path`, `VT`]]]) – An iterable of `(path, value)` tuples, or `path: value` Mapping.
 * **Returns:**
   The edited mapping.
 * **Return type:**
@@ -1007,7 +1007,7 @@ You can also pass a dict of edits.
 Walk a dict, yielding paths to values that pass the `pkv_filt`
 
 * **Parameters:**
-  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
+  * **pkv_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – A function that takes a path, key, and value, and returns
     `True` if the path should be yielded, and `False` otherwise
   * **d** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – The `Mapping` to walk (scan through)
   * **leafs_only** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to yield only paths to leafs (default), or to yield
@@ -1015,7 +1015,7 @@ Walk a dict, yielding paths to values that pass the `pkv_filt`
   * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
 * **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[`PT`]
 * **Returns:**
   An iterator of paths to values that pass the `pkv_filt`
 
@@ -1072,7 +1072,7 @@ Get elements of a mapping through a path to be called recursively.
 * **Parameters:**
   * **obj** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – The object to get the path from
   * **path** – The path to get
-  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
+  * **on_error** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
   * **sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Determines a path is transforms into a tuple of keys.
     If it’s a string, `lambda path: path.split(sep)` is used.
     If not, it should be a function which takes in a path object and returns an iterable of keys.
@@ -1138,7 +1138,7 @@ obj and path are the opposite of path_get.
   * **paths** – The paths to get
   * **obj** – The object to get the paths from
   * **egress** – The egress function to use (default: dict)
-  * **on_error** (`Union`[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
+  * **on_error** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The error handler to use (default: raise_on_error)
   * **sep** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – The separator to use if the path is a string
   * **key_transformer** – A function to transform the keys of the path
   * **get_value** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – A function to get the value of a key in a mapping
@@ -1206,7 +1206,7 @@ backwards compatibility quasi-alias (arguments are flipped)
 Use path_filter instead, since search_paths will be deprecated.
 
 * **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)]
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[`PT`]
 
 ### dol.paths.separate_keys_with_separator(obj, sep='.')
 
@@ -1218,7 +1218,7 @@ Extends a given path with a new key using the specified separator.
 If the path is empty, the key is returned as is.
 
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Path`)
+  `Path`
 
 ### dol.paths.split_if_str(obj, sep='.')
 

@@ -242,9 +242,6 @@ See also `dol.KeyTemplate` for more general key-based views.
 
 Compress input bytes, returning the compressed bytes
 
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
-
 ```pycon
 >>> b = b'x' * 1000 + b'y' * 1000  # 2000 (quite compressible) bytes
 >>> len(b)
@@ -269,6 +266,9 @@ True
 True
 ```
 
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
+
 #### zip_decompress(, allowZip64=True, compresslevel=None, strict_timestamps=True)
 
 Decompress input bytes of a single file zip, returning the uncompressed bytes
@@ -290,11 +290,11 @@ Make a `cls` codec factory from an `encoder` and a `decoder`, with the merged si
 
 Transforms keys of mapping to omit the longest prefix they have in common
 
-### dol.kv_codecs.csv_decode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False)
+### dol.kv_codecs.csv_decode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False)
 
 Decode a CSV string into a list of rows (`csv.reader` arguments accepted).
 
-### dol.kv_codecs.csv_dict_decode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
+### dol.kv_codecs.csv_dict_decode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
 
 Decode a csv string into a list of dicts.
 
@@ -329,7 +329,7 @@ each field)
 [{'a': '1', 'b': 2.0}, {'a': '3', 'b': 4.0}]
 ```
 
-### dol.kv_codecs.csv_dict_encode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
+### dol.kv_codecs.csv_dict_encode(string, fieldnames, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False, restkey=None, restval='', extrasaction='raise', fieldcasts=None)
 
 Encode a list of dicts into a csv string.
 
@@ -340,7 +340,7 @@ Encode a list of dicts into a csv string.
 'a,b\r\n1,2\r\n3,4\r\n'
 ```
 
-### dol.kv_codecs.csv_encode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\\\r\\\\n', quoting=0, strict=False)
+### dol.kv_codecs.csv_encode(string, dialect='excel', delimiter=',', quotechar='"', escapechar=None, doublequote=True, skipinitialspace=False, lineterminator='\\r\\n', quoting=0, strict=False)
 
 Encode rows (an iterable of iterables) into a CSV string (`csv.writer` arguments accepted).
 

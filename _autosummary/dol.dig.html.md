@@ -129,9 +129,6 @@ enters that layer\*, which is what `store[k] = v` would do, then `_id_of_key` ma
 for the layer below. A leaf that has an `is_valid_key` method (e.g. `Files`) is asked
 about the innermost key last.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> from dol import filt_iter, KeyCodecs
 >>> s = KeyCodecs.prefixed('data/')(filt_iter(dict, filt=lambda k: k.endswith('.txt')))()
@@ -159,6 +156,9 @@ Limits (the probe reads what the layers *declare*): a layer that maps keys but h
 means while keeping the do-nothing `_id_of_key` (`add_path_access`, `flatten`, whose
 keys are tuples walked through the inner store) gets a silently wrong answer; so does a
 subclass that changes the key inside `__setitem__` before calling `super()`.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### dol.dig.store_trans_path(store, arg, method)
 

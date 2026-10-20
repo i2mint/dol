@@ -9,10 +9,11 @@
 <link rel="alternate" type="text/markdown" href="ai-agents.html.md">
 <link rel="describedby" href="llms.txt"><link rel="index" title="Index" href="genindex.html"><link rel="search" title="Search" href="search.html"><link rel="prev" title="dol.zipfiledol" href="_autosummary/dol.zipfiledol.html">
 
-    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.1.1 and Furo 2025.12.19 -->
         <title>For AI agents - dol</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
     
@@ -287,6 +288,11 @@ machine-readable copies of this documentation.</p>
 <p>Understand and safely modify dol’s core wrapping machinery — wrap_kvs, store_decorator, Store.wrap, and how transforms are applied. Use when touching dol/trans.py or dol/base.py; when changing how key/value transforms (key_of_id, id_of_key, obj_of_data, data_of_obj, postget, preset) are called; when a transform passed to wrap_kvs behaves unexpectedly (called with/without the store as first arg); when working Issues #9/#12/#18/#6/#5; or when a wrap_kvs change could ripple through the ~32 ecosystem packages that use it. Covers the signature-conditioning rule (name AND arity), the FirstArgIsMapping marker, the delegation (has-a) architecture and its ‘self is unwrapped’ trap, the subclass-signature-freeze trap, and the mandatory dependents test-gate. For end-user store-building, see the consumer skills; for Windows path issues, see dol-dev-portability.</p>
 <p>Source: <a class="reference external" href="https://github.com/i2mint/dol/tree/HEAD/.claude/skills/dol-dev-wrap-kvs"><code class="docutils literal notranslate"><span class="pre">.claude/skills/dol-dev-wrap-kvs</span></code></a>.</p>
 </section>
+<section id="dol-facade-authoring">
+<h3><code class="docutils literal notranslate"><span class="pre">dol-facade-authoring</span></code><a class="headerlink" href="#dol-facade-authoring" title="Link to this heading">¶</a></h3>
+<p>Author a dol facade over a new storage system: the backend itself, not codecs on top of one. Use when asked to ‘write a dol store for X’, start a ‘new <x>dol package’, ‘make X a MutableMapping’, build a ‘dol facade/backend/adapter for <storage>’, or ‘wrap this DB/API/file format as a dict’; also when adding a read-only reader for a file format or service to an existing dol package. Covers where the code should live (a module bridged into an existing package’s seam vs its own <x>dol package), the layering (connection, raw base store, codecs, one-call factory, malls), the Mapping contract each of the five methods must honour, error translation, why leaf capabilities are free functions or sibling stores and not methods (dol#83), optional backends and system dependencies with check_requirements, and offline testing with a fake source and a tiny generated fixture. For codecs, wrap_kvs, Pipe, filt_iter and caching on an existing backend, see dol-store-building; for dol’s wrapping internals, see dol-dev-wrap-kvs.</p>
+<p>Source: <a class="reference external" href="https://github.com/i2mint/dol/tree/HEAD/.claude/skills/dol-facade-authoring"><code class="docutils literal notranslate"><span class="pre">.claude/skills/dol-facade-authoring</span></code></a>.</p>
+</section>
 <section id="dol-store-building">
 <h3><code class="docutils literal notranslate"><span class="pre">dol-store-building</span></code><a class="headerlink" href="#dol-store-building" title="Link to this heading">¶</a></h3>
 <p>Build a dol store: wrap any storage backend (files, S3, DB, dict, an API) behind a uniform dict-like (MutableMapping) interface, adding key and value transforms/serialization. Use when a user wants to give a backend a dict interface, add JSON/pickle/gzip (or custom) serialization to a store, transform or filter keys, compose codecs, cache a slow store, or asks ‘how do I use dol to …’. Covers wrap_kvs (the core), the ValueCodecs/KeyCodecs namespaces, Pipe composition, the ready-made file stores (Files/TextFiles/JsonFiles/PickleFiles), filt_iter, the test-with-dict-then-swap-backend workflow, and self-aware transforms via FirstArgIsMapping. For authoring interactive scaffolds see the /new-store, /add-codec, /explain-store commands; for modifying dol’s internals see dol-dev-wrap-kvs.</p>
@@ -359,6 +365,7 @@ machine-readable copies of this documentation.</p>
 <li><a class="reference internal" href="#skills">Skills</a><ul>
 <li><a class="reference internal" href="#dol-dev-portability"><code class="docutils literal notranslate"><span class="pre">dol-dev-portability</span></code></a></li>
 <li><a class="reference internal" href="#dol-dev-wrap-kvs"><code class="docutils literal notranslate"><span class="pre">dol-dev-wrap-kvs</span></code></a></li>
+<li><a class="reference internal" href="#dol-facade-authoring"><code class="docutils literal notranslate"><span class="pre">dol-facade-authoring</span></code></a></li>
 <li><a class="reference internal" href="#dol-store-building"><code class="docutils literal notranslate"><span class="pre">dol-store-building</span></code></a></li>
 </ul>
 </li>
@@ -375,7 +382,7 @@ machine-readable copies of this documentation.</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=7e9dc082"></script>
+</div><script src="_static/documentation_options.js?v=96be8132"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>

@@ -310,7 +310,7 @@ For more, see: [https://github.com/i2mint/dol/wiki/Mapping-Views](https://github
 #### get(k, default=None)
 
 * **Return type:**
-  [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`Val`)
+  `Val`
 
 #### head()
 
@@ -693,16 +693,16 @@ Walks a nested structure of mappings, yielding stuff on the way.
 
 * **Parameters:**
   * **v** ([`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)) – A nested structure of mappings
-  * **leaf_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, what you want to yield when you encounter
+  * **leaf_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, what you want to yield when you encounter
     a leaf node (as define by walk_filt resolving to False)
-  * **walk_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – (p, k, vv) -> (bool) whether to explore the nested structure v further
-  * **pkv_to_pv** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]]) – (p, k, v) -> (pp, vv)
+  * **walk_filt** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – (p, k, vv) -> (bool) whether to explore the nested structure v further
+  * **pkv_to_pv** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`PT`, `VT`]]) – (p, k, v) -> (pp, vv)
     where pp is a form of p + k (update of the path with the new node k)
     and vv is the value that will be used by both walk_filt and leaf_yield
-  * **p** ([`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`)) – The path to v (used internally, mainly, to keep track of the path)
+  * **p** (`PT`) – The path to v (used internally, mainly, to keep track of the path)
   * **breadth_first** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Whether to perform breadth-first traversal
     (instead of the default depth-first traversal).
-  * **branch_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`KT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, optional yield function to yield before
+  * **branch_yield** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[`PT`, `KT`, `VT`], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]) – (pp, k, vv) -> Any, optional yield function to yield before
     the recursive walk of a branch. This is useful if you want to yield something
     for every branch, not just the leaves.
 * **Return type:**
@@ -840,7 +840,7 @@ Small callbacks for `Stream`: an always-true filter, a no-op, and rewind (`skip_
 Extend the path `p` with the key `k` and return `(new_path, v)` (the default `kv_walk` `pkv_to_pv`).
 
 * **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`PT`), [`TypeVar`](https://docs.python.org/3/library/typing.html#typing.TypeVar)(`VT`)]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[`PT`, `VT`]
 
 ### dol.base.val_is_mapping(p, k, v)
 
@@ -871,9 +871,6 @@ the wrappers is returned (ambiguous but never raw/None). This does not arise for
 class-wraps (each construction builds its own inner) nor for `copy.copy` (whose copies
 are transform-equivalent, so either answer is correct).
 
-* **Return type:**
-  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
-
 ```pycon
 >>> import math
 >>> from dol import wrap_kvs, wrapped_self
@@ -893,3 +890,6 @@ are transform-equivalent, so either answer is correct).
 >>> s.via_wrapped_self('2')                # wrapped_self recovers the transformed value
 2.0
 ```
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
