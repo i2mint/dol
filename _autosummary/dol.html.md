@@ -48,6 +48,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`naming`](dol.naming.html.md#module-dol.naming)                                   | This module is about generating, validating, and operating on (parametrized) fields (i.e. strings, e.g. paths). |
 | [`paths`](dol.paths.html.md#module-dol.paths)                                     | Module for path (and path-like) object manipulation                                                             |
 | [`recipes`](dol.recipes.html.md#module-dol.recipes)                                 | Recipes using dol                                                                                               |
+| [`records`](dol.records.html.md#module-dol.records)                                 | Records: a queryable CRUD facade for the small rows beside the blobs (#80).                                     |
 | [`signatures`](dol.signatures.html.md#module-dol.signatures)                           | Signature calculus: Tools to make it easier to work with function's signatures.                                 |
 | [`sources`](dol.sources.html.md#module-dol.sources)                                 | Key-value views of disparate sources.                                                                           |
 | [`tools`](dol.tools.html.md#module-dol.tools)                                     | Various tools to add functionality to stores.                                                                   |
