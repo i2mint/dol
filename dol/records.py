@@ -17,6 +17,8 @@ collection facade with CRUD and query, the Python mirror of zodal's ``DataProvid
 - :class:`Capabilities` — what a provider can do and push down, so callers degrade.
 - :class:`MappingProvider` — the reference provider over any ``MutableMapping`` of
   ``id -> record`` (a ``dict``, or any dol store of dicts, e.g. JSON files).
+- :class:`BifurcatedProvider` — records in a provider, their large fields in a
+  ``dol.content`` store, with :class:`~dol.content.ContentRef` s in their place.
 
 Stdlib only, like the rest of dol's core.
 
@@ -38,7 +40,7 @@ from __future__ import annotations
 import copy
 import itertools
 from collections.abc import Callable, Iterable, Mapping, MutableMapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Protocol, runtime_checkable
 
 Record = dict[str, Any]
@@ -53,6 +55,7 @@ __all__ = [
     "Capabilities",
     "DataProvider",
     "MappingProvider",
+    "BifurcatedProvider",
     "FILTER_OPERATORS",
     "filter_to_function",
     "matches_search",
@@ -117,7 +120,12 @@ class ListParams:
             if p
             else None
         )
-        return cls(sort=sort, filter=d.get("filter"), search=d.get("search"), pagination=pagination)
+        return cls(
+            sort=sort,
+            filter=d.get("filter"),
+            search=d.get("search"),
+            pagination=pagination,
+        )
 
 
 @dataclass(frozen=True)
@@ -162,7 +170,9 @@ class DataProvider(Protocol):
     def get_one(self, id: str) -> Record: ...
     def create(self, data: Mapping[str, Any]) -> Record: ...
     def update(self, id: str, data: Mapping[str, Any]) -> Record: ...
-    def update_many(self, ids: Iterable[str], data: Mapping[str, Any]) -> list[Record]: ...
+    def update_many(
+        self, ids: Iterable[str], data: Mapping[str, Any]
+    ) -> list[Record]: ...
     def delete(self, id: str) -> None: ...
     def delete_many(self, ids: Iterable[str]) -> None: ...
 
@@ -198,7 +208,9 @@ def _same(a, b) -> bool:
 
 
 def _member(x, values) -> bool:
-    return isinstance(values, (list, tuple, set, frozenset)) and any(_same(x, v) for v in values)
+    return isinstance(values, (list, tuple, set, frozenset)) and any(
+        _same(x, v) for v in values
+    )
 
 
 #: zodal's filter operators: ``operator -> (field_value, value) -> bool``.
@@ -215,9 +227,11 @@ FILTER_OPERATORS: dict[str, Callable[[Any, Any], bool]] = {
     "in": lambda f, v: _member(f, v),
     "notIn": lambda f, v: not _member(f, v),
     "arrayContains": lambda f, v: isinstance(f, (list, tuple)) and _member(v, f),
-    "arrayContainsAny": lambda f, v: isinstance(f, (list, tuple))
-    and isinstance(v, (list, tuple, set, frozenset))
-    and any(_member(x, f) for x in v),
+    "arrayContainsAny": lambda f, v: (
+        isinstance(f, (list, tuple))
+        and isinstance(v, (list, tuple, set, frozenset))
+        and any(_member(x, f) for x in v)
+    ),
     "isNull": lambda f, v: f is None,
     "isNotNull": lambda f, v: f is not None,
 }
@@ -251,7 +265,9 @@ def filter_to_function(
     try:
         name, op_name, value = filter["field"], filter["operator"], filter.get("value")
     except KeyError as e:
-        raise ValueError(f"a filter condition needs field and operator: {filter!r}") from e
+        raise ValueError(
+            f"a filter condition needs field and operator: {filter!r}"
+        ) from e
     try:
         op = operators[op_name]
     except KeyError:
@@ -268,8 +284,14 @@ def matches_search(
     if not search:
         return True
     needle = search.lower()
-    keys = fields if fields is not None else [k for k, v in record.items() if isinstance(v, str)]
-    return any(isinstance(record.get(k), str) and needle in record[k].lower() for k in keys)
+    keys = (
+        fields
+        if fields is not None
+        else [k for k, v in record.items() if isinstance(v, str)]
+    )
+    return any(
+        isinstance(record.get(k), str) and needle in record[k].lower() for k in keys
+    )
 
 
 def _sort_key(value):
@@ -351,7 +373,9 @@ class MappingProvider:
 
     @staticmethod
     def _next_free_int_id(store: Mapping) -> str:
-        return next(str(i) for i in itertools.count(len(store) + 1) if str(i) not in store)
+        return next(
+            str(i) for i in itertools.count(len(store) + 1) if str(i) not in store
+        )
 
     def _as_record(self, id: Any, value: Any) -> Record:
         if not isinstance(value, Mapping):
@@ -404,7 +428,9 @@ class MappingProvider:
     def update_many(self, ids: Iterable[Any], data: Mapping[str, Any]) -> list[Record]:
         """Apply ``data`` to every existing record of ``ids`` (missing ones are skipped)."""
         if data.get(self.id_field) is not None:
-            raise ValueError(f"update_many cannot set {self.id_field!r}: ids are unique")
+            raise ValueError(
+                f"update_many cannot set {self.id_field!r}: ids are unique"
+            )
         return [self.update(id, data) for id in ids if id in self.store]
 
     def delete(self, id: Any) -> None:
@@ -428,3 +454,175 @@ class MappingProvider:
 
     def capabilities(self) -> Capabilities:
         return Capabilities(can_upsert=True)
+
+
+# ----------------------------------------------------------------- bifurcation
+
+
+def _default_content_key(item_id: Any, field: str) -> str:
+    return f"{item_id}.{field}"
+
+
+class BifurcatedProvider:
+    """Records in a metadata provider, their large fields in a content store.
+
+    The record half of the content-metadata bifurcation: on write, the
+    ``content_fields`` of a record go to ``content_store`` (bytes, via
+    :func:`dol.content.put_content`) and the record keeps a
+    :class:`~dol.content.ContentRef` (its wire-form dict) in their place; on read the
+    refs come back, light enough to list, and :meth:`get_content` (or
+    ``get_one(id, resolve_content=True)``) fetches the bytes.
+
+    The metadata record is the commit point: content is written before the record
+    that refers to it is (for a new record, the record is created first to learn its
+    id, then compensated by deletion if a content write fails), and deleted after the
+    record is gone (a failed content delete leaves an orphan blob, never a dangling
+    ref).
+
+    >>> from dol.content import ContentRef
+    >>> clips = BifurcatedProvider(MappingProvider({}), {}, content_fields=["audio"])
+    >>> rec = clips.create({"title": "take 1", "audio": b"RIFF..."})
+    >>> ContentRef.from_json(rec["audio"]).item_id
+    '1.audio'
+    >>> clips.get_content(rec["id"], "audio")
+    b'RIFF...'
+    >>> clips.get_one("1", resolve_content=True)["audio"]
+    b'RIFF...'
+
+    :param metadata: the :class:`DataProvider` holding the records.
+    :param content_store: a ``MutableMapping`` of bytes (a dict, a dol ``Files``, S3...).
+    :param content_fields: the record fields whose values are bytes to offload.
+    :param content_key: ``(record id, field) -> content store key``.
+    """
+
+    def __init__(
+        self,
+        metadata: DataProvider,
+        content_store: MutableMapping[str, bytes],
+        *,
+        content_fields: Sequence[str],
+        id_field: str = "id",
+        content_key: Callable[[Any, str], str] = _default_content_key,
+    ):
+        if not content_fields:
+            raise ValueError("content_fields must name at least one field")
+        self.metadata, self.content_store = metadata, content_store
+        self.content_fields = tuple(content_fields)
+        self.id_field, self.content_key = id_field, content_key
+
+    def _split(self, data: Mapping[str, Any]) -> tuple[dict, dict]:
+        meta, content = {}, {}
+        for k, v in data.items():  # a None content field stays in the record as None
+            (content if k in self.content_fields and v is not None else meta)[k] = v
+        return meta, content
+
+    def _put(self, item_id: Any, content: Mapping[str, Any]) -> dict[str, dict]:
+        from dol.content import put_content
+
+        refs = {}
+        for field_name, value in content.items():
+            if value is None:
+                continue
+            if not isinstance(value, (bytes, bytearray)):
+                raise TypeError(
+                    f"content field {field_name!r} must be bytes, got {type(value).__name__}"
+                )
+            key = self.content_key(item_id, field_name)
+            refs[field_name] = put_content(
+                self.content_store, key, bytes(value), field=field_name
+            ).to_json()
+        return refs
+
+    def _drop_content(self, record: Mapping[str, Any]) -> None:
+        from dol.content import delete_content, is_content_ref
+
+        for field_name in self.content_fields:
+            ref = record.get(field_name)
+            if is_content_ref(ref):
+                try:
+                    delete_content(self.content_store, ref)
+                except KeyError:
+                    pass  # already gone
+
+    # -- DataProvider ---------------------------------------------------------------
+
+    def get_list(self, params: ListParams | Mapping | None = None) -> ListResult:
+        return self.metadata.get_list(params)
+
+    def get_one(self, id: Any, *, resolve_content: bool = False) -> Record:
+        record = self.metadata.get_one(id)
+        if resolve_content:
+            for field_name in self.content_fields:
+                if record.get(field_name) is not None:
+                    record[field_name] = self.get_content(id, field_name)
+        return record
+
+    def get_content(self, id: Any, field: str) -> bytes:
+        """The bytes of one content field of record ``id``."""
+        from dol.content import get_content
+
+        ref = self.metadata.get_one(id).get(field)
+        if ref is None:
+            raise KeyError(f"record {id!r} has no {field!r} content")
+        return get_content(self.content_store, ref)
+
+    def create(self, data: Mapping[str, Any]) -> Record:
+        meta, content = self._split(data)
+        created = self.metadata.create(meta)
+        if not any(v is not None for v in content.values()):
+            return created
+        id = created[self.id_field]
+        try:
+            refs = self._put(id, content)
+            return self.metadata.update(id, refs)
+        except Exception:
+            self._drop_content(
+                {
+                    f: {"_tag": "ContentRef", "itemId": self.content_key(id, f)}
+                    for f in content
+                }
+            )
+            try:
+                self.metadata.delete(
+                    id
+                )  # compensate: the record must not outlive a failure
+            except Exception:
+                pass
+            raise
+
+    def update(self, id: Any, data: Mapping[str, Any]) -> Record:
+        meta, content = self._split(data)
+        self.metadata.get_one(id)  # RecordNotFound before any blob is written
+        refs = self._put(id, content)  # content first: the record then commits it
+        return self.metadata.update(id, {**meta, **refs})
+
+    def update_many(self, ids: Iterable[Any], data: Mapping[str, Any]) -> list[Record]:
+        meta, content = self._split(data)
+        if not content:
+            return self.metadata.update_many(ids, meta)
+        updated = []
+        for id in ids:
+            try:
+                updated.append(self.update(id, data))
+            except RecordNotFound:
+                continue  # missing ids are skipped, as in update_many
+        return updated
+
+    def delete(self, id: Any) -> None:
+        record = self.metadata.get_one(id)
+        self.metadata.delete(id)  # the commit point goes first: no dangling ref
+        self._drop_content(record)
+
+    def delete_many(self, ids: Iterable[Any]) -> None:
+        for id in ids:
+            try:
+                self.delete(id)
+            except RecordNotFound:
+                pass
+
+    def capabilities(self) -> Capabilities:
+        base = getattr(self.metadata, "capabilities", None)
+        caps = base() if callable(base) else Capabilities()
+        return replace(
+            caps, bifurcated=True, content_fields=self.content_fields, can_upsert=False
+        )
