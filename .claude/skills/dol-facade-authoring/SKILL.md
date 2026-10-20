@@ -74,7 +74,10 @@ A read-only reader, its persister and the factory. A fuller version, with error 
 from collections.abc import Iterator
 from functools import cached_property
 from dol import KvReader, KvPersister, ValueCodecs
-from widget_sdk import WidgetNotFound, make_client as _default_client  # the backend's own SDK
+from widget_sdk import (
+    WidgetNotFound,
+    make_client as _default_client,
+)  # the backend's own SDK
 
 
 class WidgetReader(KvReader):
@@ -116,7 +119,10 @@ class WidgetStore(WidgetReader, KvPersister):
 
 
 def widget_store(
-    namespace: str = "default", *, client=None, read_only: bool = False,
+    namespace: str = "default",
+    *,
+    client=None,
+    read_only: bool = False,
     value_codec=ValueCodecs.json() + ValueCodecs.str_to_bytes(),
 ):
     """A ready store: JSON values over the raw bytes store."""

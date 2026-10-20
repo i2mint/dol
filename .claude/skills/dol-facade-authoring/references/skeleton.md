@@ -54,9 +54,14 @@ class SdkSource:
 
         self._client = widget_sdk.connect(location)
 
-    def list_ids(self): return self._client.list()
-    def exists(self, k): return self._client.exists(k)
-    def get(self, k): return self._client.get(k)
+    def list_ids(self):
+        return self._client.list()
+
+    def exists(self, k):
+        return self._client.exists(k)
+
+    def get(self, k):
+        return self._client.get(k)
 
 
 class CliSource:
@@ -81,12 +86,16 @@ def _resolve_backend(backend):
             if source.is_available():
                 return source
         hints = "\n".join(f"  - {n}: {s.install_hint}" for n, s in BACKENDS.items())
-        raise MissingBackendError(f"No widget backend is available. Install one of:\n{hints}")
+        raise MissingBackendError(
+            f"No widget backend is available. Install one of:\n{hints}"
+        )
     if backend not in BACKENDS:
         raise ValueError(f"Unknown widget backend {backend!r}. Known: {list(BACKENDS)}")
     source = BACKENDS[backend]
     if not source.is_available():
-        raise MissingBackendError(f"The {backend!r} backend is not available. {source.install_hint}")
+        raise MissingBackendError(
+            f"The {backend!r} backend is not available. {source.install_hint}"
+        )
     return source
 
 
@@ -94,7 +103,9 @@ def check_requirements(*, verbose: bool = True) -> dict:
     available = {n: s.is_available() for n, s in BACKENDS.items()}
     if verbose:
         for n, ok in available.items():
-            print(f"{n:12} {'available' if ok else 'missing: ' + BACKENDS[n].install_hint}")
+            print(
+                f"{n:12} {'available' if ok else 'missing: ' + BACKENDS[n].install_hint}"
+            )
     return available
 ```
 
@@ -163,15 +174,21 @@ import pytest
 
 
 class _DictSource:
-    def __init__(self, data): self.data = dict(data)
+    def __init__(self, data):
+        self.data = dict(data)
 
     @classmethod
     def factory(cls, data):
         return lambda location: cls(data)
 
-    def list_ids(self): return list(self.data)
-    def exists(self, k): return k in self.data
-    def get(self, k): return self.data[k]  # KeyError is a LookupError, like the real one
+    def list_ids(self):
+        return list(self.data)
+
+    def exists(self, k):
+        return k in self.data
+
+    def get(self, k):
+        return self.data[k]  # KeyError is a LookupError, like the real one
 
 
 def test_mapping_contract():
@@ -191,6 +208,7 @@ def test_unknown_backend_raises():
 
 def test_ops_refuses_wrapped_store():
     from dol import KeyCodecs
+
     r = WidgetReader("x", backend=_DictSource.factory({"p/a": b"1"}))
     w = KeyCodecs.prefixed("p/")(r)
     assert list(w) == ["a"]
