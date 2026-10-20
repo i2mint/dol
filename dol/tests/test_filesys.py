@@ -548,3 +548,18 @@ def test_write_open_kwargs_opener_and_encode_before_open(tmp_path):
     b = Files(str(tmp_path), write_open_kwargs=dict(opener=owner_only))
     b["b"] = b"x"
     assert b["b"] == b"x"
+
+
+def test_bytes_persister_rejects_non_bytes_before_open(tmp_path):
+    """i2mint/dol#139: a non-bytes-like value must not truncate the existing file."""
+    import pytest
+    from dol import Files
+
+    s = Files(str(tmp_path))
+    s["c"] = b"keep"
+    for bad in ("str", 1, None):
+        with pytest.raises(KeyError):  # the store wraps write errors as KeyError
+            s["c"] = bad
+    assert s["c"] == b"keep"
+    s["c"] = bytearray(b"ok")
+    assert s["c"] == b"ok"
