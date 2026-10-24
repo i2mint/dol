@@ -5,7 +5,7 @@
 > of [dol_issues_report.md](dol_issues_report.md) §2 (kept as the 2026-07-02 triage
 > snapshot — its close-list, dependency map, and verification log remain the
 > evidence record). Design content lives in the linked docs; this file only
-> sequences it. Last updated 2026-08-21 (Track D #91 built).
+> sequences it. Last updated 2026-10-24 (storage tiering decided; see Decided inputs).
 
 ## The program in one paragraph
 
@@ -28,7 +28,7 @@ walkthrough of how we got here.
 | **P0 — prototype** | **done** (v0.3.62–63, PRs [#88](https://github.com/i2mint/dol/pull/88)/[#89](https://github.com/i2mint/dol/pull/89)) | Private `dol/_interface_wrap.py` + ~45 tests; the six decisions Q0–Q5 implemented where code was called for (Q2 `exclude` default, Q3 typed-codec seams, Q4 outer-view eq, Q1 `MappingInterface` + `kv_interface_wrap` facade). |
 | **P1 — adapter trials** | **in progress** | Census-family adapters trial `interface_wrap` on spec-expressible surfaces; sibling stores per the spec-expressibility rule. First trial (s3dol `url_for`) posted to [#86](https://github.com/i2mint/dol/discussions/86) on 2026-08-11. Remaining: more adapters, the adapter-side conformance helper, the legacy-path warning idea. Export of the engine is reconsidered only after P1 evidence (decision Q1). |
 | **P2 — the wrap_kvs facade** | not started; **gated on the compatibility appendix** | A wrap_kvs facade over the engine for flat-equivalent configurations (falling back to nesting, loudly, where a layer observes its domain). Must answer first: does the product subclass `Store`; what does `.store` return (≥51 lines in dol core read it); is the #6 signature graft kept; does the engine register the `wrapped_self` backref. Also P2: tag `dol.trans.Codec` with the Q3 type tags (dependents test-gate). |
-| **P3 — layer vocabulary** | intent recorded → **[#93](https://github.com/i2mint/dol/issues/93)** | Extend the flat stack beyond pure codecs: filter / cache / contextual-codec / interceptor layer kinds, and spec-registered fast-ops ([#24](https://github.com/i2mint/dol/discussions/24), [#56](https://github.com/i2mint/dol/issues/56)). See Track D interplay: the layer-kind design should inherit the new vocabulary from #92. |
+| **P3 — layer vocabulary** | intent recorded → **[#93](https://github.com/i2mint/dol/issues/93)** | Extend the flat stack beyond pure codecs: filter / cache / contextual-codec / interceptor layer kinds, and spec-registered fast-ops ([#24](https://github.com/i2mint/dol/discussions/24), [#56](https://github.com/i2mint/dol/issues/56)). See Track D interplay: the layer-kind design should inherit the new vocabulary from #92. **Decided 2026-10-24**: a bounded value cache / two-tier store is *not* a codec layer and does not wait for this phase; it ships in xdol as a composite store and becomes a `bounded value-cache` kind here when the vocabulary lands (see Decided inputs: storage tiering, decision 2). |
 
 ## Track B — is-a class decoration
 
@@ -91,7 +91,8 @@ Sequencing is **ledger first** — both other legs consume it.
    ship with the list and are generated into it: fleet-only scope (dol is on PyPI),
    5 star-importing packages, and **47** submodule-only names that are live compat
    surface without being exports. Complementary to
-   [#70](https://github.com/i2mint/dol/issues/70).
+   [#70](https://github.com/i2mint/dol/issues/70). The move list awaits the owner in
+   [#145](https://github.com/i2mint/dol/issues/145). Storage tiering (2026-10-24) placed nothing new in core: `TieredStore`, `AccessLog` and the verify/backfill/reconcile companions go to xdol ([i2mint/xdol#15–#17](https://github.com/i2mint/xdol/issues/16)), consistent with this audit.
 
 ## Track E — hygiene and remaining triage
 
@@ -109,6 +110,7 @@ Sequencing is **ledger first** — both other legs consume it.
   packages.
 - **Untriaged** (filed after the 2026-07-02 triage):
   [#82](https://github.com/i2mint/dol/issues/82) (prefix-relativization boundary bug).
+- **Routed out (2026-10-24)**: #109 (`WriteThrough`), #151 (tiered store) and #152 (access tracking) were transferred to xdol as [i2mint/xdol#15](https://github.com/i2mint/xdol/issues/15), [#16](https://github.com/i2mint/xdol/issues/16) and [#17](https://github.com/i2mint/xdol/issues/17) (the old dol URLs redirect); see Decided inputs: storage tiering.
 - Repo cleanup notes: the remote branch refs for merged PRs #88/#89 and the
   2026-07-11 `stash/*` branches (full-tree WIP snapshots predating the whole
   #83/#86 cycle) are stale and can be pruned after a quick skim for salvage.
@@ -135,3 +137,17 @@ Full record: [dol_issue86_design.md §11](dol_issue86_design.md); narrative:
 [#90](https://github.com/i2mint/dol/discussions/90). Also standing: the rebind
 family is rejected (twice, on strengthened grounds — §6 of the same doc);
 `clear()` stays disabled on `KvPersister`.
+
+### Storage tiering (decided 2026-10-24; re-open only with new evidence)
+
+Context: the owner's platform ADR-0025 (Accepted 2026-10-24) needs a write-through, hot-local-over-cold-object-store tier and per-key access tracking, constructed by a `data_store(project, kind)` resolver ([thorwhalen/tw_platform#421](https://github.com/thorwhalen/tw_platform/issues/421)). The components are generic (`hot` and `cold` are any `MutableMapping`s) and the question was where in the dol family they go and how they relate to the flat engine. Four decisions, each recorded in the issue it governs:
+
+1. **One component, not two.** The write-through pair of the former #109 (`WriteThrough(master, copy)`) and the tiered store of the former #151 share one write path (cold/master first, then hot/copy; a cold failure propagates with hot untouched; a hot failure after cold accepted is `HotWriteError`) and one read path (hot, then cold). The mirror is the tier with `budget_bytes=None`; the bounded tier adds a `PlacementPolicy`; `budget_bytes=0` is cold-only. Overwrite and delete refusal compose from dol's existing `disable_delitem` and overwrite-refusing mixin, so `may_overwrite`, `create_only` and `read_from` are not arguments. The companions `verify`, `backfill`, `reconcile` are thin names over `xdol.updating`, which already has the mapping-update-with-policy family; `verify` is also what evicts hot copies made stale by a second writer, so it is not `sweep`'s job. Issues: #151 → [i2mint/xdol#16](https://github.com/i2mint/xdol/issues/16) (the component), #152 → [i2mint/xdol#17](https://github.com/i2mint/xdol/issues/17) (tracking), #109 → [i2mint/xdol#15](https://github.com/i2mint/xdol/issues/15) (companions), all transferred and rewritten as buildable contracts.
+
+2. **Not a codec layer; ships now.** A bounded cache or tier is a two-store composite (the `CascadedStores` family), a *leaf* to the flat engine today and a candidate `bounded value-cache` layer kind for P3 ([#93](https://github.com/i2mint/dol/issues/93)). It waits for neither P2 nor P3. Migration path: the class exposes exactly the `MutableMapping` protocol plus read-only `hot`, `cold`, `policy`, `tracker`, `budget_bytes`; every verb (`sweep`, `pin`, `unpin`, `status`, `prefetch`) is a store-first free function and `local_paths` a sibling store, per the spec-expressibility rule, so `interface_wrap` over it hides nothing today; when #93's layer kinds land, xdol registers the tier as a layer (leaf = cold, state = hot + tracker + policy; fast ops: batch-get splits hot hits from cold misses, batch-write and batch-delete go cold then hot) and no caller changes. The dependency stays one-way (xdol → dol).
+
+3. **Names**, under #92's horizon (no `X_of_Y`, units in names, seams keyword-only): `TieredStore(hot, cold, *, budget_bytes, policy, tracker)`; `PlacementPolicy` (protocol: `admit`, `to_release`, `high_watermark`, `low_watermark`) with `GdsfPolicy` the one shipped implementation (`min_residency_s`, `admit_after_reads`, `admit_window_s`, `cost_per_request`, `cost_per_byte`; LRU is the pointable, unshipped replacement); `AccessStats`, `AccessLog(path, *, clock, tag)`, `track_access(store, *, tracker, clock, tag)`, `merge_stats`, `default_access_log_for`; errors `TieringError`, `HotWriteError`; companions `verify`, `backfill`, `reconcile`.
+
+4. **Home: nothing enters dol core.** Tier, policy, tracking and companions go to **xdol** (`xdol.tiering`, `xdol.access`, `xdol.updating`): core is shedding exactly this class of member (#145 moves `WriteBackChainMap`, `mk_write_cached_store`, `flush_on_exit` out), the component consumes only `MutableMapping` so P2/P3 cannot break it, xdol is the lower-blast-radius place for a v1 whose policy protocol may still move, and xdol already hosts the reconcile family. Promotion to core stays open at a boundary: if P3 makes the tier a layer kind the fleet relies on, it moves the other way. The resolver is a new package, **`stowage`**, in `i/` (i2mint, a dol sibling: it depends on dol, xdol, s3dol and config2py and is not platform-specific); it owns the stores-file settings schema, read through one `settings` argument, and the CLI (`sweep`, `status`, `pin`, `unpin`, `prefetch`), because only the resolver knows which stores exist. ADR-0025 §5 says "in dol"; the one-word amendment and the name confirmation are the owner's: [#153](https://github.com/i2mint/dol/issues/153) (manual-task).
+
+Build order: xdol#17 → xdol#16 → xdol#15 → `stowage` (tw_platform#421).
