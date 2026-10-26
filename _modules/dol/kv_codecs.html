@@ -576,28 +576,30 @@
     <span class="k">return</span> <span class="bp">cls</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_raise_module_unavailable</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">reason</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"The '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' codec needs the stdlib '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' module, which this "</span>
+        <span class="sa">f</span><span class="s2">"Python was built without (</span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">). Install the system library "</span>
+        <span class="sa">f</span><span class="s2">"(e.g. xz/bzip2 headers) and rebuild Python."</span>
+    <span class="p">)</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_optional_stdlib_module</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Import a stdlib module that CPython may be built without (``bz2``, ``lzma``).</span>
 
 <span class="sd">    If it is missing, return a stand-in whose ``compress``/``decompress`` raise an</span>
 <span class="sd">    informative ``ImportError`` when *called*, so importing ``dol`` still works.</span>
+<span class="sd">    The stand-in functions are picklable (a ``partial`` of a module-level function).</span>
 <span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">err</span> <span class="o">=</span> <span class="n">e</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">_unavailable</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"The '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' codec needs the stdlib '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' module, which this "</span>
-                <span class="sa">f</span><span class="s2">"Python was built without (</span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">). Install the system library "</span>
-                <span class="sa">f</span><span class="s2">"(e.g. xz/bzip2 headers) and rebuild Python."</span>
-            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">err</span>
-
-        <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">compress</span><span class="o">=</span><span class="n">_unavailable</span><span class="p">,</span> <span class="n">decompress</span><span class="o">=</span><span class="n">_unavailable</span><span class="p">)</span>
+        <span class="n">unavailable</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">_raise_module_unavailable</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">compress</span><span class="o">=</span><span class="n">unavailable</span><span class="p">,</span> <span class="n">decompress</span><span class="o">=</span><span class="n">unavailable</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ValueCodecs">
@@ -985,7 +987,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=9b86714d"></script>
+</div><script src="../../_static/documentation_options.js?v=bb37eba6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
