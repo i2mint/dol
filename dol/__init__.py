@@ -142,6 +142,7 @@ from dol.trans import (
     FirstArgIsMapping,  # mark a transform whose first arg is the store (self), not data
     confirm_overwrite,  # wrap_kvs preset: confirm before overwriting a differing value
     mk_confirm_overwrite_preset,  # factory for a customizable confirm_overwrite preset
+    on_overwrite,  # overwrite policy for a store: warn/raise/overwrite + same-value check
     filt_iter,  # filter store keys (and contains ready to use filters as attributes)
     cached_keys,  # cache store keys
     add_decoder,  # add a decoder (i.e. outcomming value transformer) to a store
