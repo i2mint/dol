@@ -232,7 +232,10 @@ def test_subfolder_stores():
         # Testing folder1
         folder1_store = stores["folder1"]
         assert isinstance(folder1_store, Files)
-        assert set(folder1_store.keys()) == {"day.doc", os.path.join("subfolder", "apple.p")}
+        assert set(folder1_store.keys()) == {
+            "day.doc",
+            os.path.join("subfolder", "apple.p"),
+        }
         assert folder1_store["day.doc"] == b"time"
 
         # Testing folder1/subfolder
@@ -252,7 +255,8 @@ def test_subfolder_stores():
 def test_is_valid_key_sees_the_inner_key(tmpdir):
     """``Files`` is ``mk_relative_path_store(FileBytesPersister)``, so ``is_valid_key`` was
     reached through ``Store.__getattr__`` with the RELATIVE key while the leaf matched it
-    against a pattern built from the absolute path -- returning False for keys that exist."""
+    against a pattern built from the absolute path -- returning False for keys that exist.
+    """
     import os
 
     from dol import Files, TextFiles
@@ -484,9 +488,10 @@ def test_symlink_then_dotdot_is_refused_by_every_containment_user(tmp_path):
         s[os.path.join("lnk", "..", "made", "x.txt")] = b"pwned"
     assert not (tmp_path / "outside" / "made").exists()
     # allow_escape=True is the explicit opt-out
-    assert Files(str(root), allow_escape=True)[
-        os.path.join("lnk", "..", "secret.txt")
-    ] == b"secret"
+    assert (
+        Files(str(root), allow_escape=True)[os.path.join("lnk", "..", "secret.txt")]
+        == b"secret"
+    )
 
 
 def test_rootdir_with_dotdot_after_a_symlink_lists_and_reads(tmp_path):
@@ -563,3 +568,26 @@ def test_bytes_persister_rejects_non_bytes_before_open(tmp_path):
     assert s["c"] == b"keep"
     s["c"] = bytearray(b"ok")
     assert s["c"] == b"ok"
+
+
+def test_path_of_follows_wrappers_and_validates(tmp_path):
+    import os
+
+    import pytest
+
+    from dol import Files, KeyCodecs, path_of, wrap_kvs
+    from dol.filesys import KeyValidationError
+
+    root = str(tmp_path)
+    assert path_of(Files(root), "a/b.txt") == os.path.join(root, "a", "b.txt")
+    suffixed = KeyCodecs.suffixed(".json")(Files(root))
+    assert path_of(suffixed, "a") == os.path.join(root, "a.json")
+    upper = wrap_kvs(Files(root), id_of_key=str.lower, key_of_id=str.upper)
+    assert path_of(upper, "ABC") == os.path.join(root, "abc")
+    with pytest.raises(KeyError):
+        path_of(Files(root), "../x")
+    with pytest.raises(KeyValidationError):
+        path_of(suffixed, "../x")
+    with pytest.raises(TypeError):
+        path_of({}, "a")
+    assert os.listdir(root) == []  # nothing created

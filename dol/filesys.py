@@ -524,9 +524,9 @@ class FileSysCollection(Collection):
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
-        assert max_levels >= subpath_implied_min_levels, (
-            f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
-        )
+        assert (
+            max_levels >= subpath_implied_min_levels
+        ), f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
         self.subpath = subpath
@@ -1048,6 +1048,44 @@ def _missing_dir_of_key(store, k):
     except KeyValidationError:
         return None  # the write will raise for this key; make no dirs for it (#107)
     return dirname
+
+
+def path_of(store, key) -> str:
+    """The file-system path of ``key`` in a file-backed ``store``, however it is wrapped.
+
+    The key is followed through every layer's ``_id_of_key`` (the same walk as
+    ``dol.inner_most_key``) down to the innermost file-system store, which must accept
+    the result: a key leaving ``rootdir`` raises ``KeyValidationError`` (a ``KeyError``),
+    as a read or write of it would. A store with no file-system layer at its core
+    raises ``TypeError``. Nothing is read or created.
+
+    >>> import tempfile
+    >>> from dol import Files, KeyCodecs
+    >>> root = tempfile.mkdtemp()
+    >>> path_of(Files(root), 'a/b.txt') == os.path.join(root, 'a', 'b.txt')
+    True
+    >>> s = KeyCodecs.suffixed('.json')(Files(root))  # wrapped: the outer key is mapped
+    >>> path_of(s, 'a').endswith('a.json')
+    True
+    >>> path_of(Files(root), '../x')
+    Traceback (most recent call last):
+      ...
+    dol.filesys.KeyValidationError: 'Key not valid (usually because does not exist or access not permitted): ...'
+    >>> path_of({}, 'a')
+    Traceback (most recent call last):
+      ...
+    TypeError: ...
+    """
+    from dol.dig import inner_most_key
+
+    innermost = _innermost_layer(store)
+    if not isinstance(innermost, FileSysCollection):
+        raise TypeError(
+            f"{type(innermost).__name__} is not a file-system store: no path for {key!r}"
+        )
+    path = os.fspath(inner_most_key(store, key))
+    innermost.validate_key(path)
+    return path
 
 
 def _innermost_layer(store):
