@@ -361,6 +361,7 @@ class ValueCodecs(CodecCollection):
         """To contain default codecs. Is populated by @_add_default_codecs"""
 
     import pickle, json, gzip, base64 as b64, codecs, io
+
     bz2 = _optional_stdlib_module("bz2")
     lzma = _optional_stdlib_module("lzma")
     from operator import methodcaller
