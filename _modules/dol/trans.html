@@ -2917,6 +2917,34 @@
 
 
 
+<span class="n">_ABSENT</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>  <span class="c1"># sentinel: "no differing existing value"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_not_ne</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""``not (a != b)``: the historical sameness test of ``confirm_overwrite``."""</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_same_value</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Default ``same`` for :func:`on_overwrite`: identity, else ``bool(a == b)``; any</span>
+<span class="sd">    error (e.g. an ambiguous array comparison) counts as "not the same"."""</span>
+    <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="n">b</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">a</span> <span class="o">==</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_existing_if_different</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">same</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Return the value ``self`` holds at ``k`` if there is one that is not</span>
+<span class="sd">    ``same(existing, v)``, else ``_ABSENT``."""</span>
+    <span class="n">existing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_ABSENT</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_ABSENT</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">same</span><span class="p">(</span><span class="n">existing</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">existing</span>
+    <span class="k">return</span> <span class="n">_ABSENT</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_dflt_overwrite_prompt</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="sa">f</span><span class="s2">"The key </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> already exists and has value </span><span class="si">{</span><span class="n">existing</span><span class="si">}</span><span class="s2">. "</span>
@@ -2961,9 +2989,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">confirm_overwrite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""``preset`` that returns ``v`` unless ``k`` already holds a different value</span>
 <span class="sd">        and the user does not confirm; then the existing value is kept."""</span>
-        <span class="n">_sentinel</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
-        <span class="n">existing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">_sentinel</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_sentinel</span> <span class="ow">and</span> <span class="n">existing</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="n">_existing_if_different</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_not_ne</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">_ABSENT</span><span class="p">:</span>
             <span class="c1"># resolve ``input`` at call time (not capture) so monkeypatching works</span>
             <span class="n">ask</span> <span class="o">=</span> <span class="n">get_input</span> <span class="k">if</span> <span class="n">get_input</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">input</span>
             <span class="k">if</span> <span class="n">ask</span><span class="p">(</span><span class="n">prompt</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
@@ -2985,6 +3012,126 @@
 <span class="c1">#: &gt;&gt;&gt; dict(d) == {'a': 'apple', 'b': 'banana', 'c': 'coconut'}</span>
 <span class="c1">#: True</span>
 <span class="n">confirm_overwrite</span> <span class="o">=</span> <span class="n">mk_confirm_overwrite_preset</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_overwrite_msg</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"key </span><span class="si">{</span><span class="n">k</span><span class="si">!r}</span><span class="s2"> already exists with a different value"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_on_overwrite</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">warn</span><span class="p">(</span><span class="n">_overwrite_msg</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"; overwriting it"</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_raise_on_overwrite</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">OverWritesNotAllowedError</span><span class="p">(</span><span class="n">_overwrite_msg</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_just_overwrite</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">new</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">new</span>
+
+
+<span class="c1">#: Named overwrite strategies: ``(k, existing, new, *, stacklevel) -&gt; value to write``.</span>
+<span class="n">_OVERWRITE_POLICIES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"warn"</span><span class="p">:</span> <span class="n">_warn_on_overwrite</span><span class="p">,</span>
+    <span class="s2">"raise"</span><span class="p">:</span> <span class="n">_raise_on_overwrite</span><span class="p">,</span>
+    <span class="s2">"overwrite"</span><span class="p">:</span> <span class="n">_just_overwrite</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_overwrite_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stacklevel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Turn a policy name or a ``(k, existing, new) -&gt; value`` callable into a strategy.</span>
+
+<span class="sd">    &gt;&gt;&gt; _resolve_overwrite_policy("nope", stacklevel=3)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    ValueError: policy must be one of ['warn', 'raise', 'overwrite'] or a callable, got 'nope'</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">policy</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">policy</span>
+    <span class="k">if</span> <span class="n">policy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_OVERWRITE_POLICIES</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"policy must be one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">_OVERWRITE_POLICIES</span><span class="p">)</span><span class="si">}</span><span class="s2"> or a callable, "</span>
+            <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="n">policy</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="c1"># stacklevel + 1: the preset adds one frame between the strategy and __setitem__</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">_OVERWRITE_POLICIES</span><span class="p">[</span><span class="n">policy</span><span class="p">],</span> <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mk_overwrite_policy_preset</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="s2">"warn"</span><span class="p">,</span> <span class="n">same</span><span class="o">=</span><span class="n">_same_value</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Make a ``wrap_kvs`` ``preset`` applying an overwrite ``policy``.</span>
+<span class="sd">    See :func:`on_overwrite`."""</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">_resolve_overwrite_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">overwrite_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="n">_existing_if_different</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">same</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="n">_ABSENT</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">strategy</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">existing</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">overwrite_policy</span>
+
+
+<div class="viewcode-block" id="on_overwrite">
+<a class="viewcode-back" href="../../_autosummary/dol.trans.html#dol.trans.on_overwrite">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">on_overwrite</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">policy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"warn"</span><span class="p">,</span>
+    <span class="n">same</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">_same_value</span><span class="p">,</span>
+    <span class="n">stacklevel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Apply an overwrite ``policy`` to a store (class or instance; with no ``store``,</span>
+<span class="sd">    return a decorator), with a pluggable ``same(existing, new)`` check so that</span>
+<span class="sd">    re-writing an equivalent value (e.g. a module reload) is silent.</span>
+
+<span class="sd">    ``policy`` is ``"warn"`` (warn, then write), ``"raise"``</span>
+<span class="sd">    (``OverWritesNotAllowedError``), ``"overwrite"`` (the store is returned unwrapped),</span>
+<span class="sd">    or a callable ``(k, existing, new) -&gt; value_to_write``, called only when ``k``</span>
+<span class="sd">    already holds a value that is not ``same`` as ``new`` (it may also raise).</span>
+<span class="sd">    ``same`` defaults to ``is``-or-``==``, where a failing or ambiguous ``==`` (arrays)</span>
+<span class="sd">    counts as different. ``stacklevel`` is the ``"warn"`` warning's stack level, as seen</span>
+<span class="sd">    from the ``store[k] = v`` line; raise it by one per extra layer you call it through.</span>
+
+<span class="sd">    Notes: each checked write first reads the old value (a round-trip on remote stores);</span>
+<span class="sd">    the read-compare-write is not atomic across threads; ``del s[k]`` then ``s[k] = v``</span>
+<span class="sd">    bypasses ``"raise"`` (unlike ``disallow_overwrites``); and the comparison is made on</span>
+<span class="sd">    the objects at this layer (what ``store[k]`` returns and ``store[k] = v`` receives,</span>
+<span class="sd">    not the encoded data of inner layers).</span>
+
+<span class="sd">    &gt;&gt;&gt; d = on_overwrite(dict(a=1), policy="raise")</span>
+<span class="sd">    &gt;&gt;&gt; d['a'] = 1  # same value: silent</span>
+<span class="sd">    &gt;&gt;&gt; d['b'] = 2  # new key: fine</span>
+<span class="sd">    &gt;&gt;&gt; d['a'] = 3</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    dol.errors.OverWritesNotAllowedError: key 'a' already exists with a different value</span>
+
+<span class="sd">    With ``"warn"`` (the default) the write goes through, with a warning:</span>
+
+<span class="sd">    &gt;&gt;&gt; import warnings</span>
+<span class="sd">    &gt;&gt;&gt; w = on_overwrite(dict(a=1))</span>
+<span class="sd">    &gt;&gt;&gt; with warnings.catch_warnings(record=True) as caught:</span>
+<span class="sd">    ...     warnings.simplefilter("always")</span>
+<span class="sd">    ...     w['a'] = 2</span>
+<span class="sd">    &gt;&gt;&gt; len(caught), w['a']</span>
+<span class="sd">    (1, 2)</span>
+
+<span class="sd">    ``same`` decides what counts as "the same value":</span>
+
+<span class="sd">    &gt;&gt;&gt; s = on_overwrite(dict(f=len), policy="raise", same=lambda a, b: a.__name__ == b.__name__)</span>
+<span class="sd">    &gt;&gt;&gt; s['f'] = len  # same by name: silent</span>
+<span class="sd">    """</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">_resolve_overwrite_policy</span><span class="p">(</span>
+        <span class="n">policy</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span>
+    <span class="p">)</span>  <span class="c1"># validate early</span>
+    <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># factory / parametrized class decorator form</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">on_overwrite</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">,</span> <span class="n">same</span><span class="o">=</span><span class="n">same</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="n">stacklevel</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">policy</span> <span class="o">==</span> <span class="s2">"overwrite"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">store</span>  <span class="c1"># nothing to check: skip the per-write read</span>
+    <span class="n">preset</span> <span class="o">=</span> <span class="n">_mk_overwrite_policy_preset</span><span class="p">(</span><span class="n">policy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span> <span class="n">same</span><span class="o">=</span><span class="n">same</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="n">preset</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="add_aliases">
@@ -3578,7 +3725,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=b0006e87"></script>
+</div><script src="../../_static/documentation_options.js?v=19401ae1"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
