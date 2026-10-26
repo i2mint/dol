@@ -2747,7 +2747,9 @@ def on_overwrite(
     >>> s = on_overwrite(dict(f=len), policy="raise", same=lambda a, b: a.__name__ == b.__name__)
     >>> s['f'] = len  # same by name: silent
     """
-    strategy = _resolve_overwrite_policy(policy, stacklevel=stacklevel)  # validate early
+    strategy = _resolve_overwrite_policy(
+        policy, stacklevel=stacklevel
+    )  # validate early
     if store is None:  # factory / parametrized class decorator form
         return partial(on_overwrite, policy=policy, same=same, stacklevel=stacklevel)
     if isinstance(policy, str) and policy == "overwrite":
