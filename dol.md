@@ -1,4 +1,4 @@
-> built 2026-10-26 09:27 UTC from 633ca6b (master) · dol 0.3.96. Details: build_info.json
+> built 2026-10-26 15:34 UTC from 61707e2 (master) · dol 0.3.97. Details: build_info.json
 
 # index.html.md
 
@@ -445,6 +445,73 @@ using the “return_keys” flag.
 >>> s = appendable(d, item2kv=item_to_kv, return_keys=True)
 >>> s.append({'L': 'let', 'I': 'it', 'G': 'go'})
 ('go', 'let')
+```
+
+
+# _autosummary/dol.atomic.html.md
+
+# dol.atomic
+
+Atomic file writes: write to a sibling temp file, then `os.replace` it into place.
+
+A crash (or an exception while producing the data) leaves the old content or the new,
+never a torn or empty file. Dependency-free; `atomic_write` is the one entry point.
+
+```pycon
+>>> import os, tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "f.txt")
+>>> atomic_write(path, b"hello")
+>>> open(path).read(), os.listdir(os.path.dirname(path))
+('hello', ['f.txt'])
+>>> atomic_write(path, (c.encode() for c in "ab"))  # chunks are streamed
+>>> open(path).read()
+'ab'
+```
+
+### Functions
+
+| [`atomic_write`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)(path, data, \*[, fsync, perms])   | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).   |
+|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+
+### dol.atomic.atomic_write(path, data, , fsync=False, perms=None)
+
+Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).
+
+* **Parameters:**
+  * **path** – Target file; its parent folder must exist. A symlink is followed:
+    its target is what gets replaced.
+  * **data** ([`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes) | [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]) – Bytes-like, or an iterable of bytes-like chunks (written one at a
+    time, so a large payload need not be held in memory). If the iterable raises,
+    `path` is untouched. Text must be encoded first.
+  * **fsync** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Flush the file (and, on POSIX, the folder) to disk before returning:
+    durable across power loss, not just across a process crash. Slower. (On macOS
+    `os.fsync` is not `F_FULLFSYNC`: best effort.)
+  * **perms** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Mode (e.g. `0o600`) for the file, set at creation so the data is
+    never readable more widely, even briefly, and not narrowed by the umask.
+    Default: the mode of the file being replaced, else the usual umask mode.
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+The temp file is a hidden, uniquely named sibling (`.<name>.<random>.tmp`), created
+with `O_EXCL`, so concurrent writers never share one and key listings skip it.
+On any failure it is removed and the old content is untouched. Atomic on POSIX,
+and on Windows within one volume. Hard links to the old file are detached, and its owner is not preserved.
+
+```pycon
+>>> import tempfile
+>>> d = tempfile.mkdtemp()
+>>> atomic_write(os.path.join(d, "a"), [b"x", b"y"], perms=0o600, fsync=True)
+>>> open(os.path.join(d, "a"), "rb").read()
+b'xy'
+>>> def boom():
+...     yield b"partial"
+...     raise RuntimeError("producer died")
+>>> atomic_write(os.path.join(d, "a"), boom())
+Traceback (most recent call last):
+  ...
+RuntimeError: producer died
+>>> open(os.path.join(d, "a"), "rb").read(), os.listdir(d)  # old content, no litter
+(b'xy', ['a'])
 ```
 
 
@@ -3963,6 +4030,7 @@ Get the first item of a kv store, or a list of the first n items
 
 | [`appendable`](_autosummary/dol.appendable.html.md#dol.appendable)([store_cls, return_keys, ...])   | Makes a new class with append (and consequential extend) methods                                                |
 |-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| [`atomic`](_autosummary/dol.atomic.html.md#module-dol.atomic)                                   | Atomic file writes: write to a sibling temp file, then `os.replace` it into place.                              |
 | [`base`](_autosummary/dol.base.html.md#module-dol.base)                                       | Base classes for making stores.                                                                                 |
 | [`cache_keys`](_autosummary/dol.cache_keys.html.md#module-dol.cache_keys)                           | Key strategies: how `cache_this` turns an instance and a call into a cache key.                                 |
 | [`caching`](_autosummary/dol.caching.html.md#module-dol.caching)                                 | Tools to add caching layers to stores and methods.                                                              |
@@ -17506,20 +17574,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-26 09:27 UTC** from commit <a href="https://github.com/i2mint/dol/commit/633ca6b6cdf1aca9d5199e495f15a55e5583e2af"><code>633ca6b</code></a> on branch <code>master</code>, for **dol 0.3.96** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 15:34 UTC** from commit <a href="https://github.com/i2mint/dol/commit/61707e2b4945b0692e4d2f93eeeacc07d1dae49e"><code>61707e2</code></a> on branch <code>master</code>, for **dol 0.3.97** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.96) is ahead of the latest release on PyPI (0.3.95): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/633ca6b6cdf1aca9d5199e495f15a55e5583e2af"><code>633ca6b6cdf1aca9d5199e495f15a55e5583e2af</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/61707e2b4945b0692e4d2f93eeeacc07d1dae49e"><code>61707e2b4945b0692e4d2f93eeeacc07d1dae49e</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.96</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.97</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17528,9 +17594,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40299392625">40299392625</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40350266455">40350266455</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>1b84ce087da5bf8390e0a1a4edb3e901f9f380fa</code> (in the history of the built commit) |
+| Event commit | <code>7ffbb30b2414c398dc8af48495a4b62ca9a500e8</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17555,13 +17621,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.95/">0.3.95</a>, older than the documented version (0.3.96).
+Latest release: <a href="https://pypi.org/project/dol/0.3.97/">0.3.97</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 633ca6b6cdf1aca9d5199e495f15a55e5583e2af
+git checkout 61707e2b4945b0692e4d2f93eeeacc07d1dae49e
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

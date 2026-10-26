@@ -35,6 +35,7 @@ Get the first item of a kv store, or a list of the first n items
 
 | [`appendable`](dol.appendable.html.md#dol.appendable)([store_cls, return_keys, ...])   | Makes a new class with append (and consequential extend) methods                                                |
 |-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| [`atomic`](dol.atomic.html.md#module-dol.atomic)                                   | Atomic file writes: write to a sibling temp file, then `os.replace` it into place.                              |
 | [`base`](dol.base.html.md#module-dol.base)                                       | Base classes for making stores.                                                                                 |
 | [`cache_keys`](dol.cache_keys.html.md#module-dol.cache_keys)                           | Key strategies: how `cache_this` turns an instance and a call into a cache key.                                 |
 | [`caching`](dol.caching.html.md#module-dol.caching)                                 | Tools to add caching layers to stores and methods.                                                              |
