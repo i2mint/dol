@@ -69,7 +69,7 @@ def atomic_write(
     The temp file is a hidden, uniquely named sibling (``.<name>.<random>.tmp``), created
     with ``O_EXCL``, so concurrent writers never share one and key listings skip it.
     On any failure it is removed and the old content is untouched. Atomic on POSIX,
-    and on Windows within one volume. Hard links to the old file are detached.
+    and on Windows within one volume. Hard links to the old file are detached, and its owner is not preserved.
 
     >>> import tempfile
     >>> d = tempfile.mkdtemp()

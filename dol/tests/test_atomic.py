@@ -94,7 +94,8 @@ def test_perms_exact_despite_umask(tmp_path):
 
 
 @posix_only
-def test_perms_set_before_data_is_written(tmp_path):
+def test_perms_set_before_data_is_written(tmp_path, monkeypatch):
+    monkeypatch.setattr(os, "fchmod", lambda *a: None)  # creation alone must do it
     seen = []
 
     def gen():
@@ -102,7 +103,7 @@ def test_perms_set_before_data_is_written(tmp_path):
         seen.append(_mode(tmp_path / tmp))
         yield b"secret"
 
-    old = os.umask(0o022)
+    old = os.umask(0)
     try:
         atomic_write(tmp_path / "f", gen(), perms=0o600)
     finally:
