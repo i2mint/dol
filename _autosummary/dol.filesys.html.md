@@ -40,6 +40,7 @@ Main entry points:
 | [`mk_pickle_bytes_wrap`](#dol.filesys.mk_pickle_bytes_wrap)(\*[, loads_kwargs, ...])       | Make a `wrap_kvs` value-codec wrapper for pickle, with kwargs for `pickle.loads`/`pickle.dumps`.                                                                            |
 | [`mk_tmp_dol_dir`](#dol.filesys.mk_tmp_dol_dir)([dirname, ...])                      | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
 | [`path_is_under`](#dol.filesys.path_is_under)(path, rootdir)                        | Whether `path`, *lexically* normalized, is `rootdir` or lies under it.                                                                                                      |
+| [`path_of`](#dol.filesys.path_of)(store, key)                                 | The file-system path of `key` in a file-backed `store`, however it is wrapped.                                                                                              |
 | [`paths_in_dir`](#dol.filesys.paths_in_dir)(rootdir[, include_hidden])             | Yield the paths of the entries of `rootdir` (directories with a trailing separator), skipping hidden ones unless `include_hidden`.                                          |
 | [`process_path`](#dol.filesys.process_path)(\*path[, ensure_dir_exists, ...])      | Process a path string, ensuring it exists, and optionally expanding user.                                                                                                   |
 | [`resolve_dir`](#dol.filesys.resolve_dir)(dirpath[, assert_existence, ...])       | Resolve a path to a full, real, path to a directory                                                                                                                         |
@@ -554,6 +555,44 @@ True
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### dol.filesys.path_of(store, key)
+
+The file-system path of `key` in a file-backed `store`, however it is wrapped.
+
+The key is followed through every layer’s `_id_of_key` (the same walk as
+`dol.inner_most_key`) down to the innermost file-system store, which must accept
+the result: a key leaving `rootdir` raises `KeyValidationError` (a `KeyError`),
+as a read or write of it would. A store with no file-system layer at its core, or
+with a layer that maps keys without defining `_id_of_key` (so the key cannot be
+followed), raises `TypeError`. Nothing is read or created. The result is an
+absolute, normalized path (relative roots resolve against the CWD).
+
+Limit: like `dol.dig.key_in_scope`, this reads what the layers declare through
+`_id_of_key`; a layer that maps keys by other means (`add_path_access`,
+`flatten`) is not followed, and a `filt_iter` scope is not enforced.
+
+```pycon
+>>> import tempfile
+>>> from dol import Files, KeyCodecs
+>>> root = tempfile.mkdtemp()
+>>> path_of(Files(root), os.path.join('a', 'b.txt')) == os.path.join(root, 'a', 'b.txt')
+True
+>>> s = KeyCodecs.suffixed('.json')(Files(root))  # wrapped: the outer key is mapped
+>>> path_of(s, 'a').endswith('a.json')
+True
+>>> path_of(Files(root), '../x')
+Traceback (most recent call last):
+  ...
+dol.filesys.KeyValidationError: 'Key not valid (usually because does not exist or access not permitted): ...'
+>>> path_of({}, 'a')
+Traceback (most recent call last):
+  ...
+TypeError: ...
+```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 

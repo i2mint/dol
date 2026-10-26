@@ -1424,24 +1424,63 @@
 <span class="sd">    relative path (a relative ``rootdir``) is made relative to the CWD, which is where</span>
 <span class="sd">    the write will put it.</span>
 <span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path_of</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span>
+        <span class="ne">TypeError</span><span class="p">,</span>
+        <span class="ne">KeyError</span><span class="p">,</span>
+    <span class="p">):</span>  <span class="c1"># not a file store / key not followable / key rejected</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span> <span class="k">else</span> <span class="n">dirname</span>
+
+
+<div class="viewcode-block" id="path_of">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.path_of">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">path_of</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The file-system path of ``key`` in a file-backed ``store``, however it is wrapped.</span>
+
+<span class="sd">    The key is followed through every layer's ``_id_of_key`` (the same walk as</span>
+<span class="sd">    ``dol.inner_most_key``) down to the innermost file-system store, which must accept</span>
+<span class="sd">    the result: a key leaving ``rootdir`` raises ``KeyValidationError`` (a ``KeyError``),</span>
+<span class="sd">    as a read or write of it would. A store with no file-system layer at its core, or</span>
+<span class="sd">    with a layer that maps keys without defining ``_id_of_key`` (so the key cannot be</span>
+<span class="sd">    followed), raises ``TypeError``. Nothing is read or created. The result is an</span>
+<span class="sd">    absolute, normalized path (relative roots resolve against the CWD).</span>
+
+<span class="sd">    Limit: like ``dol.dig.key_in_scope``, this reads what the layers declare through</span>
+<span class="sd">    ``_id_of_key``; a layer that maps keys by other means (``add_path_access``,</span>
+<span class="sd">    ``flatten``) is not followed, and a ``filt_iter`` scope is not enforced.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; from dol import Files, KeyCodecs</span>
+<span class="sd">    &gt;&gt;&gt; root = tempfile.mkdtemp()</span>
+<span class="sd">    &gt;&gt;&gt; path_of(Files(root), os.path.join('a', 'b.txt')) == os.path.join(root, 'a', 'b.txt')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; s = KeyCodecs.suffixed('.json')(Files(root))  # wrapped: the outer key is mapped</span>
+<span class="sd">    &gt;&gt;&gt; path_of(s, 'a').endswith('a.json')</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; path_of(Files(root), '../x')</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    dol.filesys.KeyValidationError: 'Key not valid (usually because does not exist or access not permitted): ...'</span>
+<span class="sd">    &gt;&gt;&gt; path_of({}, 'a')</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    TypeError: ...</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">dol.dig</span><span class="w"> </span><span class="kn">import</span> <span class="n">inner_most_key</span>
 
     <span class="n">innermost</span> <span class="o">=</span> <span class="n">_innermost_layer</span><span class="p">(</span><span class="n">store</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">innermost</span><span class="p">,</span> <span class="n">FileSysCollection</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">_id</span> <span class="o">=</span> <span class="n">inner_most_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_id</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">):</span>
-        <span class="n">_id</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">dirname</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">innermost</span><span class="o">.</span><span class="n">validate_key</span><span class="p">(</span><span class="n">_id</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">KeyValidationError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># the write will raise for this key; make no dirs for it (#107)</span>
-    <span class="k">return</span> <span class="n">dirname</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">innermost</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not a file-system store: no path for </span><span class="si">{</span><span class="n">key</span><span class="si">!r}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">key</span> <span class="k">if</span> <span class="n">innermost</span> <span class="ow">is</span> <span class="n">store</span> <span class="k">else</span> <span class="n">inner_most_key</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">innermost</span><span class="o">.</span><span class="n">validate_key</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_innermost_layer</span><span class="p">(</span><span class="n">store</span><span class="p">):</span>
@@ -1680,7 +1719,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=12779fc0"></script>
+</div><script src="../../_static/documentation_options.js?v=b0006e87"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

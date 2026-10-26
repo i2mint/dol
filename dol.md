@@ -1,4 +1,4 @@
-> built 2026-10-26 15:34 UTC from 61707e2 (master) · dol 0.3.97. Details: build_info.json
+> built 2026-10-26 15:46 UTC from b2e1c3c (master) · dol 0.3.98. Details: build_info.json
 
 # index.html.md
 
@@ -3399,6 +3399,7 @@ Main entry points:
 | [`mk_pickle_bytes_wrap`](_autosummary/dol.filesys.html.md#dol.filesys.mk_pickle_bytes_wrap)(\*[, loads_kwargs, ...])       | Make a `wrap_kvs` value-codec wrapper for pickle, with kwargs for `pickle.loads`/`pickle.dumps`.                                                                            |
 | [`mk_tmp_dol_dir`](_autosummary/dol.filesys.html.md#dol.filesys.mk_tmp_dol_dir)([dirname, ...])                      | Create and return a path to a temporary directory that's guaranteed to be accessible to the user.                                                                           |
 | [`path_is_under`](_autosummary/dol.filesys.html.md#dol.filesys.path_is_under)(path, rootdir)                        | Whether `path`, *lexically* normalized, is `rootdir` or lies under it.                                                                                                      |
+| [`path_of`](_autosummary/dol.filesys.html.md#dol.filesys.path_of)(store, key)                                 | The file-system path of `key` in a file-backed `store`, however it is wrapped.                                                                                              |
 | [`paths_in_dir`](_autosummary/dol.filesys.html.md#dol.filesys.paths_in_dir)(rootdir[, include_hidden])             | Yield the paths of the entries of `rootdir` (directories with a trailing separator), skipping hidden ones unless `include_hidden`.                                          |
 | [`process_path`](_autosummary/dol.filesys.html.md#dol.filesys.process_path)(\*path[, ensure_dir_exists, ...])      | Process a path string, ensuring it exists, and optionally expanding user.                                                                                                   |
 | [`resolve_dir`](_autosummary/dol.filesys.html.md#dol.filesys.resolve_dir)(dirpath[, assert_existence, ...])       | Resolve a path to a full, real, path to a directory                                                                                                                         |
@@ -3913,6 +3914,44 @@ True
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### dol.filesys.path_of(store, key)
+
+The file-system path of `key` in a file-backed `store`, however it is wrapped.
+
+The key is followed through every layer’s `_id_of_key` (the same walk as
+`dol.inner_most_key`) down to the innermost file-system store, which must accept
+the result: a key leaving `rootdir` raises `KeyValidationError` (a `KeyError`),
+as a read or write of it would. A store with no file-system layer at its core, or
+with a layer that maps keys without defining `_id_of_key` (so the key cannot be
+followed), raises `TypeError`. Nothing is read or created. The result is an
+absolute, normalized path (relative roots resolve against the CWD).
+
+Limit: like `dol.dig.key_in_scope`, this reads what the layers declare through
+`_id_of_key`; a layer that maps keys by other means (`add_path_access`,
+`flatten`) is not followed, and a `filt_iter` scope is not enforced.
+
+```pycon
+>>> import tempfile
+>>> from dol import Files, KeyCodecs
+>>> root = tempfile.mkdtemp()
+>>> path_of(Files(root), os.path.join('a', 'b.txt')) == os.path.join(root, 'a', 'b.txt')
+True
+>>> s = KeyCodecs.suffixed('.json')(Files(root))  # wrapped: the outer key is mapped
+>>> path_of(s, 'a').endswith('a.json')
+True
+>>> path_of(Files(root), '../x')
+Traceback (most recent call last):
+  ...
+dol.filesys.KeyValidationError: 'Key not valid (usually because does not exist or access not permitted): ...'
+>>> path_of({}, 'a')
+Traceback (most recent call last):
+  ...
+TypeError: ...
+```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### dol.filesys.paths_in_dir(rootdir, include_hidden=False)
 
@@ -17574,7 +17613,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-26 15:34 UTC** from commit <a href="https://github.com/i2mint/dol/commit/61707e2b4945b0692e4d2f93eeeacc07d1dae49e"><code>61707e2</code></a> on branch <code>master</code>, for **dol 0.3.97** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 15:46 UTC** from commit <a href="https://github.com/i2mint/dol/commit/b2e1c3c0cc270888c8367aa23fbe98c56d72e10b"><code>b2e1c3c</code></a> on branch <code>master</code>, for **dol 0.3.98** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17583,9 +17622,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/61707e2b4945b0692e4d2f93eeeacc07d1dae49e"><code>61707e2b4945b0692e4d2f93eeeacc07d1dae49e</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/b2e1c3c0cc270888c8367aa23fbe98c56d72e10b"><code>b2e1c3c0cc270888c8367aa23fbe98c56d72e10b</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.97</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.98</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17594,9 +17633,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40350266455">40350266455</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40352177960">40352177960</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>7ffbb30b2414c398dc8af48495a4b62ca9a500e8</code> (in the history of the built commit) |
+| Event commit | <code>63993cfe73a8c5033b6c06a3ff58fdf97017cdf0</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17621,13 +17660,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.97/">0.3.97</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.98/">0.3.98</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 61707e2b4945b0692e4d2f93eeeacc07d1dae49e
+git checkout b2e1c3c0cc270888c8367aa23fbe98c56d72e10b
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
