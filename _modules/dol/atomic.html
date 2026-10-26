@@ -274,6 +274,9 @@
 <span class="sd">A crash (or an exception while producing the data) leaves the old content or the new,</span>
 <span class="sd">never a torn or empty file. Dependency-free; ``atomic_write`` is the one entry point.</span>
 
+<span class="sd">``file_lock`` is its companion: an atomic replace is only safe against concurrent</span>
+<span class="sd">appenders and readers when they all hold the same advisory lock.</span>
+
 <span class="sd">    &gt;&gt;&gt; import os, tempfile</span>
 <span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "f.txt")</span>
 <span class="sd">    &gt;&gt;&gt; atomic_write(path, b"hello")</span>
@@ -284,10 +287,15 @@
 <span class="sd">    'ab'</span>
 <span class="sd">"""</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 
 <span class="n">_BYTES_LIKE</span> <span class="o">=</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">,</span> <span class="nb">memoryview</span><span class="p">)</span>
 
@@ -390,6 +398,232 @@
     <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
         <span class="n">_fsync_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span></div>
 
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># file_lock</span>
+
+<span class="n">DFLT_LOCK_SIDECAR</span> <span class="o">=</span> <span class="s2">".lock"</span>
+<span class="n">DFLT_POLL_INTERVAL</span> <span class="o">=</span> <span class="mf">0.001</span>  <span class="c1"># seconds between attempts on a contended lock (Windows)</span>
+
+<span class="n">_LOCK_UNSUPPORTED</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># e.g. Lustre without its flock option, some FUSE/SMB mounts</span>
+    <span class="nb">getattr</span><span class="p">(</span><span class="n">errno</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"ENOLCK"</span><span class="p">,</span> <span class="s2">"ENOTSUP"</span><span class="p">,</span> <span class="s2">"EOPNOTSUPP"</span><span class="p">,</span> <span class="s2">"ENOSYS"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">errno</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"nt"</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">msvcrt</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_lock</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># not LK_LOCK: it sleeps 1s on any contention and raises after ~10s.</span>
+        <span class="c1"># No timeout: Windows releases a dead process's locks.</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msvcrt</span><span class="o">.</span><span class="n">locking</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">msvcrt</span><span class="o">.</span><span class="n">LK_NBLCK</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">return</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">errno</span><span class="o">.</span><span class="n">EACCES</span><span class="p">,</span> <span class="n">errno</span><span class="o">.</span><span class="n">EDEADLOCK</span><span class="p">):</span>
+                    <span class="k">raise</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">poll_interval</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unlock</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">msvcrt</span><span class="o">.</span><span class="n">locking</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">msvcrt</span><span class="o">.</span><span class="n">LK_UNLCK</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">fcntl</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_lock</span><span class="p">(</span><span class="n">fh</span><span class="p">,</span> <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fcntl</span><span class="o">.</span><span class="n">flock</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_EX</span><span class="p">)</span>  <span class="c1"># excludes other descriptors too</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unlock</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fcntl</span><span class="o">.</span><span class="n">flock</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">fcntl</span><span class="o">.</span><span class="n">LOCK_UN</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_open_lock_file</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""``path`` opened for locking: read-only if it exists but is not writable (both</span>
+<span class="sd">    ``flock`` and ``msvcrt.locking`` work on a read-only handle); ``None`` if the</span>
+<span class="sd">    folder is read-only, so locking is unavailable. Any other failure (missing folder,</span>
+<span class="sd">    too many open files...) is a real error and propagates."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"a+b"</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">PermissionError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EROFS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">raise</span>
+
+
+<span class="n">_live_locks</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakSet</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_renew_in_child</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="c1"># after a fork the child must not use, nor release, what the parent holds</span>
+    <span class="k">for</span> <span class="n">lock</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">_live_locks</span><span class="p">):</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">_thread_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># the parent's section; __exit__ in the child is a no-op</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="s2">"register_at_fork"</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">register_at_fork</span><span class="p">(</span><span class="n">after_in_child</span><span class="o">=</span><span class="n">_renew_in_child</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="FileLock">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.FileLock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FileLock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A reusable, exclusive, advisory lock on a sidecar file ``&lt;path&gt;&lt;sidecar&gt;``.</span>
+
+<span class="sd">    Use it as ``with lock:``; the body runs either way, and ``lock.held`` says whether</span>
+<span class="sd">    the lock is actually held (it is not when the lock folder is read-only or the</span>
+<span class="sd">    filesystem does not support locking: advisory locks are best effort, and the caller</span>
+<span class="sd">    decides whether that matters).</span>
+
+<span class="sd">    The handle is kept open between uses (cheaper for many short sections); ``close()``</span>
+<span class="sd">    it when done. It is fork-safe: ``flock`` locks belong to the open file description,</span>
+<span class="sd">    so a forked child that inherited the handle would not exclude its parent; the pid</span>
+<span class="sd">    is remembered and the handle reopened on a mismatch (and a child never releases</span>
+<span class="sd">    its parent's lock). Threads of one process exclude each other too. Not reentrant:</span>
+<span class="sd">    entering again from the holding thread raises ``RuntimeError`` (a second lock on</span>
+<span class="sd">    the same path from the same thread would deadlock). For a one-off section, use</span>
+<span class="sd">    :func:`file_lock`.</span>
+
+<span class="sd">    The lock file is a separate sidecar, not ``path`` itself, so that</span>
+<span class="sd">    :func:`atomic_write` replacing ``path`` does not swap the file being locked.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; lock = FileLock(os.path.join(tempfile.mkdtemp(), "data.json"))</span>
+<span class="sd">    &gt;&gt;&gt; with lock:</span>
+<span class="sd">    ...     lock.held</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; lock.close()</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">sidecar</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_LOCK_SIDECAR</span><span class="p">,</span>
+        <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_POLL_INTERVAL</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        :param path: The file being protected; the lock lives next to it.</span>
+<span class="sd">        :param sidecar: Non-empty suffix of the lock file.</span>
+<span class="sd">        :param poll_interval: Seconds between attempts on a contended lock (Windows</span>
+<span class="sd">            only; POSIX blocks in the kernel).</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sidecar</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">"sidecar must be non-empty: the lock file cannot be `path`"</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="n">sidecar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># weakref.finalize closing the handle on collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># the process the handle belongs to</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># thread currently inside the lock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="n">_live_locks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># inherited over a fork: leave it be</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="n">_open_lock_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_try_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_lock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">readonly</span> <span class="o">=</span> <span class="s2">"+"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">mode</span>
+            <span class="c1"># NFS emulates flock with fcntl locks, refused on a read-only descriptor</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="ow">in</span> <span class="n">_LOCK_UNSUPPORTED</span> <span class="ow">or</span> <span class="p">(</span><span class="n">readonly</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">EBADF</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"FileLock"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FileLock(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">!r}</span><span class="s2">) is not reentrant"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_handle</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_try_lock</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="k">raise</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">exc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">!=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">():</span>
+            <span class="k">return</span>  <span class="c1"># a forked child leaving the section its parent entered</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">held</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">_unlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+<div class="viewcode-block" id="FileLock.close">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.FileLock.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Release the kept handle (not from inside the ``with`` block)."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"close() called while holding the lock"</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span><span class="p">()</span>  <span class="c1"># closes the handle, once</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="file_lock">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.file_lock">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">file_lock</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">sidecar</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_LOCK_SIDECAR</span><span class="p">,</span>
+    <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_POLL_INTERVAL</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Hold an exclusive advisory lock on ``&lt;path&gt;&lt;sidecar&gt;``; yields whether it is held.</span>
+
+<span class="sd">    Cross-process and cross-platform (``flock`` on POSIX, ``msvcrt.locking`` on</span>
+<span class="sd">    Windows). Take it around every append, read and :func:`atomic_write` of ``path``</span>
+<span class="sd">    so they cannot interleave. The body still runs when locking is unavailable</span>
+<span class="sd">    (read-only folder, filesystem without lock support): the yielded value is then</span>
+<span class="sd">    ``False``. A lock file that exists but is not writable is opened read-only.</span>
+<span class="sd">    Nesting it on the same path in one thread deadlocks; use one section.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "data.json")</span>
+<span class="sd">    &gt;&gt;&gt; with file_lock(path) as held:</span>
+<span class="sd">    ...     atomic_write(path, b"{}")</span>
+<span class="sd">    &gt;&gt;&gt; held, os.path.exists(path + ".lock")</span>
+<span class="sd">    (True, True)</span>
+<span class="sd">    """</span>
+    <span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">sidecar</span><span class="o">=</span><span class="n">sidecar</span><span class="p">,</span> <span class="n">poll_interval</span><span class="o">=</span><span class="n">poll_interval</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">lock</span><span class="o">.</span><span class="n">held</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">lock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -418,7 +652,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=19401ae1"></script>
+</div><script src="../../_static/documentation_options.js?v=009019f7"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

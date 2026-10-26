@@ -1,4 +1,4 @@
-> built 2026-10-26 16:09 UTC from fff243e (master) · dol 0.3.99. Details: build_info.json
+> built 2026-10-26 20:55 UTC from 9ffcc21 (master) · dol 0.3.100. Details: build_info.json
 
 # index.html.md
 
@@ -457,6 +457,9 @@ Atomic file writes: write to a sibling temp file, then `os.replace` it into plac
 A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; `atomic_write` is the one entry point.
 
+`file_lock` is its companion: an atomic replace is only safe against concurrent
+appenders and readers when they all hold the same advisory lock.
+
 ```pycon
 >>> import os, tempfile
 >>> path = os.path.join(tempfile.mkdtemp(), "f.txt")
@@ -472,6 +475,51 @@ never a torn or empty file. Dependency-free; `atomic_write` is the one entry poi
 
 | [`atomic_write`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)(path, data, \*[, fsync, perms])   | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).   |
 |-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
+| [`file_lock`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])  | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.       |
+
+### Classes
+
+| [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])   | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.   |
+|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+
+### *class* dol.atomic.FileLock(path, , sidecar='.lock', poll_interval=0.001)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.
+
+Use it as `with lock:`; the body runs either way, and `lock.held` says whether
+the lock is actually held (it is not when the lock folder is read-only or the
+filesystem does not support locking: advisory locks are best effort, and the caller
+decides whether that matters).
+
+The handle is kept open between uses (cheaper for many short sections); `close()`
+it when done. It is fork-safe: `flock` locks belong to the open file description,
+so a forked child that inherited the handle would not exclude its parent; the pid
+is remembered and the handle reopened on a mismatch (and a child never releases
+its parent’s lock). Threads of one process exclude each other too. Not reentrant:
+entering again from the holding thread raises `RuntimeError` (a second lock on
+the same path from the same thread would deadlock). For a one-off section, use
+[`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock).
+
+The lock file is a separate sidecar, not `path` itself, so that
+[`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) replacing `path` does not swap the file being locked.
+
+```pycon
+>>> import tempfile
+>>> lock = FileLock(os.path.join(tempfile.mkdtemp(), "data.json"))
+>>> with lock:
+...     lock.held
+True
+>>> lock.close()
+```
+
+#### close()
+
+Release the kept handle (not from inside the `with` block).
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ### dol.atomic.atomic_write(path, data, , fsync=False, perms=None)
 
@@ -512,6 +560,26 @@ Traceback (most recent call last):
 RuntimeError: producer died
 >>> open(os.path.join(d, "a"), "rb").read(), os.listdir(d)  # old content, no litter
 (b'xy', ['a'])
+```
+
+### dol.atomic.file_lock(path, , sidecar='.lock', poll_interval=0.001)
+
+Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.
+
+Cross-process and cross-platform (`flock` on POSIX, `msvcrt.locking` on
+Windows). Take it around every append, read and [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) of `path`
+so they cannot interleave. The body still runs when locking is unavailable
+(read-only folder, filesystem without lock support): the yielded value is then
+`False`. A lock file that exists but is not writable is opened read-only.
+Nesting it on the same path in one thread deadlocks; use one section.
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "data.json")
+>>> with file_lock(path) as held:
+...     atomic_write(path, b"{}")
+>>> held, os.path.exists(path + ".lock")
+(True, True)
 ```
 
 
@@ -17665,20 +17733,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-26 16:09 UTC** from commit <a href="https://github.com/i2mint/dol/commit/fff243e8c36da0e3a67d16ae200cb30cce2a4e04"><code>fff243e</code></a> on branch <code>master</code>, for **dol 0.3.99** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 20:55 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9ffcc212ff99f5fdd8ea445ecef5cc896d536527"><code>9ffcc21</code></a> on branch <code>master</code>, for **dol 0.3.100** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.99) is ahead of the latest release on PyPI (0.3.98): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/fff243e8c36da0e3a67d16ae200cb30cce2a4e04"><code>fff243e8c36da0e3a67d16ae200cb30cce2a4e04</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/9ffcc212ff99f5fdd8ea445ecef5cc896d536527"><code>9ffcc212ff99f5fdd8ea445ecef5cc896d536527</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.99</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.100</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17687,9 +17753,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40356044352">40356044352</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40399627160">40399627160</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>17e2ec97cb6d87ef299caa2f1cb27c0b19d340b0</code> (in the history of the built commit) |
+| Event commit | <code>8d6cced7d8b2fb9440ba459b766e43abd2ab0aae</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17714,13 +17780,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.98/">0.3.98</a>, older than the documented version (0.3.99).
+Latest release: <a href="https://pypi.org/project/dol/0.3.100/">0.3.100</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout fff243e8c36da0e3a67d16ae200cb30cce2a4e04
+git checkout 9ffcc212ff99f5fdd8ea445ecef5cc896d536527
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

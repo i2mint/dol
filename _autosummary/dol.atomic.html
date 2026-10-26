@@ -282,6 +282,8 @@
 <p>Atomic file writes: write to a sibling temp file, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> it into place.</p>
 <p>A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; <code class="docutils literal notranslate"><span class="pre">atomic_write</span></code> is the one entry point.</p>
+<p><code class="docutils literal notranslate"><span class="pre">file_lock</span></code> is its companion: an atomic replace is only safe against concurrent
+appenders and readers when they all hold the same advisory lock.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"f.txt"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">atomic_write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"hello"</span><span class="p">)</span>
@@ -299,9 +301,64 @@ never a torn or empty file. Dependency-free; <code class="docutils literal notra
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_write</span></code></a>(path, data, *[, fsync, perms])</p></td>
 <td><p>Write <code class="docutils literal notranslate"><span class="pre">data</span></code> to <code class="docutils literal notranslate"><span class="pre">path</span></code> atomically (temp file in the same folder, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code>).</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_lock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
+<td><p>Hold an exclusive advisory lock on <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>; yields whether it is held.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileLock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
+<td><p>A reusable, exclusive, advisory lock on a sidecar file <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.atomic.FileLock">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">FileLock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidecar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.lock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#FileLock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.FileLock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A reusable, exclusive, advisory lock on a sidecar file <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>.</p>
+<p>Use it as <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">lock:</span></code>; the body runs either way, and <code class="docutils literal notranslate"><span class="pre">lock.held</span></code> says whether
+the lock is actually held (it is not when the lock folder is read-only or the
+filesystem does not support locking: advisory locks are best effort, and the caller
+decides whether that matters).</p>
+<p>The handle is kept open between uses (cheaper for many short sections); <code class="docutils literal notranslate"><span class="pre">close()</span></code>
+it when done. It is fork-safe: <code class="docutils literal notranslate"><span class="pre">flock</span></code> locks belong to the open file description,
+so a forked child that inherited the handle would not exclude its parent; the pid
+is remembered and the handle reopened on a mismatch (and a child never releases
+its parent’s lock). Threads of one process exclude each other too. Not reentrant:
+entering again from the holding thread raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (a second lock on
+the same path from the same thread would deadlock). For a one-off section, use
+<a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a>.</p>
+<p>The lock file is a separate sidecar, not <code class="docutils literal notranslate"><span class="pre">path</span></code> itself, so that
+<a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> replacing <code class="docutils literal notranslate"><span class="pre">path</span></code> does not swap the file being locked.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"data.json"</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">lock</span><span class="o">.</span><span class="n">held</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.atomic.FileLock.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#FileLock.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.FileLock.close" title="Link to this definition">¶</a></dt>
+<dd><p>Release the kept handle (not from inside the <code class="docutils literal notranslate"><span class="pre">with</span></code> block).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.atomic.atomic_write">
 <span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#atomic_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.atomic_write" title="Link to this definition">¶</a></dt>
@@ -346,6 +403,28 @@ and on Windows within one volume. Hard links to the old file are detached, and i
 <span class="go">(b'xy', ['a'])</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.atomic.file_lock">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">file_lock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidecar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.lock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#file_lock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.file_lock" title="Link to this definition">¶</a></dt>
+<dd><p>Hold an exclusive advisory lock on <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>; yields whether it is held.</p>
+<p>Cross-process and cross-platform (<code class="docutils literal notranslate"><span class="pre">flock</span></code> on POSIX, <code class="docutils literal notranslate"><span class="pre">msvcrt.locking</span></code> on
+Windows). Take it around every append, read and <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> of <code class="docutils literal notranslate"><span class="pre">path</span></code>
+so they cannot interleave. The body still runs when locking is unavailable
+(read-only folder, filesystem without lock support): the yielded value is then
+<code class="docutils literal notranslate"><span class="pre">False</span></code>. A lock file that exists but is not writable is opened read-only.
+Nesting it on the same path in one thread deadlocks; use one section.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"data.json"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">file_lock</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">held</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">atomic_write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"</span><span class="si">{}</span><span class="s2">"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">held</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s2">".lock"</span><span class="p">)</span>
+<span class="go">(True, True)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
 </dd></dl>
 
 </section>
@@ -402,7 +481,12 @@ and on Windows within one volume. Hard links to the old file are detached, and i
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dol.atomic</a><ul>
+<li><a class="reference internal" href="#dol.atomic.FileLock"><code class="docutils literal notranslate"><span class="pre">FileLock</span></code></a><ul>
+<li><a class="reference internal" href="#dol.atomic.FileLock.close"><code class="docutils literal notranslate"><span class="pre">FileLock.close()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#dol.atomic.atomic_write"><code class="docutils literal notranslate"><span class="pre">atomic_write()</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.file_lock"><code class="docutils literal notranslate"><span class="pre">file_lock()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -414,7 +498,7 @@ and on Windows within one volume. Hard links to the old file are detached, and i
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=19401ae1"></script>
+</div><script src="../_static/documentation_options.js?v=009019f7"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
