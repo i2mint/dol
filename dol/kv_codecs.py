@@ -285,28 +285,30 @@ def _add_default_codecs(cls):
     return cls
 
 
+def _raise_module_unavailable(name, reason, *args, **kwargs):
+    raise ImportError(
+        f"The '{name}' codec needs the stdlib '{name}' module, which this "
+        f"Python was built without ({reason}). Install the system library "
+        f"(e.g. xz/bzip2 headers) and rebuild Python."
+    )
+
+
 def _optional_stdlib_module(name: str):
     """Import a stdlib module that CPython may be built without (``bz2``, ``lzma``).
 
     If it is missing, return a stand-in whose ``compress``/``decompress`` raise an
     informative ``ImportError`` when *called*, so importing ``dol`` still works.
+    The stand-in functions are picklable (a ``partial`` of a module-level function).
     """
     import importlib
+    from functools import partial
     from types import SimpleNamespace
 
     try:
         return importlib.import_module(name)
     except ImportError as e:
-        err = e
-
-        def _unavailable(data, *args, **kwargs):
-            raise ImportError(
-                f"The '{name}' codec needs the stdlib '{name}' module, which this "
-                f"Python was built without ({err}). Install the system library "
-                f"(e.g. xz/bzip2 headers) and rebuild Python."
-            ) from err
-
-        return SimpleNamespace(compress=_unavailable, decompress=_unavailable)
+        unavailable = partial(_raise_module_unavailable, name, str(e))
+        return SimpleNamespace(compress=unavailable, decompress=unavailable)
 
 
 @_add_default_codecs
