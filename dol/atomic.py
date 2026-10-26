@@ -14,6 +14,7 @@ never a torn or empty file. Dependency-free; ``atomic_write`` is the one entry p
 """
 
 import os
+import stat
 import uuid
 from collections.abc import Iterable
 
@@ -34,33 +35,41 @@ def _fsync_dir(dirpath: str) -> None:
         os.close(fd)
 
 
+def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
+    """``perms`` if given, else the mode of the file being replaced (``None`` if new)."""
+    if perms is not None:
+        return perms
+    try:
+        return stat.S_IMODE(os.stat(path).st_mode)
+    except OSError:
+        return None
+
+
 def atomic_write(
     path,
     data: "bytes | Iterable[bytes]",
     *,
     fsync: bool = False,
     perms: "int | None" = None,
-    tmp_suffix: str = ".tmp",
-    exclusive: bool = True,
 ) -> None:
     """Write ``data`` to ``path`` atomically (temp file in the same folder, then ``os.replace``).
 
-    :param path: Target file; its parent folder must exist.
+    :param path: Target file; its parent folder must exist. A symlink is followed:
+        its target is what gets replaced.
     :param data: Bytes-like, or an iterable of bytes-like chunks (written one at a
         time, so a large payload need not be held in memory). If the iterable raises,
-        ``path`` is untouched.
+        ``path`` is untouched. Text must be encoded first.
     :param fsync: Flush the file (and, on POSIX, the folder) to disk before returning:
-        durable across power loss, not just across a process crash. Slower.
-    :param perms: Mode (e.g. ``0o600``) for the new file. Default: the usual umask
-        permissions. A mode given here is applied exactly, not narrowed by the umask.
-    :param tmp_suffix: Suffix of the temp file's name.
-    :param exclusive: If true (default), the temp file is a uniquely named sibling
-        (``<name>.<random><tmp_suffix>``) created with ``O_EXCL``, so concurrent
-        writers never touch each other's temp file. If false, it is the fixed name
-        ``<name><tmp_suffix>`` (predictable, but concurrent writers can interleave).
+        durable across power loss, not just across a process crash. Slower. (On macOS
+        ``os.fsync`` is not ``F_FULLFSYNC``: best effort.)
+    :param perms: Mode (e.g. ``0o600``) for the file, set at creation so the data is
+        never readable more widely, even briefly, and not narrowed by the umask.
+        Default: the mode of the file being replaced, else the usual umask mode.
 
-    On any failure the temp file is removed and the old content is untouched.
-    Atomic on POSIX, and on Windows within one volume.
+    The temp file is a hidden, uniquely named sibling (``.<name>.<random>.tmp``), created
+    with ``O_EXCL``, so concurrent writers never share one and key listings skip it.
+    On any failure it is removed and the old content is untouched. Atomic on POSIX,
+    and on Windows within one volume. Hard links to the old file are detached.
 
     >>> import tempfile
     >>> d = tempfile.mkdtemp()
@@ -77,19 +86,24 @@ def atomic_write(
     >>> open(os.path.join(d, "a"), "rb").read(), os.listdir(d)  # old content, no litter
     (b'xy', ['a'])
     """
-    path = os.fspath(path)
+    if isinstance(data, str):
+        raise TypeError(
+            "atomic_write takes bytes (or chunks of bytes); encode text first"
+        )
+    path = os.path.realpath(os.fspath(path))
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
-    tmp = (
-        f"{path}.{uuid.uuid4().hex[:8]}{tmp_suffix}"
-        if exclusive
-        else f"{path}{tmp_suffix}"
-    )
+    dirname, name = os.path.split(path)
+    tmp = os.path.join(dirname, f".{name[:100]}.{uuid.uuid4().hex[:8]}.tmp")
+    mode = _mode_to_apply(path, perms)
     try:
-        with open(tmp, "xb" if exclusive else "wb") as fh:
+        fd = os.open(
+            tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else mode
+        )
+        with os.fdopen(fd, "wb") as fh:
+            if mode is not None and hasattr(os, "fchmod"):
+                os.fchmod(fh.fileno(), mode)  # exact, not narrowed by the umask
             for chunk in chunks:
                 fh.write(chunk)
-            if perms is not None:
-                os.chmod(tmp, perms)
             if fsync:
                 fh.flush()
                 os.fsync(fh.fileno())
@@ -101,4 +115,4 @@ def atomic_write(
             pass
         raise
     if fsync:
-        _fsync_dir(os.path.dirname(path))
+        _fsync_dir(dirname)
