@@ -236,3 +236,29 @@ def test_value_codecs():
         new_xml_string
         == '<html><body><h1 style="color:red;">Hello, World!</h1></body></html>'
     )
+
+
+def test_import_without_lzma_or_bz2():
+    """`import dol` must survive a Python built without _lzma/bz2 (issue #150)."""
+    import subprocess, sys, textwrap
+
+    code = textwrap.dedent(
+        """
+        import sys
+        sys.modules["_lzma"] = None
+        sys.modules["bz2"] = None
+        import dol
+        from dol import ValueCodecs
+        assert ValueCodecs.gzip is not None
+        try:
+            ValueCodecs.lzma()
+            enc = ValueCodecs.lzma().encoder
+            enc(b"x")
+        except ImportError as e:
+            assert "lzma" in str(e)
+        else:
+            raise SystemExit("expected ImportError")
+        """
+    )
+    r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr

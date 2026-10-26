@@ -285,6 +285,30 @@ def _add_default_codecs(cls):
     return cls
 
 
+def _optional_stdlib_module(name: str):
+    """Import a stdlib module that CPython may be built without (``bz2``, ``lzma``).
+
+    If it is missing, return a stand-in whose ``compress``/``decompress`` raise an
+    informative ``ImportError`` when *called*, so importing ``dol`` still works.
+    """
+    import importlib
+    from types import SimpleNamespace
+
+    try:
+        return importlib.import_module(name)
+    except ImportError as e:
+        err = e
+
+        def _unavailable(data, *args, **kwargs):
+            raise ImportError(
+                f"The '{name}' codec needs the stdlib '{name}' module, which this "
+                f"Python was built without ({err}). Install the system library "
+                f"(e.g. xz/bzip2 headers) and rebuild Python."
+            ) from err
+
+        return SimpleNamespace(compress=_unavailable, decompress=_unavailable)
+
+
 @_add_default_codecs
 class ValueCodecs(CodecCollection):
     r"""
@@ -336,7 +360,9 @@ class ValueCodecs(CodecCollection):
     class default:
         """To contain default codecs. Is populated by @_add_default_codecs"""
 
-    import pickle, json, gzip, bz2, base64 as b64, lzma, codecs, io
+    import pickle, json, gzip, base64 as b64, codecs, io
+    bz2 = _optional_stdlib_module("bz2")
+    lzma = _optional_stdlib_module("lzma")
     from operator import methodcaller
     from dol.zipfiledol import (
         zip_compress,
