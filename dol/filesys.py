@@ -1032,7 +1032,10 @@ def _missing_dir_of_key(store, k):
     """
     try:
         path = path_of(store, k)
-    except (TypeError, KeyError):  # not a file store / key not followable / key rejected
+    except (
+        TypeError,
+        KeyError,
+    ):  # not a file store / key not followable / key rejected
         return None
     dirname = os.path.dirname(path)
     return None if os.path.isdir(dirname) else dirname
