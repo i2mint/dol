@@ -3,6 +3,9 @@
 A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; ``atomic_write`` is the one entry point.
 
+``file_lock`` is its companion: an atomic replace is only safe against concurrent
+appenders and readers when they all hold the same advisory lock.
+
     >>> import os, tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "f.txt")
     >>> atomic_write(path, b"hello")
@@ -13,10 +16,15 @@ never a torn or empty file. Dependency-free; ``atomic_write`` is the one entry p
     'ab'
 """
 
+import errno
 import os
 import stat
+import threading
+import time
 import uuid
+import weakref
 from collections.abc import Iterable
+from contextlib import contextmanager
 
 _BYTES_LIKE = (bytes, bytearray, memoryview)
 
@@ -116,3 +124,178 @@ def atomic_write(
         raise
     if fsync:
         _fsync_dir(dirname)
+
+
+# ---------------------------------------------------------------------------
+# file_lock
+
+_LOCK_UNSUPPORTED = {  # e.g. Lustre without its flock option, some FUSE/SMB mounts
+    getattr(errno, name)
+    for name in ("ENOLCK", "ENOTSUP", "EOPNOTSUPP", "ENOSYS")
+    if hasattr(errno, name)
+}
+
+if os.name == "nt":
+    import msvcrt
+
+    def _lock(fh, poll_interval: float) -> None:
+        # not LK_LOCK: it sleeps 1s on any contention and raises after ~10s.
+        # No timeout: Windows releases a dead process's locks.
+        fh.seek(0)
+        while True:
+            try:
+                msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+                return
+            except OSError as e:
+                if e.errno not in (errno.EACCES, errno.EDEADLOCK):
+                    raise
+            time.sleep(poll_interval)
+
+    def _unlock(fh) -> None:
+        fh.seek(0)
+        msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+
+else:
+    import fcntl
+
+    def _lock(fh, poll_interval: float) -> None:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_EX)  # excludes other descriptors too
+
+    def _unlock(fh) -> None:
+        fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+
+
+def _open_lock_file(path: str):
+    """``path`` opened for locking, read-only if it cannot be written (both ``flock``
+    and ``msvcrt.locking`` work on a read-only handle); ``None`` if it cannot be
+    opened at all."""
+    try:
+        return open(path, "a+b")
+    except PermissionError:
+        try:
+            return open(path, "rb")
+        except OSError:
+            return None
+    except OSError:
+        return None
+
+
+_live_locks = weakref.WeakSet()
+
+
+def _renew_thread_locks_in_child() -> None:
+    # a threading.Lock held across a fork stays locked in the child, forever
+    for lock in list(_live_locks):
+        lock._thread_lock = threading.Lock()
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_renew_thread_locks_in_child)
+
+
+class FileLock:
+    """A reusable, exclusive, advisory lock on a sidecar file ``<path><sidecar>``.
+
+    Use it as ``with lock:``; the body runs either way, and ``lock.held`` says whether
+    the lock is actually held (it is not when the lock file cannot be opened, e.g. in a
+    read-only folder, or the filesystem does not support locking: advisory locks are
+    best effort, and the caller decides whether that matters).
+
+    The handle is kept open between uses (cheaper for many short sections). It is
+    fork-safe: ``flock`` locks belong to the open file description, so a forked child
+    that inherited the handle would not exclude its parent; the pid is remembered and
+    the handle reopened on a mismatch. Threads of one process exclude each other too.
+    Not reentrant. For a one-off section, use :func:`file_lock`.
+
+    >>> import tempfile
+    >>> lock = FileLock(os.path.join(tempfile.mkdtemp(), "data.json"))
+    >>> with lock:
+    ...     lock.held
+    True
+    """
+
+    def __init__(
+        self, path, *, sidecar: str = ".lock", poll_interval: float = 0.001
+    ) -> None:
+        """
+        :param path: The file being protected; the lock lives next to it.
+        :param sidecar: Suffix of the lock file. ``""`` locks ``path`` itself.
+        :param poll_interval: Seconds between attempts on a contended lock (Windows only;
+            POSIX blocks in the kernel).
+        """
+        self.path = os.fspath(path) + sidecar
+        self.poll_interval = poll_interval
+        self.held = False
+        self._fh = None
+        self._pid = None  # the process the handle belongs to
+        self._thread_lock = threading.Lock()
+        _live_locks.add(self)
+
+    def __enter__(self) -> "FileLock":
+        self._thread_lock.acquire()
+        try:
+            if self._pid != os.getpid():
+                self._drop_handle()  # inherited over a fork: reopen our own
+                self._pid = os.getpid()
+            if self._fh is None:
+                self._fh = _open_lock_file(self.path)
+            if self._fh is None:
+                self.held = False
+                return self
+            try:
+                _lock(self._fh, self.poll_interval)
+                self.held = True
+            except OSError as e:
+                if e.errno not in _LOCK_UNSUPPORTED:
+                    raise
+                self.held = False
+        except BaseException:
+            self._thread_lock.release()
+            raise
+        return self
+
+    def __exit__(self, *exc) -> None:
+        try:
+            if self.held:
+                self.held = False
+                _unlock(self._fh)
+        finally:
+            self._thread_lock.release()
+
+    def _drop_handle(self) -> None:
+        if self._fh is not None:
+            try:
+                self._fh.close()
+            except OSError:
+                pass
+            self._fh = None
+
+    def close(self) -> None:
+        """Release the kept handle (the lock must not be held)."""
+        with self._thread_lock:
+            self._drop_handle()
+
+
+@contextmanager
+def file_lock(path, *, sidecar: str = ".lock", poll_interval: float = 0.001):
+    """Hold an exclusive advisory lock on ``<path><sidecar>``; yields whether it is held.
+
+    Cross-process and cross-platform (``flock`` on POSIX, ``msvcrt.locking`` on
+    Windows). Take it around every append, read and :func:`atomic_write` of ``path``
+    so they cannot interleave. The body still runs when locking is unavailable
+    (read-only folder, filesystem without lock support): the yielded value is then
+    ``False``. A lock file created by another user and not writable is opened read-only.
+
+    >>> import tempfile
+    >>> path = os.path.join(tempfile.mkdtemp(), "data.json")
+    >>> with file_lock(path) as held:
+    ...     atomic_write(path, b"{}")
+    >>> held, os.path.exists(path + ".lock")
+    (True, True)
+    """
+    lock = FileLock(path, sidecar=sidecar, poll_interval=poll_interval)
+    try:
+        with lock:
+            yield lock.held
+    finally:
+        lock.close()

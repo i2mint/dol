@@ -115,7 +115,7 @@ from dol.filesys import (
     subfolder_stores,  # a store of stores, each store corresponding to a subfolder
 )
 
-from dol.atomic import atomic_write  # crash-safe file write (temp file + os.replace)
+from dol.atomic import atomic_write, file_lock, FileLock  # crash-safe file write (temp file + os.replace)
 
 from dol.util import (
     non_colliding_key,  # make a key that does not collide with existing keys
