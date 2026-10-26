@@ -243,7 +243,9 @@ class FileLock:
             only; POSIX blocks in the kernel).
         """
         if not sidecar:
-            raise ValueError("sidecar must be non-empty: the lock file cannot be `path`")
+            raise ValueError(
+                "sidecar must be non-empty: the lock file cannot be `path`"
+            )
         self.path = os.fspath(path) + sidecar
         self.poll_interval = poll_interval
         self.held = False
