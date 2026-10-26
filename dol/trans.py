@@ -29,6 +29,7 @@ This module re-exports them, and the add-ons, so older imports keep working.
 from functools import wraps, partial, reduce
 import types
 import re
+import operator
 from inspect import signature, Parameter
 from typing import Union, Optional, Any, Generic
 from collections.abc import Iterable, Collection, Callable
@@ -2612,6 +2613,79 @@ def mk_confirm_overwrite_preset(
 #: >>> dict(d) == {'a': 'apple', 'b': 'banana', 'c': 'coconut'}
 #: True
 confirm_overwrite = mk_confirm_overwrite_preset()
+
+
+OVERWRITE_POLICIES = ("warn", "raise", "overwrite")
+
+
+def mk_overwrite_policy_preset(
+    *, policy: str = "warn", same: Callable[[Any, Any], bool] = operator.eq
+):
+    """Make a ``wrap_kvs`` ``preset`` applying an overwrite ``policy``: when ``k``
+    already holds a value that is not ``same`` as the new one, ``"warn"`` (warn, then
+    write), ``"raise"`` (raise ``OverWritesNotAllowedError``) or ``"overwrite"`` (just
+    write). Writing a ``same`` value is always silent. See :func:`on_overwrite`.
+
+    >>> mk_overwrite_policy_preset(policy="nope")
+    Traceback (most recent call last):
+      ...
+    ValueError: policy must be one of ('warn', 'raise', 'overwrite'), got 'nope'
+    """
+    if policy not in OVERWRITE_POLICIES:
+        raise ValueError(f"policy must be one of {OVERWRITE_POLICIES}, got {policy!r}")
+
+    def overwrite_policy(self, k, v):
+        if policy == "overwrite":
+            return v
+        _sentinel = object()
+        existing = self.get(k, _sentinel)
+        if existing is not _sentinel and not same(existing, v):
+            msg = f"key {k!r} already exists with a different value"
+            if policy == "raise":
+                raise OverWritesNotAllowedError(msg)
+            warn(msg + "; overwriting it", stacklevel=3)
+        return v
+
+    return overwrite_policy
+
+
+@store_decorator
+def on_overwrite(
+    store=None,
+    *,
+    policy: str = "warn",
+    same: Callable[[Any, Any], bool] = operator.eq,
+    name=None,
+    __module__=None,
+):
+    """Apply an overwrite ``policy`` (``"warn"``, ``"raise"`` or ``"overwrite"``) to a
+    store (class or instance), with a pluggable ``same(existing, new)`` check so that
+    re-writing an equivalent value (e.g. a module reload) is silent.
+
+    >>> d = on_overwrite(dict(a=1), policy="raise")
+    >>> d['a'] = 1  # same value: silent
+    >>> d['b'] = 2  # new key: fine
+    >>> d['a'] = 3
+    Traceback (most recent call last):
+      ...
+    dol.errors.OverWritesNotAllowedError: key 'a' already exists with a different value
+
+    With ``"warn"`` (the default) the write goes through, with a warning:
+
+    >>> import warnings
+    >>> w = on_overwrite(dict(a=1))
+    >>> with warnings.catch_warnings(record=True) as caught:
+    ...     warnings.simplefilter("always")
+    ...     w['a'] = 2
+    >>> len(caught), w['a']
+    (1, 2)
+
+    ``same`` decides what counts as "the same value":
+
+    >>> s = on_overwrite(dict(f=len), policy="raise", same=lambda a, b: a.__name__ == b.__name__)
+    >>> s['f'] = len  # same by name: silent
+    """
+    return wrap_kvs(store, preset=mk_overwrite_policy_preset(policy=policy, same=same))
 
 
 def add_aliases(obj, **aliases):
