@@ -2,7 +2,7 @@
 
 # About this build
 
-This documentation was built on **2026-10-20 19:03 UTC** from commit <a href="https://github.com/i2mint/dol/commit/da40c55541bd1ce443e343f5c8136d7c12b2e9f4"><code>da40c55</code></a> on branch <code>master</code>, for **dol 0.3.94** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 09:11 UTC** from commit <a href="https://github.com/i2mint/dol/commit/b447319d556fddb3a88d7fed8fd1e4e83693d798"><code>b447319</code></a> on branch <code>master</code>, for **dol 0.3.95** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -11,9 +11,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/da40c55541bd1ce443e343f5c8136d7c12b2e9f4"><code>da40c55541bd1ce443e343f5c8136d7c12b2e9f4</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/b447319d556fddb3a88d7fed8fd1e4e83693d798"><code>b447319d556fddb3a88d7fed8fd1e4e83693d798</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.94</code>                                                                                                                               |
+| Tags at this commit | <code>0.3.95</code>                                                                                                                               |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -22,9 +22,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/39479770649">39479770649</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40297371182">40297371182</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>c9ba7af15a6a66638895d351ab9211b2376a1e02</code> (in the history of the built commit) |
+| Event commit | <code>a1205d72295dd904180dcc4ddae1d814049fb089</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -49,13 +49,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.94/">0.3.94</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.95/">0.3.95</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout da40c55541bd1ce443e343f5c8136d7c12b2e9f4
+git checkout b447319d556fddb3a88d7fed8fd1e4e83693d798
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
