@@ -244,20 +244,21 @@ def test_import_without_lzma_or_bz2():
 
     code = textwrap.dedent(
         """
-        import sys
+        import sys, pickle
         sys.modules["_lzma"] = None
-        sys.modules["bz2"] = None
+        sys.modules["_bz2"] = None  # what a Python built without them looks like
         import dol
         from dol import ValueCodecs
-        assert ValueCodecs.gzip is not None
-        try:
-            ValueCodecs.lzma()
-            enc = ValueCodecs.lzma().encoder
-            enc(b"x")
-        except ImportError as e:
-            assert "lzma" in str(e)
-        else:
-            raise SystemExit("expected ImportError")
+        for name in ("lzma", "bz2"):
+            codec = getattr(ValueCodecs, name)()
+            for side in (codec.encoder, codec.decoder):
+                try:
+                    side(b"x")
+                except ImportError as e:
+                    assert "built without" in str(e), e  # helpful, not the raw error
+                else:
+                    raise SystemExit(f"{name}: expected ImportError")
+        pickle.dumps(ValueCodecs.default.lzma)
         """
     )
     r = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
