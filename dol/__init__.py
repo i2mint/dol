@@ -106,6 +106,7 @@ from dol.filesys import (
     resolve_dir,  # to get a full path (resolve ~ and .) and ensure it is a directory
     DirReader,  # recursive read-only access to directories,
     temp_dir,  # make a temporary directory,
+    path_of,  # file-system path of a key in a (possibly wrapped) file store
     PickleFiles,  # CRUD access to pickled files
     JsonFiles,  # CRUD access to jsob files,
     Jsons,  # Same as JsonFiles, but with added .json extension handling

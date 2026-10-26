@@ -563,3 +563,57 @@ def test_bytes_persister_rejects_non_bytes_before_open(tmp_path):
     assert s["c"] == b"keep"
     s["c"] = bytearray(b"ok")
     assert s["c"] == b"ok"
+
+
+def test_path_of_follows_wrappers_and_validates(tmp_path):
+    import os
+
+    import pytest
+
+    from dol import Files, Jsons, KeyCodecs, Pipe, mk_dirs_if_missing, path_of, wrap_kvs
+    from dol.filesys import FileBytesPersister, KeyValidationError
+
+    root = str(tmp_path)
+    assert path_of(Files(root), os.path.join("a", "b.txt")) == os.path.join(
+        root, "a", "b.txt"
+    )
+    suffixed = KeyCodecs.suffixed(".json")(Files(root))
+    assert path_of(suffixed, "a") == os.path.join(root, "a.json")
+    upper = wrap_kvs(Files(root), id_of_key=str.lower, key_of_id=str.upper)
+    assert path_of(upper, "ABC") == os.path.join(root, "abc")
+    stacked = Pipe(KeyCodecs.suffixed(".x"), mk_dirs_if_missing)(Files(root))
+    assert path_of(stacked, "k") == os.path.join(root, "k.x")
+    assert path_of(Jsons(root), "k") == os.path.join(root, "k.json")
+    # a bare leaf: keys already are paths
+    leaf = FileBytesPersister(root)
+    assert path_of(leaf, os.path.join(root, "z")) == os.path.join(root, "z")
+    with pytest.raises(KeyError):
+        path_of(Files(root), os.path.join("..", "x"))
+    with pytest.raises(KeyValidationError):
+        path_of(suffixed, os.path.join("..", "x"))
+    with pytest.raises(KeyValidationError):
+        path_of(leaf, os.path.join(root, "..", "x"))
+    with pytest.raises(TypeError):
+        path_of({}, "a")
+    assert os.listdir(root) == []  # nothing created
+
+
+def test_path_of_relative_root_is_absolute(tmp_path, monkeypatch):
+    import os
+
+    from dol import Files, path_of
+
+    monkeypatch.chdir(tmp_path)
+    got = path_of(Files("sub"), "a")
+    assert os.path.isabs(got) and got == os.path.abspath(os.path.join("sub", "a"))
+
+
+def test_path_of_allow_escape(tmp_path):
+    import os
+
+    from dol import Files, path_of
+
+    root = tmp_path / "r"
+    root.mkdir()
+    s = Files(str(root), allow_escape=True)
+    assert path_of(s, os.path.join("..", "x")) == str(tmp_path / "x")
