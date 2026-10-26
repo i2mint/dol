@@ -132,12 +132,22 @@ def test_forked_child_leaving_the_block_keeps_parents_lock(tmp_path):
     with lock:
         pid = os.fork()
         if pid == 0:
+            code = 1
             try:
                 lock.__exit__(None, None, None)  # the child leaves the inherited block
+                code = 0
             finally:
-                os._exit(0)
-        os.waitpid(pid, 0)
+                os._exit(code)
+        assert os.waitpid(pid, 0)[1] == 0  # the child exited cleanly
         with open(lock.path, "rb") as fh:
             with pytest.raises(OSError):
                 fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    lock.close()
+
+
+def test_close_inside_the_block_raises(tmp_path):
+    lock = FileLock(tmp_path / "f")
+    with lock:
+        with pytest.raises(RuntimeError, match="close"):
+            lock.close()
     lock.close()

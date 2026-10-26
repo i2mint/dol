@@ -193,7 +193,7 @@ def _renew_in_child() -> None:
     # after a fork the child must not use, nor release, what the parent holds
     for lock in list(_live_locks):
         lock._thread_lock = threading.Lock()
-        lock._owner = None
+        lock._owner = None  # the parent's section; __exit__ in the child is a no-op
         lock.held = False
 
 
@@ -248,6 +248,7 @@ class FileLock:
         self.poll_interval = poll_interval
         self.held = False
         self._fh = None
+        self._closer = None  # weakref.finalize closing the handle on collection
         self._pid = None  # the process the handle belongs to
         self._owner = None  # thread currently inside the lock
         self._thread_lock = threading.Lock()
@@ -255,12 +256,12 @@ class FileLock:
 
     def _ensure_handle(self) -> None:
         if self._pid != os.getpid():
-            self._fh = None  # inherited over a fork: the parent's, leave it be
+            self._fh = self._closer = None  # inherited over a fork: leave it be
             self._pid = os.getpid()
         if self._fh is None:
             self._fh = _open_lock_file(self.path)
             if self._fh is not None:
-                weakref.finalize(self, self._fh.close)
+                self._closer = weakref.finalize(self, self._fh.close)
 
     def _try_lock(self) -> bool:
         if self._fh is None:
@@ -289,6 +290,8 @@ class FileLock:
         return self
 
     def __exit__(self, *exc) -> None:
+        if self._owner != threading.get_ident():
+            return  # a forked child leaving the section its parent entered
         try:
             if self.held:
                 self.held = False
@@ -298,11 +301,13 @@ class FileLock:
             self._thread_lock.release()
 
     def close(self) -> None:
-        """Release the kept handle (must not be called while the lock is held)."""
+        """Release the kept handle (not from inside the ``with`` block)."""
+        if self._owner == threading.get_ident():
+            raise RuntimeError("close() called while holding the lock")
         with self._thread_lock:
-            if self._fh is not None and self._pid == os.getpid():
-                self._fh.close()
-            self._fh = None
+            if self._closer is not None:
+                self._closer()  # closes the handle, once
+            self._fh = self._closer = None
 
 
 @contextmanager
