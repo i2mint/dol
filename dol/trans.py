@@ -29,7 +29,6 @@ This module re-exports them, and the add-ons, so older imports keep working.
 from functools import wraps, partial, reduce
 import types
 import re
-import operator
 from inspect import signature, Parameter
 from typing import Union, Optional, Any, Generic
 from collections.abc import Iterable, Collection, Callable
@@ -2548,6 +2547,34 @@ class SimpleDelegator:
             raise TypeError(f"{self._obj=} is not callable")
 
 
+_ABSENT = object()  # sentinel: "no differing existing value"
+
+
+def _not_ne(a, b):
+    """``not (a != b)``: the historical sameness test of ``confirm_overwrite``."""
+    return not (a != b)
+
+
+def _same_value(a, b) -> bool:
+    """Default ``same`` for :func:`on_overwrite`: identity, else ``bool(a == b)``; any
+    error (e.g. an ambiguous array comparison) counts as "not the same"."""
+    if a is b:
+        return True
+    try:
+        return bool(a == b)
+    except Exception:
+        return False
+
+
+def _existing_if_different(self, k, v, same):
+    """Return the value ``self`` holds at ``k`` if there is one that is not
+    ``same(existing, v)``, else ``_ABSENT``."""
+    existing = self.get(k, _ABSENT)
+    if existing is not _ABSENT and not same(existing, v):
+        return existing
+    return _ABSENT
+
+
 def _dflt_overwrite_prompt(k, existing, new):
     return (
         f"The key {k} already exists and has value {existing}. "
@@ -2590,9 +2617,8 @@ def mk_confirm_overwrite_preset(
     def confirm_overwrite(self, k, v):
         """``preset`` that returns ``v`` unless ``k`` already holds a different value
         and the user does not confirm; then the existing value is kept."""
-        _sentinel = object()
-        existing = self.get(k, _sentinel)
-        if existing is not _sentinel and existing != v:
+        existing = _existing_if_different(self, k, v, _not_ne)
+        if existing is not _ABSENT:
             # resolve ``input`` at call time (not capture) so monkeypatching works
             ask = get_input if get_input is not None else input
             if ask(prompt(k, existing, v)) != str(v):
@@ -2615,52 +2641,88 @@ def mk_confirm_overwrite_preset(
 confirm_overwrite = mk_confirm_overwrite_preset()
 
 
-OVERWRITE_POLICIES = ("warn", "raise", "overwrite")
+def _overwrite_msg(k):
+    return f"key {k!r} already exists with a different value"
 
 
-def mk_overwrite_policy_preset(
-    *, policy: str = "warn", same: Callable[[Any, Any], bool] = operator.eq
-):
-    """Make a ``wrap_kvs`` ``preset`` applying an overwrite ``policy``: when ``k``
-    already holds a value that is not ``same`` as the new one, ``"warn"`` (warn, then
-    write), ``"raise"`` (raise ``OverWritesNotAllowedError``) or ``"overwrite"`` (just
-    write). Writing a ``same`` value is always silent. See :func:`on_overwrite`.
+def _warn_on_overwrite(k, existing, new, *, stacklevel=3):
+    warn(_overwrite_msg(k) + "; overwriting it", stacklevel=stacklevel)
+    return new
 
-    >>> mk_overwrite_policy_preset(policy="nope")
+
+def _raise_on_overwrite(k, existing, new, *, stacklevel=None):
+    raise OverWritesNotAllowedError(_overwrite_msg(k))
+
+
+def _just_overwrite(k, existing, new, *, stacklevel=None):
+    return new
+
+
+#: Named overwrite strategies: ``(k, existing, new, *, stacklevel) -> value to write``.
+_OVERWRITE_POLICIES = {
+    "warn": _warn_on_overwrite,
+    "raise": _raise_on_overwrite,
+    "overwrite": _just_overwrite,
+}
+
+
+def _resolve_overwrite_policy(policy, *, stacklevel):
+    """Turn a policy name or a ``(k, existing, new) -> value`` callable into a strategy.
+
+    >>> _resolve_overwrite_policy("nope", stacklevel=3)
     Traceback (most recent call last):
       ...
-    ValueError: policy must be one of ('warn', 'raise', 'overwrite'), got 'nope'
+    ValueError: policy must be one of ['warn', 'raise', 'overwrite'] or a callable, got 'nope'
     """
-    if policy not in OVERWRITE_POLICIES:
-        raise ValueError(f"policy must be one of {OVERWRITE_POLICIES}, got {policy!r}")
+    if callable(policy):
+        return policy
+    if policy not in _OVERWRITE_POLICIES:
+        raise ValueError(
+            f"policy must be one of {list(_OVERWRITE_POLICIES)} or a callable, "
+            f"got {policy!r}"
+        )
+    # stacklevel + 1: the preset adds one frame between the strategy and __setitem__
+    return partial(_OVERWRITE_POLICIES[policy], stacklevel=stacklevel + 1)
+
+
+def _mk_overwrite_policy_preset(*, policy="warn", same=_same_value, stacklevel=3):
+    """Make a ``wrap_kvs`` ``preset`` applying an overwrite ``policy``.
+    See :func:`on_overwrite`."""
+    strategy = _resolve_overwrite_policy(policy, stacklevel=stacklevel)
 
     def overwrite_policy(self, k, v):
-        if policy == "overwrite":
+        existing = _existing_if_different(self, k, v, same)
+        if existing is _ABSENT:
             return v
-        _sentinel = object()
-        existing = self.get(k, _sentinel)
-        if existing is not _sentinel and not same(existing, v):
-            msg = f"key {k!r} already exists with a different value"
-            if policy == "raise":
-                raise OverWritesNotAllowedError(msg)
-            warn(msg + "; overwriting it", stacklevel=3)
-        return v
+        return strategy(k, existing, v)
 
     return overwrite_policy
 
 
-@store_decorator
 def on_overwrite(
     store=None,
     *,
-    policy: str = "warn",
-    same: Callable[[Any, Any], bool] = operator.eq,
-    name=None,
-    __module__=None,
+    policy: str | Callable[[Any, Any, Any], Any] = "warn",
+    same: Callable[[Any, Any], bool] = _same_value,
+    stacklevel: int = 3,
 ):
-    """Apply an overwrite ``policy`` (``"warn"``, ``"raise"`` or ``"overwrite"``) to a
-    store (class or instance), with a pluggable ``same(existing, new)`` check so that
+    """Apply an overwrite ``policy`` to a store (class or instance; with no ``store``,
+    return a decorator), with a pluggable ``same(existing, new)`` check so that
     re-writing an equivalent value (e.g. a module reload) is silent.
+
+    ``policy`` is ``"warn"`` (warn, then write), ``"raise"``
+    (``OverWritesNotAllowedError``), ``"overwrite"`` (the store is returned unwrapped),
+    or a callable ``(k, existing, new) -> value_to_write``, called only when ``k``
+    already holds a value that is not ``same`` as ``new`` (it may also raise).
+    ``same`` defaults to ``is``-or-``==``, where a failing or ambiguous ``==`` (arrays)
+    counts as different. ``stacklevel`` is the ``"warn"`` warning's stack level, as seen
+    from the ``store[k] = v`` line; raise it by one per extra layer you call it through.
+
+    Notes: each checked write first reads the old value (a round-trip on remote stores);
+    the read-compare-write is not atomic across threads; ``del s[k]`` then ``s[k] = v``
+    bypasses ``"raise"`` (unlike ``disallow_overwrites``); and the comparison is made on
+    the objects at this layer (what ``store[k]`` returns and ``store[k] = v`` receives,
+    not the encoded data of inner layers).
 
     >>> d = on_overwrite(dict(a=1), policy="raise")
     >>> d['a'] = 1  # same value: silent
@@ -2685,7 +2747,13 @@ def on_overwrite(
     >>> s = on_overwrite(dict(f=len), policy="raise", same=lambda a, b: a.__name__ == b.__name__)
     >>> s['f'] = len  # same by name: silent
     """
-    return wrap_kvs(store, preset=mk_overwrite_policy_preset(policy=policy, same=same))
+    strategy = _resolve_overwrite_policy(policy, stacklevel=stacklevel)  # validate early
+    if store is None:  # factory / parametrized class decorator form
+        return partial(on_overwrite, policy=policy, same=same, stacklevel=stacklevel)
+    if isinstance(policy, str) and policy == "overwrite":
+        return store  # nothing to check: skip the per-write read
+    preset = _mk_overwrite_policy_preset(policy=strategy, same=same)
+    return wrap_kvs(store, preset=preset)
 
 
 def add_aliases(obj, **aliases):
