@@ -524,9 +524,9 @@ class FileSysCollection(Collection):
         if max_levels is None:
             max_levels = inf
         subpath_implied_min_levels = len(subpath.split(os.path.sep)) - 1
-        assert (
-            max_levels >= subpath_implied_min_levels
-        ), f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
+        assert max_levels >= subpath_implied_min_levels, (
+            f"max_levels is {max_levels}, but subpath {subpath} would imply at least {subpath_implied_min_levels}"
+        )
         pattern_for_field = pattern_for_field or {}
         self.rootdir = ensure_slash_suffix(rootdir)
         self.subpath = subpath
@@ -1030,24 +1030,12 @@ def _missing_dir_of_key(store, k):
     relative path (a relative ``rootdir``) is made relative to the CWD, which is where
     the write will put it.
     """
-    from dol.dig import inner_most_key
-
-    innermost = _innermost_layer(store)
-    if not isinstance(innermost, FileSysCollection):
-        return None
-    _id = inner_most_key(store, k, default=None)
-    if isinstance(_id, os.PathLike):
-        _id = os.fspath(_id)
-    if not isinstance(_id, str):
-        return None
-    dirname = os.path.dirname(_id)
-    if not dirname or os.path.isdir(dirname):
-        return None
     try:
-        innermost.validate_key(_id)
-    except KeyValidationError:
-        return None  # the write will raise for this key; make no dirs for it (#107)
-    return dirname
+        path = path_of(store, k)
+    except (TypeError, KeyError):  # not a file store / key not followable / key rejected
+        return None
+    dirname = os.path.dirname(path)
+    return None if os.path.isdir(dirname) else dirname
 
 
 def path_of(store, key) -> str:
@@ -1056,13 +1044,19 @@ def path_of(store, key) -> str:
     The key is followed through every layer's ``_id_of_key`` (the same walk as
     ``dol.inner_most_key``) down to the innermost file-system store, which must accept
     the result: a key leaving ``rootdir`` raises ``KeyValidationError`` (a ``KeyError``),
-    as a read or write of it would. A store with no file-system layer at its core
-    raises ``TypeError``. Nothing is read or created.
+    as a read or write of it would. A store with no file-system layer at its core, or
+    with a layer that maps keys without defining ``_id_of_key`` (so the key cannot be
+    followed), raises ``TypeError``. Nothing is read or created. The result is an
+    absolute, normalized path (relative roots resolve against the CWD).
+
+    Limit: like ``dol.dig.key_in_scope``, this reads what the layers declare through
+    ``_id_of_key``; a layer that maps keys by other means (``add_path_access``,
+    ``flatten``) is not followed, and a ``filt_iter`` scope is not enforced.
 
     >>> import tempfile
     >>> from dol import Files, KeyCodecs
     >>> root = tempfile.mkdtemp()
-    >>> path_of(Files(root), 'a/b.txt') == os.path.join(root, 'a', 'b.txt')
+    >>> path_of(Files(root), os.path.join('a', 'b.txt')) == os.path.join(root, 'a', 'b.txt')
     True
     >>> s = KeyCodecs.suffixed('.json')(Files(root))  # wrapped: the outer key is mapped
     >>> path_of(s, 'a').endswith('a.json')
@@ -1083,9 +1077,10 @@ def path_of(store, key) -> str:
         raise TypeError(
             f"{type(innermost).__name__} is not a file-system store: no path for {key!r}"
         )
-    path = os.fspath(inner_most_key(store, key))
+    path = key if innermost is store else inner_most_key(store, key)
+    path = os.fspath(path)
     innermost.validate_key(path)
-    return path
+    return os.path.abspath(path)
 
 
 def _innermost_layer(store):
