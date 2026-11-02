@@ -387,17 +387,22 @@ _LOCK_DIGEST_HEX = 12  # not 8: a hashed lock name must never match TEMP_NAME_PA
 def _lock_path(path: str, sidecar: str) -> str:
     """``<path><sidecar>``; or, when that name would exceed 255 bytes, a hidden
     ``.<name, clipped>.<12 hex of its hash><sidecar>`` beside it. The hash is of the
-    name normalised (NFC) and casefolded, so every spelling a case- or
-    normalisation-insensitive filesystem (APFS, NTFS) takes as the same file gets the
-    same lock, and every process derives the same name."""
+    name casefolded and normalised, and the choice measures the name's NFD and
+    casefolded forms too, so spellings a case- or normalisation-insensitive filesystem
+    (APFS, NTFS) takes as one file get one lock, and every process derives the same
+    name. (Not closed: a spelling longer than its casefold, e.g. ``ſ`` vs ``s``, at
+    the exact boundary.)"""
     dirname, name = os.path.split(path)
     room = _NAME_MAX_BYTES - len(os.fsencode(f"..{'0' * _LOCK_DIGEST_HEX}{sidecar}"))
     if room < 1:
         raise ValueError(f"sidecar {sidecar!r} leaves no room for a lock file name")
-    nfc = unicodedata.normalize("NFC", name)
-    if len(os.fsencode(nfc + sidecar)) <= _NAME_MAX_BYTES:
+    nfd = unicodedata.normalize("NFD", name)
+    # every spelling a filesystem may take as this file decides alike, and the plain
+    # name returned (the caller's spelling) is among those measured
+    longest = max(len(os.fsencode(s)) for s in (name, nfd, nfd.casefold()))
+    if longest + len(os.fsencode(sidecar)) <= _NAME_MAX_BYTES:
         return path + sidecar
-    key = nfc.casefold()
+    key = unicodedata.normalize("NFC", nfd.casefold())
     digest = hashlib.sha1(os.fsencode(key)).hexdigest()[:_LOCK_DIGEST_HEX]
     return os.path.join(dirname, f".{_clip_to_bytes(key, room)}.{digest}{sidecar}")
 

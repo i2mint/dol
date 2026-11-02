@@ -400,21 +400,22 @@ def test_a_sidecar_too_long_for_any_name_is_refused_up_front(tmp_path, name):
         FileLock(tmp_path / name, sidecar="." + "s" * 250)
 
 
-def test_every_spelling_of_a_long_name_shares_one_lock(tmp_path):
-    import unicodedata
+@pytest.mark.parametrize(
+    "a, b",
+    [
+        ("\u00e9" * 124, "e\u0301" * 124),  # NFC 248 bytes, NFD 372: one file on APFS
+        ("\u00e9" * 126, "e\u0301" * 126),
+        ("N" * 252, "n" * 252),  # one file on a case-insensitive filesystem
+        ("\u023a" * 125, "\u2c65" * 125),  # 250 bytes, its casefold 375
+    ],
+)
+def test_every_spelling_of_a_long_name_shares_one_lock(tmp_path, a, b):
+    assert FileLock(tmp_path / a).path == FileLock(tmp_path / b).path
 
-    nfc = "\u00e9" * 124  # 248 bytes as NFC, 372 as NFD: one file on APFS
-    nfd = unicodedata.normalize("NFD", nfc)
-    assert FileLock(tmp_path / nfc).path == str(tmp_path / nfc) + ".lock"
-    long_nfc = "\u00e9" * 126  # 252 bytes: hashed
-    long_nfd = unicodedata.normalize("NFD", long_nfc)
-    assert FileLock(tmp_path / long_nfc).path == FileLock(tmp_path / long_nfd).path
-    upper, lower = "N" * 252, "n" * 252  # one file on a case-insensitive filesystem
-    assert FileLock(tmp_path / upper).path == FileLock(tmp_path / lower).path
-    assert FileLock(tmp_path / nfd).path in (
-        str(tmp_path / nfd) + ".lock",  # its own spelling, the same file on APFS
-        FileLock(tmp_path / nfc).path,
-    )
+
+@pytest.mark.parametrize("name", ["e\u0301" * 84, "\u212a" * 84])  # NFC is shorter
+def test_the_lock_name_always_fits(tmp_path, name):
+    assert len(os.fsencode(os.path.basename(FileLock(tmp_path / name).path))) <= 255
 
 
 def test_a_hashed_lock_name_never_looks_like_a_temp(tmp_path):
