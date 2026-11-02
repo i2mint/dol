@@ -114,10 +114,11 @@ DFLT_RETRY = Retry()
 _TMP_NAME_PREFIX_BYTES = 100
 
 
-def _clip(name: str, max_bytes: int = _TMP_NAME_PREFIX_BYTES) -> str:
-    """``name`` cut, on a character boundary, to at most ``max_bytes`` encoded bytes
-    (filesystems limit names in bytes, and a non-ASCII character takes several)."""
-    while len(os.fsencode(name)) > max_bytes:
+def _clip_to_bytes(name: str) -> str:
+    """``name`` cut, on a character boundary, to at most :data:`_TMP_NAME_PREFIX_BYTES`
+    encoded bytes (filesystems limit names in bytes; a character can take several)."""
+    name = name[:_TMP_NAME_PREFIX_BYTES]  # a character is at least one byte
+    while len(os.fsencode(name)) > _TMP_NAME_PREFIX_BYTES:
         name = name[:-1]
     return name
 
@@ -184,7 +185,7 @@ def atomic_write(
     path = os.path.realpath(os.fsdecode(path))  # str, so the temp name joins
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
-    tmp = os.path.join(dirname, f".{_clip(name)}.{uuid.uuid4().hex[:8]}.tmp")
+    tmp = os.path.join(dirname, f".{_clip_to_bytes(name)}.{uuid.uuid4().hex[:8]}.tmp")
     mode = _mode_to_apply(path, perms)
     try:
         fd = os.open(
