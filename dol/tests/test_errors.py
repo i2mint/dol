@@ -117,7 +117,9 @@ def test_items_with_caught_exceptions_specific_exceptions():
     # Only catch KeyError - should catch 'b' but raise exception on 'c'
     with pytest.raises(ValueError, match="Value error"):
         list(
-            items_with_caught_exceptions(SpecialMapping(), catch_exceptions=(KeyError,))
+            items_with_caught_exceptions(
+                SpecialMapping(), catch_exceptions=(KeyError,)
+            )
         )
 
 

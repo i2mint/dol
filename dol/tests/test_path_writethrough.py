@@ -300,11 +300,8 @@ def test_callables_are_closure_captured_not_bound_methods():
         return False  # never descend; keep it a pure value-nesting write
 
     s = add_path_access(
-        {},
-        create_missing=True,
-        on_create=None,
-        mk_missing=mk_missing,
-        explore_further=explore_further,
+        {}, create_missing=True, on_create=None,
+        mk_missing=mk_missing, explore_further=explore_further,
     )
     s["a", "b", "c"] = 1  # would TypeError if mk_missing got (self, ctx)
     assert s["a", "b", "c"] == 1
@@ -326,9 +323,7 @@ def test_explore_further_reference_parent_registers_substore():
         return hasattr(node, "_create_missing")  # it's one of our path stores
 
     root = add_path_access(
-        parent,
-        create_missing=True,
-        on_create=None,
+        parent, create_missing=True, on_create=None,
         mk_missing=lambda ctx: add_path_access({}, create_missing=True, on_create=None),
         explore_further=explore_further,
     )
@@ -354,9 +349,7 @@ def test_path_set_factory_propagates_to_every_level():
 def test_path_set_contextual_mk_missing():
     d = {}
     path_set(
-        d,
-        ("x", "y", "z"),
-        1,
+        d, ("x", "y", "z"), 1,
         mk_missing=lambda ctx: OrderedDict() if ctx.depth == 0 else {},
     )
     assert isinstance(d["x"], OrderedDict)
@@ -394,9 +387,7 @@ def test_scalar_intermediate_deep_path_raises_path_creation_error():
 
 def test_bad_mk_missing_returning_non_mapping_raises():
     # A misconfigured factory returning a non-mapping is caught loudly, not TypeError.
-    s = add_path_access(
-        {}, create_missing=True, on_create=None, mk_missing=lambda ctx: 0
-    )
+    s = add_path_access({}, create_missing=True, on_create=None, mk_missing=lambda ctx: 0)
     with pytest.raises(PathCreationError):
         s["a", "b", "c"] = 1
 
@@ -414,9 +405,7 @@ def test_no_partial_write_on_reference_parent_when_max_created_trips():
 def test_no_partial_write_on_may_create_veto():
     backend = {"top": {}}
     s = add_path_access(
-        backend,
-        create_missing=True,
-        on_create=None,
+        backend, create_missing=True, on_create=None,
         may_create=lambda ctx: ctx.key != "b",  # veto the 2nd missing key
     )
     with pytest.raises(PathCreationError):
@@ -452,9 +441,7 @@ def test_writeback_lock_spans_read_modify_write():
 
     backend = Recording()
     backend["a"] = {"b": {"c": 1}}
-    s = add_path_access(
-        backend, create_missing=True, on_create=None, writeback_lock=lock
-    )
+    s = add_path_access(backend, create_missing=True, on_create=None, writeback_lock=lock)
     s["a", "b", "d"] = 2
     assert reads_under_lock and all(reads_under_lock), reads_under_lock
     assert backend["a"] == {"b": {"c": 1, "d": 2}}

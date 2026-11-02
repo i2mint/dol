@@ -54,9 +54,7 @@ def _pytest_ini_options() -> dict:
     pyproject = PKG_DIR.parent / "pyproject.toml"
     if not pyproject.is_file():
         pytest.skip("Not running from a source tree (no pyproject.toml)")
-    return (
-        _load_toml(pyproject).get("tool", {}).get("pytest", {}).get("ini_options", {})
-    )
+    return _load_toml(pyproject).get("tool", {}).get("pytest", {}).get("ini_options", {})
 
 
 def test_py_typed_marker_is_present():

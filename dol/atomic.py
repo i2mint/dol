@@ -168,7 +168,7 @@ def atomic_write(
         raise TypeError(
             "atomic_write takes bytes (or chunks of bytes); encode text first"
         )
-    path = os.fsdecode(os.path.realpath(os.fspath(path)))  # str, so the temp name joins
+    path = os.path.realpath(os.fsdecode(path))  # str, so the temp name joins
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
     tmp = os.path.join(dirname, f".{name[:100]}.{uuid.uuid4().hex[:8]}.tmp")
@@ -335,7 +335,7 @@ class FileLock:
             raise ValueError(
                 "sidecar must be non-empty: the lock file cannot be `path`"
             )
-        self.path = os.fsdecode(os.fspath(path)) + sidecar  # bytes paths too
+        self.path = os.fsdecode(path) + os.fsdecode(sidecar)  # bytes paths too
         self.poll_interval = poll_interval
         self.held = False
         self._fh = None

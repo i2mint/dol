@@ -37,6 +37,7 @@ def test_bytes_path(tmp_path):
     with file_lock(os.fsencode(tmp_path / "f")) as held:
         assert held is True
     assert (tmp_path / "f.lock").exists()
+    assert FileLock(os.fsencode(tmp_path / "g"), sidecar=b".lk").path.endswith("g.lk")
 
 
 def test_processes_exclude_each_other(tmp_path):

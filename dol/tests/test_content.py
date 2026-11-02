@@ -21,23 +21,14 @@ from dol.content import (
 
 def test_content_ref_wire_roundtrip_matches_zodal_shape():
     ref = ContentRef(
-        item_id="abc",
-        field="audio",
-        hash="abc",
-        url="https://x/abc",
-        mime_type="audio/mpeg",
-        size=3,
+        item_id="abc", field="audio", hash="abc", url="https://x/abc",
+        mime_type="audio/mpeg", size=3,
     )
     d = ref.to_json()
     # camelCase keys + _tag discriminator, matching zodal's ContentRef
     assert d == {
-        "_tag": "ContentRef",
-        "field": "audio",
-        "itemId": "abc",
-        "hash": "abc",
-        "url": "https://x/abc",
-        "mimeType": "audio/mpeg",
-        "size": 3,
+        "_tag": "ContentRef", "field": "audio", "itemId": "abc", "hash": "abc",
+        "url": "https://x/abc", "mimeType": "audio/mpeg", "size": 3,
     }
     assert ContentRef.from_json(d) == ref
 
@@ -59,10 +50,7 @@ def test_is_content_ref():
 def test_content_hash_and_truncation():
     assert content_hash(b"abc") == hashlib.sha256(b"abc").hexdigest()
     assert content_hash(b"abc", length=12) == hashlib.sha256(b"abc").hexdigest()[:12]
-    assert (
-        content_hash(b"abc", hasher=hashlib.blake2b)
-        == hashlib.blake2b(b"abc").hexdigest()
-    )
+    assert content_hash(b"abc", hasher=hashlib.blake2b) == hashlib.blake2b(b"abc").hexdigest()
 
 
 def test_guess_mime_type():
@@ -180,9 +168,7 @@ def test_backend_injection_dict_vs_class():
     backing = {}
     cas = with_content_addressing(backing)
     ref = cas.add(b"shared-bytes")
-    assert (
-        backing[ref.item_id] == b"shared-bytes"
-    )  # writes land in the injected backend
+    assert backing[ref.item_id] == b"shared-bytes"  # writes land in the injected backend
 
 
 # -------------------------------------------------------------------------------------
