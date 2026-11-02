@@ -434,3 +434,138 @@ def test_a_hashed_lock_excludes_another_holder(tmp_path):
         with open(tmp_path / lock_file, "rb") as other:  # another descriptor
             with pytest.raises(BlockingIOError):
                 fcntl.flock(other.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+# ---------------------------------------------------------------------------
+# a second lock on a path this thread holds (#185)
+
+
+def _outcome_isolated(code: str, folder) -> str:
+    """Run ``code`` (with ``P`` = a path in ``folder``) in a fresh interpreter and
+    return the name of what it raised ("ok" if nothing): a deadlock fails the test
+    on the timeout instead of hanging the whole suite."""
+    import subprocess
+
+    script = (
+        "import contextlib, os, sys\n"
+        "from dol import file_lock, update_json\n"
+        f"P = {str(folder)!r}\n"
+        "try:\n"
+        + "".join(f"    {line}\n" for line in code.splitlines())
+        + "    print('ok')\n"
+        "except Exception as e:\n"
+        "    print(type(e).__name__)\n"
+    )
+    r = subprocess.run(
+        [sys.executable, "-c", script], capture_output=True, text=True, timeout=20
+    )
+    return r.stdout.strip() or r.stderr.strip()
+
+
+def test_nested_file_lock_on_one_path_raises_instead_of_deadlocking(tmp_path):
+    code = "with file_lock(os.path.join(P, 'f')):\n    with file_lock(os.path.join(P, 'f')):\n        pass"
+    assert _outcome_isolated(code, tmp_path) == "RuntimeError"
+    with file_lock(tmp_path / "f") as held:  # and nothing was left locked
+        assert held
+
+
+def test_another_spelling_of_the_same_file_is_caught(tmp_path):
+    (tmp_path / "sub").mkdir()
+    code = (
+        "with file_lock(os.path.join(P, 'f')):\n"
+        "    with file_lock(os.path.join(P, 'sub', '..', 'f')):\n"
+        "        pass"
+    )
+    assert _outcome_isolated(code, tmp_path) == "RuntimeError"
+
+
+def test_update_json_inside_file_lock_raises_and_nullcontext_works(tmp_path):
+    code = (
+        "p = os.path.join(P, 'm.json')\n"
+        "with file_lock(p):\n"
+        "    update_json(p, lambda m: m.update(a=1))"
+    )
+    assert _outcome_isolated(code, tmp_path) == "RuntimeError"
+    code = (
+        "p = os.path.join(P, 'm.json')\n"
+        "with file_lock(p):\n"
+        "    update_json(p, lambda m: m.update(a=1), lock=contextlib.nullcontext())"
+    )
+    assert _outcome_isolated(code, tmp_path) == "ok"
+    assert (tmp_path / "m.json").read_text() == '{"a": 1}'
+
+
+def test_a_lock_dropped_without_exit_leaves_no_false_alarm(tmp_path):
+    import gc
+
+    lock = FileLock(tmp_path / "f")
+    lock.__enter__()  # never exited
+    del lock
+    gc.collect()
+    with file_lock(tmp_path / "f") as held:  # the OS released it; so must we
+        assert held
+
+
+def test_an_unheld_lock_registers_nothing(tmp_path, monkeypatch):
+    from dol import atomic
+
+    monkeypatch.setattr(FileLock, "_try_lock", lambda self: False)
+    with file_lock(tmp_path / "f") as outer:
+        with file_lock(tmp_path / "f") as inner:  # no lock, so no deadlock to fear
+            assert (outer, inner) == (False, False)
+    assert atomic._holder_of_file == {}
+
+
+@posix_only
+def test_a_forked_child_starts_with_no_holders(tmp_path):
+    from dol import atomic
+
+    with file_lock(tmp_path / "f"):
+        r, w = os.pipe()
+        pid = os.fork()
+        if pid == 0:
+            try:
+                os.write(w, str(len(atomic._holder_of_file)).encode())
+            finally:
+                os._exit(0)
+        n = int(os.read(r, 8))
+        os.waitpid(pid, 0)
+    assert n == 0
+
+
+def test_other_threads_still_wait_their_turn(tmp_path):
+    p = tmp_path / "f"
+    order = []
+    with file_lock(p):
+        t = threading.Thread(target=lambda: _hold_and_note(p, order))
+        t.start()
+        time.sleep(0.2)
+        order.append("main")
+    t.join(10)
+    assert order == ["main", "thread"]
+    with file_lock(p):  # the registry was cleared on release
+        pass
+
+
+def _hold_and_note(p, order):
+    with file_lock(p):
+        order.append("thread")
+
+
+def test_a_different_sidecar_is_a_different_lock(tmp_path):
+    p = tmp_path / "f"
+    with file_lock(p):
+        with file_lock(p, sidecar=".other") as held:
+            assert held
+
+
+def test_a_case_variant_on_a_case_insensitive_filesystem_is_caught(tmp_path):
+    (tmp_path / "data").write_bytes(b"")
+    if not (tmp_path / "DATA").exists():
+        pytest.skip("case-sensitive filesystem: two different files")
+    code = (
+        "with file_lock(os.path.join(P, 'data')):\n"
+        "    with file_lock(os.path.join(P, 'DATA')):\n"
+        "        pass"
+    )
+    assert _outcome_isolated(code, tmp_path) == "RuntimeError"
