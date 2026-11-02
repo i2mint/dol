@@ -82,6 +82,18 @@ def test_long_names_do_not_overflow(tmp_path):
     assert (tmp_path / name).read_bytes() == b"x"
 
 
+def test_long_non_ascii_names_do_not_overflow(tmp_path, monkeypatch):
+    name = "\u6587" * 85  # 85 characters, 255 UTF-8 bytes: a legal name
+    seen = []
+    real = os.replace
+    monkeypatch.setattr(os, "replace", lambda a, b: (seen.append(a), real(a, b)))
+    atomic_write(tmp_path / name, b"x")
+    assert (tmp_path / name).read_bytes() == b"x"
+    tmp_name = os.fsencode(os.path.basename(seen[0]))
+    assert len(tmp_name) <= 255  # ext4 refuses longer (ENAMETOOLONG)
+    assert tmp_name.decode()  # cut on a character boundary: still valid UTF-8
+
+
 def test_fsync_only_when_asked(tmp_path, monkeypatch):
     calls = []
     real = os.fsync
