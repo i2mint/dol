@@ -8,9 +8,12 @@ It is deliberately not ``-x``: fail-fast hides the shape of a suite.
 Every dependent is run, none is filtered by a "has tests" guess: pytest's own
 exit code 5 ("no tests collected") is recorded as ``NO_TESTS``.
 
-The command is the dependents gate's, from priv's ``dep_graph`` (CI doctest
-flags plus each repo's ``[tool.wads.ci.testing]`` exclusions), so a baseline and
-``priv test-dependents`` measure the same thing. ``gate_args=`` is the seam.
+The command is the dependents gate's, from priv's public
+``dep_graph.gate_pytest_args`` (CI doctest flags plus each repo's
+``[tool.wads.ci.testing]`` exclusions), and failing ids come from its
+``dep_graph.junit_summary``, so a baseline and ``priv test-dependents`` measure and
+report the same thing. ``gate_args=`` and ``junit_summary=`` are the seams (tests,
+and dol's public CI, which has no priv, inject their own).
 """
 
 from __future__ import annotations
@@ -22,7 +25,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import xml.etree.ElementTree as ET
 from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -42,35 +44,33 @@ def priv_gate_args(repo: Path) -> tuple[bool, list[str]]:
     """``(enabled, pytest args)`` exactly as ``priv test-dependents`` builds them."""
     from priv import dep_graph as dg
 
-    cfg = dg._ci_testing_config(Path(repo))
-    if cfg.get("enabled", True) is False:
-        return False, []
-    excludes = cfg.get("exclude_paths", ["examples", "scrap"])
-    ignores = [f"--ignore={p}" for p in (*excludes, *dg.GATE_EXTRA_IGNORES)]
-    return True, [*dg.CI_DOCTEST_ARGS, *ignores]
+    enabled, args = dg.gate_pytest_args(Path(repo))
+    return enabled, list(args)
 
 
-def failing_ids(junit_path: Path) -> tuple[dict, list[str]]:
-    """Counts and sorted ``classname::name`` ids of failed/errored cases in a JUnit file."""
-    tree = ET.parse(junit_path)
-    counts = dict(tests=0, failures=0, errors=0, skipped=0)
-    failing = set()
-    for case in tree.iter("testcase"):
-        counts["tests"] += 1
-        tags = {child.tag for child in case}
-        # one outcome per case: a failure with a teardown error is one failure
-        if "failure" in tags:
-            counts["failures"] += 1
-        elif "error" in tags:
-            counts["errors"] += 1
-        elif "skipped" in tags:
-            counts["skipped"] += 1
-        if tags & {"failure", "error"}:
-            failing.add(f"{case.get('classname', '')}::{case.get('name', '')}")
-    counts["passed"] = (
-        counts["tests"] - counts["failures"] - counts["errors"] - counts["skipped"]
-    )
-    return counts, sorted(failing)
+def priv_junit_summary(junit_path: Path) -> dict | None:
+    """``{'counts', 'failed'}`` from a JUnit report as the gate reads it, ``None``
+    when there is no readable report."""
+    from priv import dep_graph as dg
+
+    return dg.junit_summary(junit_path)
+
+
+def _require_priv_seams(*seams) -> None:
+    """Fail before running anything when a default seam needs a priv too old for it
+    (otherwise every dependent is recorded as an ``AttributeError`` ERROR)."""
+    names = {priv_gate_args: "gate_pytest_args", priv_junit_summary: "junit_summary"}
+    needed = [names[f] for f in seams if f in names]
+    if not needed:
+        return
+    from priv import dep_graph as dg
+
+    missing = [n for n in needed if not hasattr(dg, n)]
+    if missing:
+        raise RuntimeError(
+            f"priv.dep_graph lacks {', '.join(missing)} (thorwhalen/priv#218): pull "
+            "priv, or pass gate_args= / junit_summary= explicitly"
+        )
 
 
 def run_suite(
@@ -78,6 +78,7 @@ def run_suite(
     *,
     python: str = sys.executable,
     gate_args: Callable[[Path], tuple[bool, list[str]]] = priv_gate_args,
+    junit_summary: Callable[[Path], dict | None] = priv_junit_summary,
     pytest_args: tuple[str, ...] = DFLT_PYTEST_ARGS,
     timeout: float = DFLT_TIMEOUT,
 ) -> dict:
@@ -115,11 +116,11 @@ def run_suite(
             seconds=seconds,
         )
         if junit.exists():
-            try:
-                counts, failing = failing_ids(junit)
-                entry.update(counts=counts, failing=failing)
-            except ET.ParseError:
+            summary = junit_summary(junit)
+            if summary is None:
                 entry["junit"] = "unparseable"
+            else:
+                entry.update(counts=summary["counts"], failing=summary["failed"])
         if entry["status"] not in ("PASS", "NO_TESTS"):
             entry["tail"] = [
                 store.redact(store.scrub(l)) for l in out.strip().splitlines()[-15:]
@@ -187,6 +188,7 @@ def run_baseline(
     jobs: int = 1,
     python: str = sys.executable,
     gate_args: Callable[[Path], tuple[bool, list[str]]] = priv_gate_args,
+    junit_summary: Callable[[Path], dict | None] = priv_junit_summary,
     timeout: float = DFLT_TIMEOUT,
     only=None,
     note: str | None = None,
@@ -199,6 +201,7 @@ def run_baseline(
     """
     from .pins import require_same_source
 
+    _require_priv_seams(gate_args, junit_summary)
     root = Path(root)
     scan_id = scan_id or store.latest_id(root, "scans")
     require_same_source(root, scan_id, repos)
@@ -213,7 +216,11 @@ def run_baseline(
         else:
             try:  # one dependent's trouble must not cost the whole baseline
                 entry = run_suite(
-                    path, python=python, gate_args=gate_args, timeout=timeout
+                    path,
+                    python=python,
+                    gate_args=gate_args,
+                    junit_summary=junit_summary,
+                    timeout=timeout,
                 )
                 now = fleet.git_pin(path)
                 entry["sha"] = now.get("sha")
@@ -285,7 +292,9 @@ def diff(a: dict, b: dict) -> dict:
 
     Refuses (``IncomparableBaselines``) when a dependent present in both ran with
     a different command: changing the flags changes what gets reported, which
-    would read exactly like a regression. A dependent where either side did not
+    would read exactly like a regression. A ``DISABLED`` entry ran nothing, so its
+    command is not compared (the pair is reported ``incomparable`` if the status
+    changed). A dependent where either side did not
     run to completion (``INTERRUPTED``, ``TIMEOUT``, ``ERROR``...) is reported as
     ``incomparable`` when its status changed, never as tests fixed.
     """
@@ -296,6 +305,7 @@ def diff(a: dict, b: dict) -> dict:
         if "command" in ra[n]
         and "command" in rb[n]
         and ra[n]["command"] != rb[n]["command"]
+        and "DISABLED" not in (ra[n].get("status"), rb[n].get("status"))
     ]
     if mismatched:
         raise IncomparableBaselines(

@@ -131,10 +131,27 @@ def no_priv(repo):
     return True, ['-o', 'addopts=']
 
 
+def junit_fixture(path):
+    """Stands in for priv's ``dep_graph.junit_summary`` (dol's CI has no priv): only
+    the failing ids, in priv's format; the real parser is checked by the contract
+    test below when priv is installed."""
+    import xml.etree.ElementTree as ET
+
+    failed = {
+        f"{c.get('classname')}::{c.get('name')}" if c.get('classname') else c.get('name')
+        for c in ET.parse(path).getroot().iter('testcase')
+        if c.find('failure') is not None or c.find('error') is not None
+    }
+    return dict(counts={}, failed=sorted(failed))
+
+
+NO_PRIV = dict(gate_args=no_priv, junit_summary=junit_fixture)
+
+
 def test_baseline_records_failing_ids_and_diff_localises_the_regression(fleet):
     root, repos = fleet['root'], fleet['repos']
     scan.run_scan('tgt', source_root=fleet['src'], repos=repos, root=root)
-    kw = dict(package='tgt', repos=repos, gate_args=no_priv, python=sys.executable)
+    kw = dict(package='tgt', repos=repos, python=sys.executable, **NO_PRIV)
     b1 = baseline.load_baseline(root, baseline.run_baseline(root, **kw))
     assert b1['results']['dep_a']['status'] == 'PASS'
     assert b1['results']['dep_b']['status'] == 'NO_TESTS'
@@ -144,7 +161,7 @@ def test_baseline_records_failing_ids_and_diff_localises_the_regression(fleet):
     test_a.write_text(test_a.read_text().replace('FLAG = True', 'FLAG = False'))
     b2 = baseline.load_baseline(root, baseline.run_baseline(root, **kw))
     r = b2['results']['dep_a']
-    assert r['status'] == 'FAIL' and r['counts']['failures'] == 1 and r['dirty'] == 1
+    assert r['status'] == 'FAIL' and r['failing'] == ['test_a::test_flaky'] and r['dirty'] == 1
     d = baseline.diff(b1, b2)
     assert d['changed']['dep_a']['new_failures'] == ['test_a::test_flaky']
     assert 'dep_b' not in d['changed']
@@ -157,9 +174,61 @@ def test_diff_refuses_baselines_run_with_different_commands():
         baseline.diff(a, b)
 
 
+def test_diff_ignores_the_command_of_suites_disabled_on_both_sides():
+    a = dict(id='a', results={'x': dict(status='DISABLED', command=['pytest'])})
+    b = dict(id='b', results={'x': dict(status='DISABLED', command=['pytest', '-q'])})
+    assert baseline.diff(a, b)['changed'] == {}
+
+
+def test_an_unreadable_report_is_recorded_as_such(tmp_path):
+    (tmp_path / 'test_ok.py').write_text('def test_x(): pass\n')
+    r = baseline.run_suite(tmp_path, gate_args=no_priv, junit_summary=lambda p: None)
+    assert r['status'] == 'PASS' and r['junit'] == 'unparseable' and 'counts' not in r
+
+
+def test_the_priv_seams_delegate_to_its_public_api(monkeypatch):
+    import types
+
+    fake = types.SimpleNamespace(
+        gate_pytest_args=lambda repo: (False, ('--doctest-modules', '--ignore=x')),
+        junit_summary=lambda path: {'counts': {}, 'failed': [str(path)]},
+    )
+    monkeypatch.setitem(sys.modules, 'priv', types.SimpleNamespace(dep_graph=fake))
+    monkeypatch.setitem(sys.modules, 'priv.dep_graph', fake)
+    assert baseline.priv_gate_args('repo') == (False, ['--doctest-modules', '--ignore=x'])
+    assert baseline.priv_junit_summary('r.xml') == {'counts': {}, 'failed': ['r.xml']}
+
+
+def test_diff_ignores_the_command_when_either_side_is_disabled():
+    a = dict(id='a', results={'x': dict(status='DISABLED', command=['pytest'])})
+    b = dict(id='b', results={'x': dict(status='PASS', command=['pytest', '-q'], failing=[])})
+    assert baseline.diff(a, b)['changed']['x']['incomparable']
+
+
+def test_a_too_old_priv_fails_before_anything_runs(fleet, monkeypatch):
+    import types
+
+    old = types.SimpleNamespace()  # neither public seam
+    monkeypatch.setitem(sys.modules, 'priv', types.SimpleNamespace(dep_graph=old))
+    monkeypatch.setitem(sys.modules, 'priv.dep_graph', old)
+    with pytest.raises(RuntimeError, match='pull'):
+        baseline.run_baseline(fleet['root'], package='tgt', repos=fleet['repos'])
+
+
+def test_contract_with_the_real_priv(tmp_path):
+    dg = pytest.importorskip('priv.dep_graph')
+    if not hasattr(dg, 'junit_summary'):
+        pytest.skip('local priv predates its public seams (thorwhalen/priv#218)')
+    (tmp_path / 'test_c.py').write_text('def test_ok(): pass\ndef test_bad(): assert 0\n')
+    r = baseline.run_suite(tmp_path, gate_args=no_priv)  # the real junit_summary
+    assert r['failing'] == ['test_c::test_bad'] and r['counts']['tests'] == 2
+    enabled, args = baseline.priv_gate_args(tmp_path)
+    assert enabled is True and '--doctest-modules' in args
+
+
 def test_suite_timeout_is_recorded_not_raised(tmp_path):
     (tmp_path / 'test_slow.py').write_text('import time\ndef test_x(): time.sleep(30)\n')
-    r = baseline.run_suite(tmp_path, gate_args=no_priv, timeout=3)
+    r = baseline.run_suite(tmp_path, timeout=3, **NO_PRIV)
     assert r['status'] == 'TIMEOUT'
 
 
@@ -195,7 +264,7 @@ def test_an_explicit_repos_scan_is_never_resolved_through_the_fleet(fleet):
     with pytest.raises(ValueError, match='explicit repos'):
         pins.restore(fleet['root'], apply=True)
     with pytest.raises(ValueError, match='explicit repos'):
-        baseline.run_baseline(fleet['root'], package='tgt', gate_args=no_priv)
+        baseline.run_baseline(fleet['root'], package='tgt', **NO_PRIV)
 
 
 def test_undo_leaves_a_repo_that_moved_after_the_restore(fleet):
@@ -230,7 +299,7 @@ def test_a_local_path_in_suite_output_is_redacted_not_fatal(fleet):
     )
     scan.run_scan('tgt', source_root=fleet['src'], repos=repos, root=root)
     b = baseline.load_baseline(root, baseline.run_baseline(
-        root, package='tgt', repos=repos, gate_args=no_priv))
+        root, package='tgt', repos=repos, **NO_PRIV))
     r = b['results']['dep_a']
     assert r['status'] == 'FAIL' and '/Users/bob' not in json.dumps(r)
 
