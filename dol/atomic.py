@@ -26,12 +26,14 @@ appends under that lock and follows the file when an atomic replace swaps it.
 """
 
 import errno
+import json
 import os
 import re
 import stat
 import threading
 import time
 import uuid
+import warnings
 import weakref
 from collections.abc import Callable, Iterable
 from contextlib import contextmanager
@@ -654,3 +656,114 @@ class LockedAppender:
 
     def __exit__(self, *exc) -> None:
         self.close()
+
+
+# ---------------------------------------------------------------------------
+# update_json: a locked read-modify-write of one JSON file
+
+
+class InvalidJSONError(ValueError):
+    """The file :func:`update_json` was asked to update does not hold valid JSON."""
+
+
+def update_json(
+    path,
+    change: Callable,
+    *,
+    default: Callable = dict,
+    loads: Callable = json.loads,
+    dumps: Callable = json.dumps,
+    lock=None,
+    warn_unlocked: bool = True,
+):
+    """Apply ``change`` to the JSON document at ``path`` under its lock; return what
+    ``change`` returned.
+
+    Under :func:`file_lock` of ``path``: read the document (a ``dict`` or ``list``),
+    call ``change(obj)``, which mutates ``obj`` in place (and may raise, to write
+    nothing), then :func:`atomic_write` it back, only if ``dumps`` of it changed. So a
+    no-op neither creates the file nor moves its mtime, and a file nobody changed
+    keeps its formatting. What ``change`` returns is handed back, never written.
+
+    The read is strict: only a missing file starts from ``default()``. Any other read
+    error propagates, and invalid JSON raises :class:`InvalidJSONError` (a
+    ``ValueError``): writing "default plus this change" over a file that could not
+    be read would destroy what it held.
+
+    :param path: The JSON file; its folder must exist.
+    :param default: Factory for the document when ``path`` does not exist.
+    :param loads, dumps: The codec. ``loads`` gets bytes; ``dumps`` may return str or
+        bytes (e.g. ``functools.partial(json.dumps, indent=2)``, or orjson's). Change
+        is detected by comparing ``dumps`` before and after, so it must be
+        deterministic.
+    :param lock: The context manager to hold. Default: the :class:`FileLock` every
+        :func:`file_lock` of ``path`` takes. Any other works; whether it is held is
+        the ``held`` of what it yields, else the truth of what it yields (``None``,
+        e.g. ``nullcontext()``, counts as held). Do not call this while already holding the same file's
+        lock in this thread: the lock is not reentrant, and that deadlocks.
+    :param warn_unlocked: Warn when the lock is not held (read-only folder,
+        filesystem without locks), so the loss of the guarantee is not silent.
+
+    >>> import tempfile
+    >>> path = os.path.join(tempfile.mkdtemp(), "manifest.json")
+    >>> update_json(path, lambda m: m.setdefault("clips", []).append("a.mp4"))
+    >>> update_json(path, lambda m: len(m["clips"]))
+    1
+    >>> open(path).read()
+    '{"clips": ["a.mp4"]}'
+    >>> update_json(path, lambda m: {**m, "lost": True})  # returned, not written
+    {'clips': ['a.mp4'], 'lost': True}
+    >>> open(path).read()
+    '{"clips": ["a.mp4"]}'
+    """
+    path = os.fsdecode(path)
+    if not os.path.basename(path):
+        raise ValueError(f"update_json takes a file path, not {path!r}")
+    folder = os.path.dirname(os.path.abspath(path))
+    if not os.path.isdir(folder):
+        raise FileNotFoundError(f"update_json: the folder of {path!r} does not exist")
+    own_lock = lock is None
+    if own_lock:
+        lock = FileLock(path)
+    try:
+        with lock as entered:
+            held = getattr(entered, "held", entered is None or bool(entered))
+            if not held and warn_unlocked:
+                warnings.warn(
+                    f"update_json: could not lock {path!r}; "
+                    "concurrent updates may be lost",
+                    stacklevel=2,  # the caller of update_json
+                )
+            obj = _read_json_strictly(path, default, loads)
+            before = dumps(obj)
+            result = change(obj)
+            after = dumps(obj)
+            if after != before:
+                atomic_write(
+                    path, after.encode("utf-8") if isinstance(after, str) else after
+                )
+            return result
+    finally:
+        if own_lock:
+            lock.close()
+
+
+def _read_json_strictly(path: str, default: Callable, loads: Callable):
+    try:
+        with open(path, "rb") as fh:
+            data = fh.read()
+    except FileNotFoundError:
+        obj = default()
+    else:
+        try:
+            obj = loads(data)
+        except ValueError as e:
+            raise InvalidJSONError(
+                f"{path!r} is not valid JSON; nothing was written"
+            ) from e
+    if not isinstance(obj, (dict, list)):
+        raise TypeError(
+            f"update_json changes a dict or list in place, so it cannot update a "
+            f"{type(obj).__name__} document ({path!r})"
+        )
+    return obj
