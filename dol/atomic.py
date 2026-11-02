@@ -93,7 +93,7 @@ class Retry:
         object.__setattr__(self, "on", on)
         if not isinstance(self.attempts, int) or self.attempts < 1:
             raise ValueError(f"attempts must be an int >= 1, got {self.attempts!r}")
-        if self.backoff_s < 0:
+        if not self.backoff_s >= 0:  # also refuses NaN
             raise ValueError(f"backoff_s must be >= 0, got {self.backoff_s!r}")
 
     def __call__(self, op: Callable, *args):

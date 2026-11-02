@@ -197,6 +197,7 @@ def test_retry_does_not_catch_other_errors():
         (dict(attempts=0), ValueError),
         (dict(attempts=2.5), ValueError),
         (dict(backoff_s=-1), ValueError),
+        (dict(backoff_s=float("nan")), ValueError),
         (dict(on=(PermissionError, "nope")), TypeError),
         (dict(on=(int,)), TypeError),
     ],
