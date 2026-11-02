@@ -121,6 +121,7 @@ from dol.atomic import (
 )  # unlink, retried like atomic_write (dol.atomic.Retry)
 from dol.atomic import file_lock, FileLock  # cross-process advisory lock (sidecar file)
 from dol.atomic import LockedAppender  # lock-held appends that follow a replaced file
+from dol.atomic import interrupted_writes  # temps left by killed atomic writes
 
 from dol.util import (
     non_colliding_key,  # make a key that does not collide with existing keys

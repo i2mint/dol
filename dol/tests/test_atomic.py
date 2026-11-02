@@ -1,13 +1,15 @@
 """Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete`` and ``Retry``."""
 
 import os
+import re
 import stat
+import subprocess
 import sys
 
 import pytest
 
-from dol import atomic_delete, atomic_write
-from dol.atomic import Retry
+from dol import atomic_delete, atomic_write, interrupted_writes
+from dol.atomic import TEMP_NAME_PATTERN, Retry, temp_name
 
 posix_only = pytest.mark.skipif(
     sys.platform == "win32", reason="POSIX mode bits/symlinks"
@@ -306,3 +308,77 @@ def test_windows_reader_holding_file_open_is_outlasted(tmp_path):
     threading.Timer(0.05, fh.close).start()
     atomic_delete(p)
     assert not p.exists()
+
+
+# ---------------------------------------------------------------------------
+# temp naming and interrupted_writes (#171, #174)
+
+
+def test_atomic_write_stages_under_temp_name(tmp_path, monkeypatch):
+    seen = []
+    real = os.replace
+    monkeypatch.setattr(os, "replace", lambda a, b: (seen.append(a), real(a, b)))
+    for name in ("f", "a\nb", "文" * 85, "x.tmp"):
+        atomic_write(tmp_path / name, b"x")
+    assert all(TEMP_NAME_PATTERN.fullmatch(os.path.basename(a)) for a in seen)
+
+
+def test_temp_name_is_unique_hidden_and_matched():
+    a, b = temp_name("data.json"), temp_name("data.json")
+    assert a != b and a.startswith(".data.json.")
+    assert TEMP_NAME_PATTERN.fullmatch(temp_name("line\nbreak"))
+
+
+def test_interrupted_writes_lists_only_regular_temp_files(tmp_path):
+    temp = tmp_path / temp_name("k.mp4")
+    temp.write_bytes(b"")
+    for name in ("k.mp4", ".DS_Store", "x.tmp", ".k.ab12cd3.tmp"):
+        (tmp_path / name).write_bytes(b"")
+    (tmp_path / temp_name("dir")).mkdir()
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    (sub / temp_name("deep")).write_bytes(b"")  # not directly in folder
+    assert interrupted_writes(tmp_path) == [str(temp.resolve())]
+
+
+@posix_only
+def test_interrupted_writes_skips_symlinks(tmp_path):
+    target = tmp_path / "target"
+    target.write_bytes(b"")
+    (tmp_path / temp_name("link")).symlink_to(target)
+    assert interrupted_writes(tmp_path) == []
+
+
+def test_interrupted_writes_paths_are_absolute(tmp_path, monkeypatch):
+    (tmp_path / temp_name("f")).write_bytes(b"")
+    monkeypatch.chdir(tmp_path)
+    (found,) = interrupted_writes(".")
+    assert os.path.isabs(found)
+
+
+def test_interrupted_writes_custom_pattern(tmp_path):
+    (tmp_path / ".blob-123.part").write_bytes(b"")
+    (tmp_path / temp_name("f")).write_bytes(b"")
+    found = interrupted_writes(tmp_path, pattern=re.compile(r"\.blob-.*\.part"))
+    assert [os.path.basename(p) for p in found] == [".blob-123.part"]
+
+
+def test_interrupted_writes_unlistable_folder_raises(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        interrupted_writes(tmp_path / "nope")
+
+
+def test_interrupted_writes_finds_what_a_killed_write_left(tmp_path):
+    target = tmp_path / "big"
+    code = (
+        "import os, sys\n"
+        "from dol import atomic_write\n"
+        "def chunks():\n"
+        "    yield b'partial'\n"
+        "    os._exit(0)  # killed mid-write: no cleanup runs\n"
+        "atomic_write(sys.argv[1], chunks())\n"
+    )
+    subprocess.run([sys.executable, "-c", code, str(target)], check=True)
+    assert not target.exists()
+    (left,) = interrupted_writes(tmp_path)
+    assert os.path.basename(left).startswith(".big.")

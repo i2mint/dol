@@ -26,6 +26,7 @@ appends under that lock and follows the file when an atomic replace swaps it.
 
 import errno
 import os
+import re
 import stat
 import threading
 import time
@@ -124,6 +125,49 @@ def _clip_to_bytes(name: str) -> str:
     return name
 
 
+def temp_name(name: str) -> str:
+    """The name :func:`atomic_write` stages a write to ``name`` under: a hidden sibling
+    ``.<name, clipped to 100 bytes>.<8 random hex>.tmp`` (matched by
+    :data:`TEMP_NAME_PATTERN`). Unique per call.
+
+    >>> bool(TEMP_NAME_PATTERN.fullmatch(temp_name("data.json")))
+    True
+    """
+    return f".{_clip_to_bytes(name)}.{uuid.uuid4().hex[:8]}.tmp"
+
+
+#: Matches (``fullmatch``) every name :func:`temp_name` makes, and so the temp file a
+#: killed :func:`atomic_write` leaves behind. ``DOTALL``: a file name may hold a newline.
+TEMP_NAME_PATTERN = re.compile(r"\..+\.[0-9a-f]{8}\.tmp", re.DOTALL)
+
+
+def interrupted_writes(folder, *, pattern: "re.Pattern" = TEMP_NAME_PATTERN) -> list:
+    """The temp files writes killed mid-way left directly in ``folder``: sorted absolute
+    paths of the regular files (never a symlink or folder) whose name fully matches
+    ``pattern`` (default: :func:`atomic_write`'s temps; pass your own for another
+    writer's, e.g. ``re.compile(r"\.blob-.*\.part")``).
+
+    A listed file may also be a write still in progress in another process: delete
+    only those older than any write could take (``os.stat(p).st_mtime``), or while
+    holding the lock every writer of the folder takes.
+
+    Raises ``OSError`` (e.g. ``FileNotFoundError``) when ``folder`` cannot be listed.
+
+    >>> import tempfile
+    >>> d = tempfile.mkdtemp()
+    >>> for name in ("k.mp4", ".k.mp4.ab12cd34.tmp", ".DS_Store", "x.tmp"):
+    ...     open(os.path.join(d, name), "wb").close()
+    >>> [os.path.basename(p) for p in interrupted_writes(d)]
+    ['.k.mp4.ab12cd34.tmp']
+    """
+    with os.scandir(os.fspath(folder)) as entries:
+        return sorted(
+            os.path.abspath(e.path)
+            for e in entries
+            if e.is_file(follow_symlinks=False) and pattern.fullmatch(e.name)
+        )
+
+
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
     """``perms`` if given, else the mode of the file being replaced (``None`` if new)."""
     if perms is not None:
@@ -186,7 +230,7 @@ def atomic_write(
     path = os.path.realpath(os.fsdecode(path))  # str, so the temp name joins
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
-    tmp = os.path.join(dirname, f".{_clip_to_bytes(name)}.{uuid.uuid4().hex[:8]}.tmp")
+    tmp = os.path.join(dirname, temp_name(name))
     mode = _mode_to_apply(path, perms)
     try:
         fd = os.open(
