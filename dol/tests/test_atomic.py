@@ -1,13 +1,15 @@
-"""Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete`` and ``Retry``."""
+"""Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete``, ``Retry``, temp naming."""
 
 import os
+import re
 import stat
+import subprocess
 import sys
 
 import pytest
 
-from dol import atomic_delete, atomic_write
-from dol.atomic import Retry
+from dol import atomic_delete, atomic_write, interrupted_writes
+from dol.atomic import TEMP_NAME_PATTERN, Retry, temp_name
 
 posix_only = pytest.mark.skipif(
     sys.platform == "win32", reason="POSIX mode bits/symlinks"
@@ -306,3 +308,142 @@ def test_windows_reader_holding_file_open_is_outlasted(tmp_path):
     threading.Timer(0.05, fh.close).start()
     atomic_delete(p)
     assert not p.exists()
+
+
+# ---------------------------------------------------------------------------
+# temp naming and interrupted_writes (#171, #174)
+
+
+def test_atomic_write_stages_under_temp_name(tmp_path, monkeypatch):
+    seen = []
+    real = os.replace
+    monkeypatch.setattr(os, "replace", lambda a, b: (seen.append(a), real(a, b)))
+    names = ["f", "文" * 85, "x.tmp"] + (["a\nb"] if os.name != "nt" else [])
+    for name in names:
+        atomic_write(tmp_path / name, b"x")
+    assert len(seen) == len(names)
+    assert all(TEMP_NAME_PATTERN.fullmatch(os.path.basename(a)) for a in seen)
+
+
+def test_temp_name_is_unique_hidden_and_matched():
+    a, b = temp_name("data.json"), temp_name("data.json")
+    assert a != b and a.startswith(".data.json.")
+    assert TEMP_NAME_PATTERN.fullmatch(temp_name("line\nbreak"))
+
+
+def test_interrupted_writes_lists_only_regular_temp_files(tmp_path):
+    temp = tmp_path / temp_name("k.mp4")
+    temp.write_bytes(b"")
+    for name in ("k.mp4", ".DS_Store", "x.tmp", ".k.ab12cd3.tmp"):
+        (tmp_path / name).write_bytes(b"")
+    (tmp_path / temp_name("dir")).mkdir()
+    sub = tmp_path / "sub"
+    sub.mkdir()
+    (sub / temp_name("deep")).write_bytes(b"")  # not directly in folder
+    assert interrupted_writes(tmp_path) == [os.path.abspath(temp)]
+
+
+@posix_only
+def test_interrupted_writes_skips_symlinks(tmp_path):
+    target = tmp_path / "target"
+    target.write_bytes(b"")
+    (tmp_path / temp_name("link")).symlink_to(target)
+    assert interrupted_writes(tmp_path) == []
+
+
+def test_interrupted_writes_paths_are_absolute(tmp_path, monkeypatch):
+    (tmp_path / temp_name("f")).write_bytes(b"")
+    monkeypatch.chdir(tmp_path)
+    (found,) = interrupted_writes(".")
+    assert os.path.isabs(found)
+
+
+def test_interrupted_writes_custom_pattern(tmp_path):
+    (tmp_path / ".blob-123.part").write_bytes(b"")
+    (tmp_path / temp_name("f")).write_bytes(b"")
+    found = interrupted_writes(tmp_path, pattern=re.compile(r"\.blob-.*\.part"))
+    assert [os.path.basename(p) for p in found] == [".blob-123.part"]
+
+
+def test_interrupted_writes_missing_folder_holds_none(tmp_path):
+    assert interrupted_writes(tmp_path / "nope") == []
+
+
+def test_interrupted_writes_unlistable_folder_raises(tmp_path):
+    f = tmp_path / "file"
+    f.write_bytes(b"")
+    with pytest.raises(OSError):
+        interrupted_writes(f)  # not a folder
+
+
+def test_interrupted_writes_bytes_folder_and_str_pattern(tmp_path):
+    (tmp_path / ".blob-1.part").write_bytes(b"")
+    found = interrupted_writes(os.fsencode(tmp_path), pattern=r"\.blob-.+\.part")
+    assert [os.path.basename(p) for p in found] == [".blob-1.part"]
+
+
+def test_interrupted_writes_recursive(tmp_path):
+    top = tmp_path / temp_name("a")
+    top.write_bytes(b"")
+    (tmp_path / "sub" / "deeper").mkdir(parents=True)
+    deep = tmp_path / "sub" / "deeper" / temp_name("b")
+    deep.write_bytes(b"")
+    assert interrupted_writes(tmp_path) == [os.path.abspath(top)]
+    assert interrupted_writes(tmp_path, recursive=True) == sorted(
+        [os.path.abspath(top), os.path.abspath(deep)]
+    )
+
+
+@posix_only
+def test_interrupted_writes_recursive_skips_symlinked_and_unreadable_dirs(tmp_path):
+    root, other = tmp_path / "root", tmp_path / "other"
+    root.mkdir()
+    other.mkdir()
+    (other / temp_name("x")).write_bytes(b"")
+    (root / "link").symlink_to(other)
+    locked = root / "locked"
+    locked.mkdir()
+    (locked / temp_name("y")).write_bytes(b"")
+    os.chmod(locked, 0)
+    try:
+        if os.access(locked, os.R_OK):
+            pytest.skip("running as root: permissions are not enforced")
+        assert interrupted_writes(root, recursive=True) == []
+    finally:
+        os.chmod(locked, 0o700)
+
+
+@posix_only
+def test_interrupted_writes_unreadable_top_folder_raises(tmp_path):
+    locked = tmp_path / "locked"
+    locked.mkdir()
+    os.chmod(locked, 0)
+    try:
+        if os.access(locked, os.R_OK):
+            pytest.skip("running as root: permissions are not enforced")
+        with pytest.raises(PermissionError):
+            interrupted_writes(locked, recursive=True)
+    finally:
+        os.chmod(locked, 0o700)
+
+
+@pytest.mark.parametrize("bad", ["", "a/b", os.path.join("a", "b")])
+def test_temp_name_takes_a_file_name(bad):
+    with pytest.raises(ValueError):
+        temp_name(bad)
+
+
+def test_interrupted_writes_finds_what_a_killed_write_left(tmp_path):
+    target = tmp_path / "big"
+    code = (
+        "import os, sys\n"
+        "from dol import atomic_write\n"
+        "def chunks():\n"
+        "    yield b'partial'\n"
+        "    os._exit(0)  # killed mid-write: no cleanup runs\n"
+        "atomic_write(sys.argv[1], chunks())\n"
+    )
+    subprocess.run([sys.executable, "-c", code, str(target)], check=True)
+    assert not target.exists()
+    (left,) = interrupted_writes(tmp_path)
+    assert os.path.basename(left).startswith(".big.")
