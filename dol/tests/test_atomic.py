@@ -6,8 +6,8 @@ import sys
 
 import pytest
 
-from dol import Retry, atomic_delete, atomic_write
-from dol.atomic import SHARING_VIOLATIONS
+from dol import atomic_delete, atomic_write
+from dol.atomic import Retry
 
 posix_only = pytest.mark.skipif(
     sys.platform == "win32", reason="POSIX mode bits/symlinks"
@@ -150,9 +150,29 @@ def _refuse(n, real, exc=PermissionError):
 NO_SLEEP = Retry(on=(PermissionError,), backoff_s=0)
 
 
-def test_sharing_violations_default_is_windows_only():
-    assert SHARING_VIOLATIONS == ((PermissionError,) if os.name == "nt" else ())
-    assert Retry().on == SHARING_VIOLATIONS
+def test_default_retries_only_on_windows(tmp_path, monkeypatch):
+    monkeypatch.setattr("dol.atomic.time.sleep", lambda s: None)
+    op, calls = _refuse(99, os.replace)
+    monkeypatch.setattr(os, "replace", op)
+    with pytest.raises(PermissionError):
+        atomic_write(tmp_path / "f", b"x")  # default retry
+    assert len(calls) == (Retry().attempts if os.name == "nt" else 1)
+    assert os.listdir(tmp_path) == []
+
+
+def test_interrupt_during_backoff_keeps_old_and_cleans_tmp(tmp_path, monkeypatch):
+    p = tmp_path / "f"
+    atomic_write(p, b"old")
+
+    def interrupted(s):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr("dol.atomic.time.sleep", interrupted)
+    op, _ = _refuse(99, os.replace)
+    monkeypatch.setattr(os, "replace", op)
+    with pytest.raises(KeyboardInterrupt):
+        atomic_write(p, b"new", retry=Retry(on=(PermissionError,)))
+    assert p.read_bytes() == b"old" and os.listdir(tmp_path) == ["f"]
 
 
 def test_retry_backoff_doubles_and_reraises_the_last(monkeypatch):
@@ -171,9 +191,25 @@ def test_retry_does_not_catch_other_errors():
     assert len(calls) == 1
 
 
-def test_retry_refuses_zero_attempts():
-    with pytest.raises(ValueError, match="attempts"):
-        Retry(attempts=0)
+@pytest.mark.parametrize(
+    "kwargs, error",
+    [
+        (dict(attempts=0), ValueError),
+        (dict(attempts=2.5), ValueError),
+        (dict(backoff_s=-1), ValueError),
+        (dict(on=(PermissionError, "nope")), TypeError),
+        (dict(on=(int,)), TypeError),
+    ],
+)
+def test_retry_refuses_bad_config_at_construction(kwargs, error):
+    with pytest.raises(error):
+        Retry(**kwargs)
+
+
+def test_retry_on_is_normalized_to_a_tuple():
+    assert Retry(on=PermissionError).on == (PermissionError,)
+    assert Retry(on=[PermissionError]).on == (PermissionError,)
+    hash(Retry(on=[PermissionError]))  # still a hashable value
 
 
 def test_write_retries_a_refused_replace(tmp_path, monkeypatch):
@@ -199,11 +235,13 @@ def test_write_gives_up_keeps_old_and_cleans_tmp(tmp_path, monkeypatch):
     assert os.listdir(tmp_path) == ["f"]
 
 
-def test_write_retry_none_calls_replace_once(tmp_path, monkeypatch):
+def test_single_attempt_calls_replace_once(tmp_path, monkeypatch):
     op, calls = _refuse(1, os.replace)
     monkeypatch.setattr(os, "replace", op)
     with pytest.raises(PermissionError):
-        atomic_write(tmp_path / "f", b"x", retry=None)
+        atomic_write(
+            tmp_path / "f", b"x", retry=Retry(on=(PermissionError,), attempts=1)
+        )
     assert len(calls) == 1 and os.listdir(tmp_path) == []
 
 

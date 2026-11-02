@@ -53,6 +53,9 @@ def _fsync_dir(dirpath: str) -> None:
 
 #: What :data:`DFLT_RETRY` retries: Windows' sharing violation (another handle has the
 #: file open); nothing elsewhere, where ``PermissionError`` means a real permission problem.
+#: Windows reports a sharing violation on ``os.replace`` with the same error as a genuine
+#: access denial, so there *every* ``PermissionError`` is retried: a read-only destination
+#: still fails, only ~0.6 s later.
 SHARING_VIOLATIONS: "tuple[type[BaseException], ...]" = (
     (PermissionError,) if os.name == "nt" else ()
 )
@@ -63,8 +66,9 @@ class Retry:
     """Call ``op(*args)``, retrying on ``on`` exceptions with doubling backoff.
 
     ``attempts`` calls at most, sleeping ``backoff_s``, then twice that, and so on
-    between them (defaults: 7 calls, ~0.6 s of sleep in all). The last failure is
-    re-raised. Any other exception propagates at once.
+    between them (defaults: 7 calls, ~0.6 s of sleep in all; the backoff is not capped,
+    so keep ``attempts`` small). The last failure is re-raised. Any other exception
+    propagates at once. ``Retry(attempts=1)`` (or ``on=()``) calls ``op`` once.
 
     >>> calls = []
     >>> def flaky():
@@ -81,8 +85,16 @@ class Retry:
     backoff_s: float = 0.01
 
     def __post_init__(self):
-        if self.attempts < 1:
-            raise ValueError(f"attempts must be >= 1, got {self.attempts}")
+        # checked here, not at the first contended call, where a bad `on` would mask
+        # the real error with a TypeError
+        on = (self.on,) if isinstance(self.on, type) else tuple(self.on)
+        if not all(isinstance(e, type) and issubclass(e, BaseException) for e in on):
+            raise TypeError(f"on must be exception classes, got {self.on!r}")
+        object.__setattr__(self, "on", on)
+        if not isinstance(self.attempts, int) or self.attempts < 1:
+            raise ValueError(f"attempts must be an int >= 1, got {self.attempts!r}")
+        if self.backoff_s < 0:
+            raise ValueError(f"backoff_s must be >= 0, got {self.backoff_s!r}")
 
     def __call__(self, op: Callable, *args):
         for attempt in range(self.attempts):
@@ -95,10 +107,6 @@ class Retry:
 
 
 DFLT_RETRY = Retry()
-
-
-def _call_once(op: Callable, *args):
-    return op(*args)
 
 
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
@@ -117,7 +125,7 @@ def atomic_write(
     *,
     fsync: bool = False,
     perms: "int | None" = None,
-    retry: "Callable | None" = DFLT_RETRY,
+    retry: Callable = DFLT_RETRY,
 ) -> None:
     """Write ``data`` to ``path`` atomically (temp file in the same folder, then ``os.replace``).
 
@@ -134,7 +142,7 @@ def atomic_write(
         Default: the mode of the file being replaced, else the usual umask mode.
     :param retry: How the final ``os.replace`` is called: ``retry(os.replace, tmp,
         path)``. Default :data:`DFLT_RETRY` retries Windows' sharing violations (a
-        reader has ``path`` open); ``None`` calls it once.
+        reader has ``path`` open); ``Retry(attempts=1)`` calls it once.
 
     The temp file is a hidden, uniquely named sibling (``.<name>.<random>.tmp``), created
     with ``O_EXCL``, so concurrent writers never share one and key listings skip it.
@@ -177,7 +185,7 @@ def atomic_write(
             if fsync:
                 fh.flush()
                 os.fsync(fh.fileno())
-        (retry or _call_once)(os.replace, tmp, path)
+        retry(os.replace, tmp, path)
     except BaseException:
         try:
             os.unlink(tmp)
@@ -188,11 +196,14 @@ def atomic_write(
         _fsync_dir(dirname)
 
 
-def atomic_delete(path, *, retry: "Callable | None" = DFLT_RETRY) -> None:
-    """Remove the file ``path`` (``os.unlink``), retrying as :func:`atomic_write` does.
+def atomic_delete(path, *, retry: Callable = DFLT_RETRY) -> None:
+    """Remove the file ``path``: ``retry(os.unlink, path)``, the delete counterpart
+    of :func:`atomic_write`.
 
-    A symlink is removed itself, not its target. A missing file raises
-    ``FileNotFoundError`` (never retried).
+    ``os.unlink`` is already atomic; what this adds is the same retry, so a delete is
+    not refused on Windows because a reader has the file open. (Windows may then keep
+    the name "delete pending" until the last handle closes.) A symlink is removed
+    itself, not its target. A missing file raises ``FileNotFoundError`` (not retried).
 
     >>> import tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "f")
@@ -201,7 +212,7 @@ def atomic_delete(path, *, retry: "Callable | None" = DFLT_RETRY) -> None:
     >>> os.path.exists(path)
     False
     """
-    (retry or _call_once)(os.unlink, os.fspath(path))
+    retry(os.unlink, os.fspath(path))
 
 
 # ---------------------------------------------------------------------------
