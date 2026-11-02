@@ -33,6 +33,7 @@ import re
 import stat
 import threading
 import time
+import unicodedata
 import uuid
 import warnings
 import weakref
@@ -120,11 +121,12 @@ DFLT_RETRY = Retry()
 _TMP_NAME_PREFIX_BYTES = 100
 
 
-#: The usual limit on one file name, in bytes (ext4, APFS, NTFS's 255 UTF-16 units).
-NAME_MAX_BYTES = 255
+#: The usual limit on one file name: 255 bytes on ext4 (255 UTF-16 units on APFS and
+#: NTFS, never more than the UTF-8 byte count, so checking bytes is safe everywhere).
+_NAME_MAX_BYTES = 255
 
 
-def _clip_to_bytes(name: str, max_bytes: int = _TMP_NAME_PREFIX_BYTES) -> str:
+def _clip_to_bytes(name: str, max_bytes: int) -> str:
     """``name`` cut, on a character boundary, to at most ``max_bytes`` encoded bytes
     (filesystems limit names in bytes; a character can take several)."""
     name = name[:max_bytes]  # a character is at least one byte
@@ -143,7 +145,7 @@ def temp_name(name: str) -> str:
     """
     if not name or os.sep in name or (os.altsep and os.altsep in name):
         raise ValueError(f"temp_name takes a non-empty file name, not {name!r}")
-    return f".{_clip_to_bytes(name)}.{uuid.uuid4().hex[:8]}.tmp"
+    return f".{_clip_to_bytes(name, _TMP_NAME_PREFIX_BYTES)}.{uuid.uuid4().hex[:8]}.tmp"
 
 
 #: Matches (``fullmatch``) every name :func:`temp_name` makes, and so the temp file a
@@ -379,18 +381,25 @@ def _renew_in_child() -> None:
         lock.held = False
 
 
+_LOCK_DIGEST_HEX = 12  # not 8: a hashed lock name must never match TEMP_NAME_PATTERN
+
+
 def _lock_path(path: str, sidecar: str) -> str:
-    """``<path><sidecar>``; or, when that name would exceed :data:`NAME_MAX_BYTES`, a
-    hidden ``.<name, clipped>.<8 hex of its hash><sidecar>`` beside it, the same in
-    every process, so all of them still share one lock."""
+    """``<path><sidecar>``; or, when that name would exceed 255 bytes, a hidden
+    ``.<name, clipped>.<12 hex of its hash><sidecar>`` beside it. The hash is of the
+    name normalised (NFC) and casefolded, so every spelling a case- or
+    normalisation-insensitive filesystem (APFS, NTFS) takes as the same file gets the
+    same lock, and every process derives the same name."""
     dirname, name = os.path.split(path)
-    if len(os.fsencode(name + sidecar)) <= NAME_MAX_BYTES:
-        return path + sidecar
-    digest = hashlib.sha1(os.fsencode(name)).hexdigest()[:8]
-    room = NAME_MAX_BYTES - len(os.fsencode(f"..{digest}{sidecar}"))
+    room = _NAME_MAX_BYTES - len(os.fsencode(f"..{'0' * _LOCK_DIGEST_HEX}{sidecar}"))
     if room < 1:
         raise ValueError(f"sidecar {sidecar!r} leaves no room for a lock file name")
-    return os.path.join(dirname, f".{_clip_to_bytes(name, room)}.{digest}{sidecar}")
+    nfc = unicodedata.normalize("NFC", name)
+    if len(os.fsencode(nfc + sidecar)) <= _NAME_MAX_BYTES:
+        return path + sidecar
+    key = nfc.casefold()
+    digest = hashlib.sha1(os.fsencode(key)).hexdigest()[:_LOCK_DIGEST_HEX]
+    return os.path.join(dirname, f".{_clip_to_bytes(key, room)}.{digest}{sidecar}")
 
 
 if hasattr(os, "register_at_fork"):
@@ -398,7 +407,8 @@ if hasattr(os, "register_at_fork"):
 
 
 class FileLock:
-    """A reusable, exclusive, advisory lock on a sidecar file ``<path><sidecar>``.
+    """A reusable, exclusive, advisory lock on a sidecar file ``<path><sidecar>``
+    (a shortened hidden name instead, for names near the 255-byte limit).
 
     Use it as ``with lock:``; the body runs either way, and ``lock.held`` says whether
     the lock is actually held (it is not when the lock folder is read-only or the
@@ -435,7 +445,7 @@ class FileLock:
         """
         :param path: The file being protected; the lock lives next to it, as
             ``<path><sidecar>`` (as a shortened hidden name when that would exceed
-            :data:`NAME_MAX_BYTES`).
+            255 bytes).
         :param sidecar: Non-empty suffix of the lock file.
         :param poll_interval: Seconds between attempts on a contended lock (Windows
             only; POSIX blocks in the kernel).
@@ -517,7 +527,8 @@ def file_lock(
     sidecar: str = DFLT_LOCK_SIDECAR,
     poll_interval: float = DFLT_POLL_INTERVAL,
 ):
-    """Hold an exclusive advisory lock on ``<path><sidecar>``; yields whether it is held.
+    """Hold an exclusive advisory lock on ``path``'s sidecar (see :class:`FileLock`);
+    yields whether it is held.
 
     Cross-process and cross-platform (``flock`` on POSIX, ``msvcrt.locking`` on
     Windows). Take it around every append, read and :func:`atomic_write` of ``path``
