@@ -267,28 +267,102 @@ def atomic_write(
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
     tmp = os.path.join(dirname, temp_name(name))
-    mode = _mode_to_apply(path, perms)
     try:
-        fd = os.open(
-            tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else mode
-        )
-        with os.fdopen(fd, "wb") as fh:
-            if mode is not None and hasattr(os, "fchmod"):
-                os.fchmod(fh.fileno(), mode)  # exact, not narrowed by the umask
-            for chunk in chunks:
-                fh.write(chunk)
-            if fsync:
-                fh.flush()
-                os.fsync(fh.fileno())
+        _write_staged(tmp, chunks, mode=_mode_to_apply(path, perms), fsync=fsync)
         retry(os.replace, tmp, path)
     except BaseException:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
+        _discard(tmp)
         raise
     if fsync:
         _fsync_dir(dirname)
+
+
+def _write_staged(tmp: str, chunks, *, mode, fsync: bool, observe=None) -> None:
+    """Write ``chunks`` to the new file ``tmp`` (``O_EXCL``), created with ``mode``
+    (exact, not narrowed by the umask) or the umask's default; ``observe(chunk)``
+    sees each chunk before it is written."""
+    fd = os.open(
+        tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else mode
+    )
+    with os.fdopen(fd, "wb") as fh:
+        if mode is not None and hasattr(os, "fchmod"):
+            os.fchmod(fh.fileno(), mode)
+        for chunk in chunks:
+            if observe is not None:
+                observe(chunk)
+            fh.write(chunk)
+        if fsync:
+            fh.flush()
+            os.fsync(fh.fileno())
+
+
+def _discard(tmp: str) -> None:
+    try:
+        os.unlink(tmp)
+    except OSError:
+        pass
+
+
+def _hexdigest(hasher) -> str:
+    return hasher.hexdigest()
+
+
+def write_content_addressed(
+    data: "bytes | Iterable[bytes]",
+    folder,
+    *,
+    hasher: Callable = hashlib.sha256,
+    name_of: Callable = _hexdigest,
+    fsync: bool = False,
+    perms: "int | None" = None,
+    retry: Callable = DFLT_RETRY,
+) -> str:
+    """Write ``data`` into ``folder`` under a name computed from its content; return
+    that name.
+
+    The bytes are hashed while they are spooled to a hidden temp file in ``folder``
+    (a :func:`temp_name`, so :func:`interrupted_writes` finds one a killed process
+    left), and only renamed to their name once complete: whoever finds a name finds
+    the whole content, never a prefix. If a file of that name is already there, it
+    is kept (same name, same content) and the temp is dropped.
+
+    :param data: Bytes-like, or an iterable of bytes-like chunks (streamed).
+    :param folder: Where the content goes; it must exist.
+    :param hasher: Factory of a ``hashlib``-like object (``update``), default sha256.
+    :param name_of: The file name from the finished hasher; default its hexdigest.
+    :param fsync, perms, retry: As for :func:`atomic_write` (``perms`` default: the
+        umask's).
+
+    >>> import tempfile
+    >>> d = tempfile.mkdtemp()
+    >>> name = write_content_addressed([b"hello ", b"world"], d)
+    >>> name == hashlib.sha256(b"hello world").hexdigest()
+    True
+    >>> write_content_addressed(b"hello world", d) == name, os.listdir(d) == [name]
+    (True, True)
+    """
+    if isinstance(data, str):
+        raise TypeError("write_content_addressed takes bytes; encode text first")
+    folder = os.fsdecode(folder)
+    chunks = [data] if isinstance(data, _BYTES_LIKE) else data
+    h = hasher()
+    tmp = os.path.join(folder, temp_name("content"))
+    try:
+        _write_staged(tmp, chunks, mode=perms, fsync=fsync, observe=h.update)
+        name = name_of(h)
+        if not name or os.path.basename(name) != name or name in (".", ".."):
+            raise ValueError(f"name_of must give a file name, not {name!r}")
+        target = os.path.join(folder, name)
+        if os.path.lexists(target):
+            _discard(tmp)  # already there: same name, same content
+        else:
+            retry(os.replace, tmp, target)
+    except BaseException:
+        _discard(tmp)
+        raise
+    if fsync:
+        _fsync_dir(folder)
+    return name
 
 
 def atomic_delete(path, *, retry: Callable = DFLT_RETRY) -> None:
