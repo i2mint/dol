@@ -131,10 +131,28 @@ def no_priv(repo):
     return True, ['-o', 'addopts=']
 
 
+def junit_fixture(path):
+    """Stands in for priv's ``dep_graph.junit_summary`` (dol's CI has no priv)."""
+    import xml.etree.ElementTree as ET
+
+    counts = dict(tests=0, failures=0, errors=0, skipped=0)
+    failed = set()
+    for case in ET.parse(path).getroot().iter('testcase'):
+        counts['tests'] += 1
+        for tag, key in (('failure', 'failures'), ('error', 'errors'), ('skipped', 'skipped')):
+            counts[key] += case.find(tag) is not None
+        if case.find('failure') is not None or case.find('error') is not None:
+            failed.add(f"{case.get('classname', '')}::{case.get('name', '')}")
+    return dict(counts=counts, failed=sorted(failed))
+
+
+NO_PRIV = dict(gate_args=no_priv, junit_summary=junit_fixture)
+
+
 def test_baseline_records_failing_ids_and_diff_localises_the_regression(fleet):
     root, repos = fleet['root'], fleet['repos']
     scan.run_scan('tgt', source_root=fleet['src'], repos=repos, root=root)
-    kw = dict(package='tgt', repos=repos, gate_args=no_priv, python=sys.executable)
+    kw = dict(package='tgt', repos=repos, python=sys.executable, **NO_PRIV)
     b1 = baseline.load_baseline(root, baseline.run_baseline(root, **kw))
     assert b1['results']['dep_a']['status'] == 'PASS'
     assert b1['results']['dep_b']['status'] == 'NO_TESTS'
@@ -157,9 +175,34 @@ def test_diff_refuses_baselines_run_with_different_commands():
         baseline.diff(a, b)
 
 
+def test_diff_ignores_the_command_of_suites_disabled_on_both_sides():
+    a = dict(id='a', results={'x': dict(status='DISABLED', command=['pytest'])})
+    b = dict(id='b', results={'x': dict(status='DISABLED', command=['pytest', '-q'])})
+    assert 'x' not in baseline.diff(a, b)
+
+
+def test_an_unreadable_report_is_recorded_as_such(tmp_path):
+    (tmp_path / 'test_ok.py').write_text('def test_x(): pass\n')
+    r = baseline.run_suite(tmp_path, gate_args=no_priv, junit_summary=lambda p: None)
+    assert r['status'] == 'PASS' and r['junit'] == 'unparseable' and 'counts' not in r
+
+
+def test_the_priv_seams_delegate_to_its_public_api(monkeypatch):
+    import types
+
+    fake = types.SimpleNamespace(
+        gate_pytest_args=lambda repo: (False, ('--doctest-modules', '--ignore=x')),
+        junit_summary=lambda path: {'counts': {}, 'failed': [str(path)]},
+    )
+    monkeypatch.setitem(sys.modules, 'priv', types.SimpleNamespace(dep_graph=fake))
+    monkeypatch.setitem(sys.modules, 'priv.dep_graph', fake)
+    assert baseline.priv_gate_args('repo') == (False, ['--doctest-modules', '--ignore=x'])
+    assert baseline.priv_junit_summary('r.xml') == {'counts': {}, 'failed': ['r.xml']}
+
+
 def test_suite_timeout_is_recorded_not_raised(tmp_path):
     (tmp_path / 'test_slow.py').write_text('import time\ndef test_x(): time.sleep(30)\n')
-    r = baseline.run_suite(tmp_path, gate_args=no_priv, timeout=3)
+    r = baseline.run_suite(tmp_path, timeout=3, **NO_PRIV)
     assert r['status'] == 'TIMEOUT'
 
 
@@ -195,7 +238,7 @@ def test_an_explicit_repos_scan_is_never_resolved_through_the_fleet(fleet):
     with pytest.raises(ValueError, match='explicit repos'):
         pins.restore(fleet['root'], apply=True)
     with pytest.raises(ValueError, match='explicit repos'):
-        baseline.run_baseline(fleet['root'], package='tgt', gate_args=no_priv)
+        baseline.run_baseline(fleet['root'], package='tgt', **NO_PRIV)
 
 
 def test_undo_leaves_a_repo_that_moved_after_the_restore(fleet):
@@ -230,7 +273,7 @@ def test_a_local_path_in_suite_output_is_redacted_not_fatal(fleet):
     )
     scan.run_scan('tgt', source_root=fleet['src'], repos=repos, root=root)
     b = baseline.load_baseline(root, baseline.run_baseline(
-        root, package='tgt', repos=repos, gate_args=no_priv))
+        root, package='tgt', repos=repos, **NO_PRIV))
     r = b['results']['dep_a']
     assert r['status'] == 'FAIL' and '/Users/bob' not in json.dumps(r)
 
