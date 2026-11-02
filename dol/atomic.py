@@ -26,6 +26,7 @@ appends under that lock and follows the file when an atomic replace swaps it.
 """
 
 import errno
+import hashlib
 import json
 import os
 import re
@@ -119,11 +120,15 @@ DFLT_RETRY = Retry()
 _TMP_NAME_PREFIX_BYTES = 100
 
 
-def _clip_to_bytes(name: str) -> str:
-    """``name`` cut, on a character boundary, to at most :data:`_TMP_NAME_PREFIX_BYTES`
-    encoded bytes (filesystems limit names in bytes; a character can take several)."""
-    name = name[:_TMP_NAME_PREFIX_BYTES]  # a character is at least one byte
-    while len(os.fsencode(name)) > _TMP_NAME_PREFIX_BYTES:
+#: The usual limit on one file name, in bytes (ext4, APFS, NTFS's 255 UTF-16 units).
+NAME_MAX_BYTES = 255
+
+
+def _clip_to_bytes(name: str, max_bytes: int = _TMP_NAME_PREFIX_BYTES) -> str:
+    """``name`` cut, on a character boundary, to at most ``max_bytes`` encoded bytes
+    (filesystems limit names in bytes; a character can take several)."""
+    name = name[:max_bytes]  # a character is at least one byte
+    while len(os.fsencode(name)) > max_bytes:
         name = name[:-1]
     return name
 
@@ -374,6 +379,20 @@ def _renew_in_child() -> None:
         lock.held = False
 
 
+def _lock_path(path: str, sidecar: str) -> str:
+    """``<path><sidecar>``; or, when that name would exceed :data:`NAME_MAX_BYTES`, a
+    hidden ``.<name, clipped>.<8 hex of its hash><sidecar>`` beside it, the same in
+    every process, so all of them still share one lock."""
+    dirname, name = os.path.split(path)
+    if len(os.fsencode(name + sidecar)) <= NAME_MAX_BYTES:
+        return path + sidecar
+    digest = hashlib.sha1(os.fsencode(name)).hexdigest()[:8]
+    room = NAME_MAX_BYTES - len(os.fsencode(f"..{digest}{sidecar}"))
+    if room < 1:
+        raise ValueError(f"sidecar {sidecar!r} leaves no room for a lock file name")
+    return os.path.join(dirname, f".{_clip_to_bytes(name, room)}.{digest}{sidecar}")
+
+
 if hasattr(os, "register_at_fork"):
     os.register_at_fork(after_in_child=_renew_in_child)
 
@@ -414,7 +433,9 @@ class FileLock:
         poll_interval: float = DFLT_POLL_INTERVAL,
     ) -> None:
         """
-        :param path: The file being protected; the lock lives next to it.
+        :param path: The file being protected; the lock lives next to it, as
+            ``<path><sidecar>`` (as a shortened hidden name when that would exceed
+            :data:`NAME_MAX_BYTES`).
         :param sidecar: Non-empty suffix of the lock file.
         :param poll_interval: Seconds between attempts on a contended lock (Windows
             only; POSIX blocks in the kernel).
@@ -423,7 +444,7 @@ class FileLock:
             raise ValueError(
                 "sidecar must be non-empty: the lock file cannot be `path`"
             )
-        self.path = os.fsdecode(path) + os.fsdecode(sidecar)  # bytes paths too
+        self.path = _lock_path(os.fsdecode(path), os.fsdecode(sidecar))
         self.poll_interval = poll_interval
         self.held = False
         self._fh = None
