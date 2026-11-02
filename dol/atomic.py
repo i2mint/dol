@@ -2,7 +2,8 @@
 
 A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; ``atomic_write`` is the entry point, and
-``atomic_delete`` its counterpart for removal.
+``atomic_delete`` its counterpart for removal. A write killed mid-way leaves its temp
+file behind; ``interrupted_writes`` lists them (``TEMP_NAME_PATTERN`` is their name).
 
 On Windows, a reader holding the destination open makes ``os.replace`` and ``os.unlink``
 fail with ``PermissionError`` until it closes (Python's ``open`` does not share delete).
@@ -127,12 +128,14 @@ def _clip_to_bytes(name: str) -> str:
 
 def temp_name(name: str) -> str:
     """The name :func:`atomic_write` stages a write to ``name`` under: a hidden sibling
-    ``.<name, clipped to 100 bytes>.<8 random hex>.tmp`` (matched by
-    :data:`TEMP_NAME_PATTERN`). Unique per call.
+    ``.<name, clipped to 100 bytes>.<8 random hex>.tmp``, always matched by
+    :data:`TEMP_NAME_PATTERN`. Unique per call. ``name`` is a file name, not a path.
 
     >>> bool(TEMP_NAME_PATTERN.fullmatch(temp_name("data.json")))
     True
     """
+    if not name or os.sep in name or (os.altsep and os.altsep in name):
+        raise ValueError(f"temp_name takes a non-empty file name, not {name!r}")
     return f".{_clip_to_bytes(name)}.{uuid.uuid4().hex[:8]}.tmp"
 
 
@@ -141,31 +144,55 @@ def temp_name(name: str) -> str:
 TEMP_NAME_PATTERN = re.compile(r"\..+\.[0-9a-f]{8}\.tmp", re.DOTALL)
 
 
-def interrupted_writes(folder, *, pattern: "re.Pattern" = TEMP_NAME_PATTERN) -> list:
-    """The temp files writes killed mid-way left directly in ``folder``: sorted absolute
-    paths of the regular files (never a symlink or folder) whose name fully matches
-    ``pattern`` (default: :func:`atomic_write`'s temps; pass your own for another
-    writer's, e.g. ``re.compile(r"\.blob-.*\.part")``).
+def interrupted_writes(
+    folder,
+    *,
+    pattern: "re.Pattern | str" = TEMP_NAME_PATTERN,
+    recursive: bool = False,
+) -> "list[str]":
+    """The temp files writes killed mid-way left in ``folder``: sorted absolute paths
+    (``str``) of the regular files (never a symlink or folder) whose name fully
+    matches ``pattern`` (default: :func:`atomic_write`'s temps; pass another writer's,
+    e.g. ``r"\.blob-.+\.part"``).
 
-    A listed file may also be a write still in progress in another process: delete
-    only those older than any write could take (``os.stat(p).st_mtime``), or while
-    holding the lock every writer of the folder takes.
+    Matching is by name only: call it on folders your own stores write, where nothing
+    else is named like a temp. A listed file may also be a write still in progress in
+    another process: delete only those older than any write could take
+    (``os.stat(p).st_mtime``), or while holding the lock every writer takes.
 
-    Raises ``OSError`` (e.g. ``FileNotFoundError``) when ``folder`` cannot be listed.
+    :param recursive: Also search subfolders (symlinked folders are not followed;
+        unreadable subfolders are skipped).
+
+    A missing ``folder`` holds none (``[]``); any other failure to list it raises
+    ``OSError``.
 
     >>> import tempfile
-    >>> d = tempfile.mkdtemp()
-    >>> for name in ("k.mp4", ".k.mp4.ab12cd34.tmp", ".DS_Store", "x.tmp"):
-    ...     open(os.path.join(d, name), "wb").close()
-    >>> [os.path.basename(p) for p in interrupted_writes(d)]
+    >>> with tempfile.TemporaryDirectory() as d:
+    ...     for name in ("k.mp4", ".k.mp4.ab12cd34.tmp", ".DS_Store", "x.tmp"):
+    ...         open(os.path.join(d, name), "wb").close()
+    ...     [os.path.basename(p) for p in interrupted_writes(d)]
     ['.k.mp4.ab12cd34.tmp']
     """
-    with os.scandir(os.fspath(folder)) as entries:
-        return sorted(
-            os.path.abspath(e.path)
-            for e in entries
-            if e.is_file(follow_symlinks=False) and pattern.fullmatch(e.name)
-        )
+    pattern = re.compile(pattern, re.DOTALL) if isinstance(pattern, str) else pattern
+
+    def scan(dirpath: str, *, top: bool):
+        try:
+            entries = os.scandir(dirpath)
+        except FileNotFoundError:
+            return
+        except OSError:
+            if top:
+                raise
+            return  # an unreadable subfolder
+        with entries:
+            for e in entries:
+                if e.is_file(follow_symlinks=False):
+                    if pattern.fullmatch(e.name):
+                        yield os.path.abspath(e.path)
+                elif recursive and e.is_dir(follow_symlinks=False):
+                    yield from scan(e.path, top=False)
+
+    return sorted(scan(os.fsdecode(folder), top=True))
 
 
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":

@@ -321,6 +321,7 @@ def test_atomic_write_stages_under_temp_name(tmp_path, monkeypatch):
     names = ["f", "文" * 85, "x.tmp"] + (["a\nb"] if os.name != "nt" else [])
     for name in names:
         atomic_write(tmp_path / name, b"x")
+    assert len(seen) == len(names)
     assert all(TEMP_NAME_PATTERN.fullmatch(os.path.basename(a)) for a in seen)
 
 
@@ -364,9 +365,58 @@ def test_interrupted_writes_custom_pattern(tmp_path):
     assert [os.path.basename(p) for p in found] == [".blob-123.part"]
 
 
+def test_interrupted_writes_missing_folder_holds_none(tmp_path):
+    assert interrupted_writes(tmp_path / "nope") == []
+
+
 def test_interrupted_writes_unlistable_folder_raises(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        interrupted_writes(tmp_path / "nope")
+    f = tmp_path / "file"
+    f.write_bytes(b"")
+    with pytest.raises(OSError):
+        interrupted_writes(f)  # not a folder
+
+
+def test_interrupted_writes_bytes_folder_and_str_pattern(tmp_path):
+    (tmp_path / ".blob-1.part").write_bytes(b"")
+    found = interrupted_writes(os.fsencode(tmp_path), pattern=r"\.blob-.+\.part")
+    assert [os.path.basename(p) for p in found] == [".blob-1.part"]
+
+
+def test_interrupted_writes_recursive(tmp_path):
+    top = tmp_path / temp_name("a")
+    top.write_bytes(b"")
+    (tmp_path / "sub" / "deeper").mkdir(parents=True)
+    deep = tmp_path / "sub" / "deeper" / temp_name("b")
+    deep.write_bytes(b"")
+    assert interrupted_writes(tmp_path) == [os.path.abspath(top)]
+    assert interrupted_writes(tmp_path, recursive=True) == sorted(
+        [os.path.abspath(top), os.path.abspath(deep)]
+    )
+
+
+@posix_only
+def test_interrupted_writes_recursive_skips_symlinked_and_unreadable_dirs(tmp_path):
+    root, other = tmp_path / "root", tmp_path / "other"
+    root.mkdir()
+    other.mkdir()
+    (other / temp_name("x")).write_bytes(b"")
+    (root / "link").symlink_to(other)
+    locked = root / "locked"
+    locked.mkdir()
+    (locked / temp_name("y")).write_bytes(b"")
+    os.chmod(locked, 0)
+    try:
+        if os.access(locked, os.R_OK):
+            pytest.skip("running as root: permissions are not enforced")
+        assert interrupted_writes(root, recursive=True) == []
+    finally:
+        os.chmod(locked, 0o700)
+
+
+@pytest.mark.parametrize("bad", ["", "a/b", os.path.join("a", "b")])
+def test_temp_name_takes_a_file_name(bad):
+    with pytest.raises(ValueError):
+        temp_name(bad)
 
 
 def test_interrupted_writes_finds_what_a_killed_write_left(tmp_path):
