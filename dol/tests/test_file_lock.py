@@ -9,7 +9,7 @@ import time
 
 import pytest
 
-from dol import FileLock, atomic_write, file_lock
+from dol import FileLock, LockedAppender, atomic_write, file_lock
 
 posix_only = pytest.mark.skipif(sys.platform == "win32", reason="POSIX only")
 
@@ -158,3 +158,206 @@ def test_close_inside_the_block_raises(tmp_path):
         with pytest.raises(RuntimeError, match="close"):
             lock.close()
     lock.close()
+
+
+# ---------------------------------------------------------------------------
+# LockedAppender (#165)
+
+
+# a kept handle on Windows makes replacing or deleting the file fail (documented)
+kept_handle_posix_only = pytest.param(True, marks=posix_only)
+
+
+@pytest.mark.parametrize("keep_handle", [kept_handle_posix_only, False])
+def test_appender_follows_a_replaced_file(tmp_path, keep_handle):
+    p = tmp_path / "log"
+    with LockedAppender(p, keep_handle=keep_handle) as log:
+        log.append(b"a\n")
+        with log.lock:
+            atomic_write(p, b"compacted\n")
+        log.append(b"b\n")
+    assert p.read_bytes() == b"compacted\nb\n"
+
+
+@posix_only
+def test_appender_recreates_a_deleted_file(tmp_path):
+    p = tmp_path / "log"
+    with LockedAppender(p, keep_handle=True) as log:
+        log.append(b"a")
+        with log.lock:
+            os.unlink(p)
+        log.append(b"b")
+    assert p.read_bytes() == b"b"
+
+
+def test_appender_keeps_the_handle_only_when_asked(tmp_path):
+    p = tmp_path / "log"
+    with LockedAppender(p, keep_handle=True) as log:
+        log.append(b"a")
+        assert log._fd is not None
+    assert log._fd is None
+    with LockedAppender(p, keep_handle=False) as log:
+        log.append(b"b")
+        assert log._fd is None
+    assert p.read_bytes() == b"ab"
+
+
+@pytest.mark.parametrize(
+    "existing, expected",
+    [
+        (b"", b"x\n"),
+        (b"ok\n", b"ok\nx\n"),
+        (b"torn", b"torn\nx\n"),
+    ],
+)
+def test_line_end_heals_a_torn_last_record(tmp_path, existing, expected):
+    p = tmp_path / "log"
+    p.write_bytes(existing)
+    with LockedAppender(p, line_end=b"\n") as log:
+        log.append(b"x\n")
+    assert p.read_bytes() == expected
+
+
+@pytest.mark.parametrize(
+    "existing, expected",
+    [
+        (b"x", b"x\r\nr\r\n"),  # shorter than line_end
+        (b"ab\r", b"ab\r\nr\r\n"),  # a torn terminator is completed, not doubled
+        (b"ab\r\n", b"ab\r\nr\r\n"),
+    ],
+)
+def test_multibyte_line_end(tmp_path, existing, expected):
+    p = tmp_path / "log"
+    p.write_bytes(existing)
+    with LockedAppender(p, line_end=b"\r\n") as log:
+        log.append(b"r\r\n")
+    assert p.read_bytes() == expected
+
+
+def test_a_kept_handle_heals_a_tail_torn_by_another_writer(tmp_path):
+    p = tmp_path / "log"
+    with LockedAppender(p, line_end=b"\n", keep_handle=True) as a:
+        a.append(b"a\n")
+        with LockedAppender(p) as b:  # no line_end: leaves a torn record
+            b.append(b"torn")
+        a.append(b"x\n")
+    assert p.read_bytes() == b"a\ntorn\nx\n"
+
+
+@pytest.mark.parametrize("keep_handle", [True, False])
+def test_a_failed_write_does_not_wedge_the_appender(tmp_path, monkeypatch, keep_handle):
+    import errno
+
+    p = tmp_path / "log"
+    real_write = os.write
+    fail = [True]
+
+    def write(fd, data):
+        if fail[0]:  # a short write, then the disk fills up
+            fail[0] = False
+            real_write(fd, bytes(data[:2]))
+            raise OSError(errno.ENOSPC, "No space left on device")
+        return real_write(fd, data)
+
+    with LockedAppender(p, line_end=b"\n", keep_handle=keep_handle) as log:
+        log.append(b"a\n")
+        monkeypatch.setattr(os, "write", write)
+        with pytest.raises(OSError):
+            log.append(b"12345\n")
+        assert log._fd is None  # dropped: the next append reopens
+        log.append(b"next\n")
+    assert p.read_bytes() == b"a\n12\nnext\n"  # nothing pending lands later
+
+
+def test_without_line_end_bytes_are_appended_as_given(tmp_path):
+    p = tmp_path / "log"
+    p.write_bytes(b"torn")
+    with LockedAppender(p) as log:
+        log.append(b"x")
+    assert p.read_bytes() == b"tornx"
+
+
+def test_appender_uses_the_injected_lock(tmp_path):
+    p = tmp_path / "log"
+    lock = FileLock(p, sidecar=".mylock")
+    with LockedAppender(p, lock=lock) as log:
+        assert log.lock is lock
+        log.append(b"a")
+    assert (tmp_path / "log.mylock").exists()
+    assert not (tmp_path / "log.lock").exists()
+
+
+def test_append_waits_for_the_lock(tmp_path):
+    p = tmp_path / "log"
+    log = LockedAppender(p)
+    done = []
+    with file_lock(p):  # a separate FileLock: another writer, e.g. a compaction
+        t = threading.Thread(target=lambda: (log.append(b"a"), done.append(1)))
+        t.start()
+        time.sleep(0.2)
+        assert done == [] and not p.exists()
+    t.join(10)
+    log.close()
+    assert done == [1] and p.read_bytes() == b"a"
+
+
+def _append_n(path, n, start):
+    start.wait()
+    with LockedAppender(path, line_end=b"\n") as log:
+        for i in range(n):
+            log.append(b"%d\n" % i)
+
+
+def _compact_n(path, n, start):
+    start.wait()
+    for _ in range(n):
+        with file_lock(path):
+            lines = open(path, "rb").read().splitlines(keepends=True)
+            atomic_write(path, b"".join(lines))  # same content, new file
+
+
+def test_no_append_is_lost_across_concurrent_compactions(tmp_path):
+    p = str(tmp_path / "log")
+    open(p, "wb").close()
+    start = mp.Barrier(4)  # all start together, so appends and compactions overlap
+    procs = [mp.Process(target=_append_n, args=(p, 100, start)) for _ in range(3)]
+    procs.append(mp.Process(target=_compact_n, args=(p, 30, start)))
+    [pr.start() for pr in procs]
+    [pr.join(60) for pr in procs]
+    assert all(pr.exitcode == 0 for pr in procs)
+    lines = open(p, "rb").read().splitlines()
+    assert sorted(lines) == sorted([b"%d" % i for i in range(100)] * 3)
+
+
+def test_an_unclosed_appender_releases_its_fd(tmp_path):
+    import gc
+
+    log = LockedAppender(tmp_path / "log", keep_handle=True)
+    log.append(b"a")
+    fd = log._fd
+    del log
+    gc.collect()
+    with pytest.raises(OSError):
+        os.fstat(fd)
+
+
+def test_typed_memoryview_is_written_whole(tmp_path):
+    from array import array
+
+    p = tmp_path / "log"
+    data = array("i", range(4))
+    with LockedAppender(p) as log:
+        log.append(memoryview(data))
+    assert p.read_bytes() == data.tobytes()
+
+
+def test_without_line_end_a_write_only_file_is_enough(tmp_path):
+    p = tmp_path / "log"
+    p.write_bytes(b"a")
+    os.chmod(p, 0o200)  # write-only
+    try:
+        with LockedAppender(p) as log:
+            log.append(b"b")
+    finally:
+        os.chmod(p, 0o600)
+    assert p.read_bytes() == b"ab"
