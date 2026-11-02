@@ -1,5 +1,6 @@
 """Tests for ``dol.atomic.update_json``: a locked read-modify-write of one JSON file."""
 
+import contextlib
 import functools
 import json
 import multiprocessing as mp
@@ -79,17 +80,83 @@ def test_custom_codec(tmp_path):
     assert p.read_text() == '{\n  "a": 1\n}'
 
 
-def test_warns_when_the_lock_is_not_held(tmp_path):
+@contextlib.contextmanager
+def _unlockable():
+    yield False  # like file_lock on a filesystem without locks
+
+
+def test_warns_at_the_caller_when_the_lock_is_not_held(tmp_path):
     p = tmp_path / "m.json"
-    lock = FileLock(p)
-    lock._try_lock = lambda: False  # as on a filesystem without locks
-    with pytest.warns(UserWarning, match="could not lock"):
-        update_json(p, lambda m: m.update(a=1), lock=lock)
+    with pytest.warns(UserWarning, match="could not lock") as record:
+        update_json(p, lambda m: m.update(a=1), lock=_unlockable())
+    assert record[0].filename == __file__
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        update_json(p, lambda m: m.update(a=2), lock=lock, warn_unlocked=False)
+        update_json(p, lambda m: m.update(a=2), lock=_unlockable(), warn_unlocked=False)
     assert json.loads(p.read_text()) == {"a": 2}
-    lock.close()
+
+
+def test_any_context_manager_is_a_lock(tmp_path):
+    p = tmp_path / "m.json"
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # yields None: assumed held
+        update_json(p, lambda m: m.update(a=1), lock=contextlib.nullcontext())
+    assert json.loads(p.read_text()) == {"a": 1}
+
+
+@pytest.mark.parametrize(
+    "default, change",
+    [
+        (int, lambda n: n + 1),  # a scalar cannot be changed in place
+        (dict, lambda m: {**m, "z": 1}),  # returning a new object is not writing it
+    ],
+)
+def test_an_update_is_never_silently_lost(tmp_path, default, change):
+    p = tmp_path / "m.json"
+    if default is int:
+        with pytest.raises(TypeError, match="in place"):
+            update_json(p, change, default=default)
+    else:
+        assert update_json(p, change) == {"z": 1}
+        assert not p.exists()  # documented: what change returns is not written
+
+
+def test_a_scalar_file_is_refused(tmp_path):
+    p = tmp_path / "m.json"
+    p.write_text("5")
+    with pytest.raises(TypeError):
+        update_json(p, lambda n: n)
+    assert p.read_text() == "5"
+
+
+def test_nested_mutation_is_detected(tmp_path):
+    p = tmp_path / "m.json"
+    p.write_text('{"a": {"b": [1]}}')
+    update_json(p, lambda m: m["a"]["b"].append(2))
+    assert json.loads(p.read_text()) == {"a": {"b": [1, 2]}}
+
+
+def test_dumps_may_return_bytes(tmp_path):
+    p = tmp_path / "m.json"
+    update_json(p, lambda m: m.update(a=1), dumps=lambda o: json.dumps(o).encode())
+    assert json.loads(p.read_bytes()) == {"a": 1}
+
+
+def test_missing_folder_is_named_clearly(tmp_path):
+    with pytest.raises(FileNotFoundError, match="folder"):
+        update_json(tmp_path / "nope" / "m.json", lambda m: None)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="symlinks")
+def test_two_links_to_one_file_share_its_lock(tmp_path):
+    real = tmp_path / "real.json"
+    real.write_text("{}")
+    link = tmp_path / "link.json"
+    link.symlink_to(real)
+    update_json(link, lambda m: m.update(a=1))
+    assert (tmp_path / "real.json.lock").exists()
+    assert not (tmp_path / "link.json.lock").exists()
+    assert json.loads(real.read_text()) == {"a": 1}
 
 
 def test_an_injected_lock_is_used_and_left_open(tmp_path):
