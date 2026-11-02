@@ -10,6 +10,7 @@ import time
 import pytest
 
 from dol import FileLock, LockedAppender, atomic_write, file_lock
+from dol.atomic import TEMP_NAME_PATTERN, _NAME_MAX_BYTES
 
 posix_only = pytest.mark.skipif(sys.platform == "win32", reason="POSIX only")
 
@@ -361,3 +362,75 @@ def test_without_line_end_a_write_only_file_is_enough(tmp_path):
     finally:
         os.chmod(p, 0o600)
     assert p.read_bytes() == b"ab"
+
+
+# ---------------------------------------------------------------------------
+# long names (#182)
+
+
+@pytest.mark.parametrize("name", ["n" * 255, "文" * 85])  # both 255 bytes
+def test_a_long_name_gets_a_short_shared_lock_file(tmp_path, name):
+    target = tmp_path / name
+    a, b = FileLock(target), FileLock(target)
+    assert a.path == b.path  # every process derives the same lock file
+    lock_name = os.path.basename(a.path)
+    assert len(os.fsencode(lock_name)) <= _NAME_MAX_BYTES
+    assert lock_name.startswith(".") and lock_name.endswith(".lock")
+    assert os.path.dirname(a.path) == str(tmp_path)
+    with file_lock(target) as held:
+        assert held
+        atomic_write(target, b"x")
+    assert os.path.exists(a.path) and target.read_bytes() == b"x"
+
+
+def test_long_names_that_differ_get_different_lock_files(tmp_path):
+    a = FileLock(tmp_path / ("n" * 254 + "a"))
+    b = FileLock(tmp_path / ("n" * 254 + "b"))
+    assert a.path != b.path
+
+
+def test_short_names_keep_the_plain_sidecar(tmp_path):
+    name = "n" * (_NAME_MAX_BYTES - len(".lock"))  # exactly at the limit
+    assert FileLock(tmp_path / name).path == str(tmp_path / name) + ".lock"
+
+
+@pytest.mark.parametrize("name", ["n" * 255, "short"])
+def test_a_sidecar_too_long_for_any_name_is_refused_up_front(tmp_path, name):
+    with pytest.raises(ValueError, match="no room"):
+        FileLock(tmp_path / name, sidecar="." + "s" * 250)
+
+
+@pytest.mark.parametrize(
+    "a, b",
+    [
+        ("\u00e9" * 124, "e\u0301" * 124),  # NFC 248 bytes, NFD 372: one file on APFS
+        ("\u00e9" * 126, "e\u0301" * 126),
+        ("N" * 252, "n" * 252),  # one file on a case-insensitive filesystem
+        ("\u023a" * 125, "\u2c65" * 125),  # 250 bytes, its casefold 375
+    ],
+)
+def test_every_spelling_of_a_long_name_shares_one_lock(tmp_path, a, b):
+    assert FileLock(tmp_path / a).path == FileLock(tmp_path / b).path
+
+
+@pytest.mark.parametrize("name", ["e\u0301" * 84, "\u212a" * 84])  # NFC is shorter
+def test_the_lock_name_always_fits(tmp_path, name):
+    assert len(os.fsencode(os.path.basename(FileLock(tmp_path / name).path))) <= 255
+
+
+def test_a_hashed_lock_name_never_looks_like_a_temp(tmp_path):
+    lock = FileLock(tmp_path / ("n" * 255), sidecar=".tmp")
+    assert not TEMP_NAME_PATTERN.fullmatch(os.path.basename(lock.path))
+
+
+@posix_only
+def test_a_hashed_lock_excludes_another_holder(tmp_path):
+    import fcntl
+
+    target = tmp_path / ("n" * 255)
+    with file_lock(target) as held:
+        assert held
+        (lock_file,) = [p for p in os.listdir(tmp_path) if p.endswith(".lock")]
+        with open(tmp_path / lock_file, "rb") as other:  # another descriptor
+            with pytest.raises(BlockingIOError):
+                fcntl.flock(other.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
