@@ -1,5 +1,6 @@
 """Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete``, ``Retry``, temp naming."""
 
+import hashlib
 import os
 import re
 import stat
@@ -8,7 +9,7 @@ import sys
 
 import pytest
 
-from dol import atomic_delete, atomic_write, interrupted_writes
+from dol import atomic_delete, atomic_write, interrupted_writes, write_content_addressed
 from dol.atomic import TEMP_NAME_PATTERN, Retry, temp_name
 
 posix_only = pytest.mark.skipif(
@@ -447,3 +448,77 @@ def test_interrupted_writes_finds_what_a_killed_write_left(tmp_path):
     assert not target.exists()
     (left,) = interrupted_writes(tmp_path)
     assert os.path.basename(left).startswith(".big.")
+
+
+# ---------------------------------------------------------------------------
+# write_content_addressed (#183)
+
+
+def test_content_addressed_names_by_sha256_and_streams(tmp_path):
+    name = write_content_addressed(
+        iter([b"a", bytearray(b"b"), memoryview(b"c")]), tmp_path
+    )
+    assert name == hashlib.sha256(b"abc").hexdigest()
+    assert (tmp_path / name).read_bytes() == b"abc" and os.listdir(tmp_path) == [name]
+
+
+def test_content_addressed_existing_name_is_kept_untouched(tmp_path, monkeypatch):
+    name = write_content_addressed(b"x", tmp_path)
+    ino = os.stat(tmp_path / name).st_ino
+    calls = []
+    real = os.replace
+    monkeypatch.setattr(os, "replace", lambda a, b: (calls.append(a), real(a, b)))
+    assert write_content_addressed(b"x", tmp_path) == name
+    assert calls == [] and os.stat(tmp_path / name).st_ino == ino
+    assert os.listdir(tmp_path) == [name]
+
+
+def test_content_addressed_custom_hasher_and_name(tmp_path):
+    name = write_content_addressed(
+        b"x", tmp_path, hasher=hashlib.md5, name_of=lambda h: h.hexdigest() + ".blob"
+    )
+    assert name == hashlib.md5(b"x").hexdigest() + ".blob"
+
+
+@pytest.mark.parametrize("bad", ["", "a/b", ".."])
+def test_content_addressed_refuses_a_name_that_is_not_a_file_name(tmp_path, bad):
+    with pytest.raises(ValueError, match="file name"):
+        write_content_addressed(b"x", tmp_path, name_of=lambda h: bad)
+    assert os.listdir(tmp_path) == []
+
+
+def test_content_addressed_failure_leaves_nothing(tmp_path):
+    def gen():
+        yield b"partial"
+        raise RuntimeError("producer died")
+
+    with pytest.raises(RuntimeError):
+        write_content_addressed(gen(), tmp_path)
+    assert os.listdir(tmp_path) == []
+
+
+@posix_only
+def test_content_addressed_temp_is_found_if_killed(tmp_path):
+    pid = os.fork()  # the child runs this very module, whatever is installed
+    if pid == 0:
+
+        def chunks():
+            yield b"partial"
+            os._exit(0)  # killed mid-write: no cleanup runs
+
+        write_content_addressed(chunks(), tmp_path)
+        os._exit(1)
+    os.waitpid(pid, 0)
+    (left,) = interrupted_writes(tmp_path)
+    assert os.listdir(tmp_path) == [os.path.basename(left)]
+
+
+def test_content_addressed_refuses_text(tmp_path):
+    with pytest.raises(TypeError, match="encode"):
+        write_content_addressed("text", tmp_path)
+
+
+@posix_only
+def test_content_addressed_perms(tmp_path):
+    name = write_content_addressed(b"x", tmp_path, perms=0o600)
+    assert _mode(tmp_path / name) == 0o600
