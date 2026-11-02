@@ -164,7 +164,11 @@ def test_close_inside_the_block_raises(tmp_path):
 # LockedAppender (#165)
 
 
-@pytest.mark.parametrize("keep_handle", [True, False])
+# a kept handle on Windows makes replacing or deleting the file fail (documented)
+kept_handle_posix_only = pytest.param(True, marks=posix_only)
+
+
+@pytest.mark.parametrize("keep_handle", [kept_handle_posix_only, False])
 def test_appender_follows_a_replaced_file(tmp_path, keep_handle):
     p = tmp_path / "log"
     with LockedAppender(p, keep_handle=keep_handle) as log:
@@ -175,6 +179,7 @@ def test_appender_follows_a_replaced_file(tmp_path, keep_handle):
     assert p.read_bytes() == b"compacted\nb\n"
 
 
+@posix_only
 def test_appender_recreates_a_deleted_file(tmp_path):
     p = tmp_path / "log"
     with LockedAppender(p, keep_handle=True) as log:
