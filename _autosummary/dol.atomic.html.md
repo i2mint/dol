@@ -3,7 +3,14 @@
 Atomic file writes: write to a sibling temp file, then `os.replace` it into place.
 
 A crash (or an exception while producing the data) leaves the old content or the new,
-never a torn or empty file. Dependency-free; `atomic_write` is the one entry point.
+never a torn or empty file. Dependency-free; `atomic_write` is the entry point, and
+`atomic_delete` its counterpart for removal.
+
+On Windows, a reader holding the destination open makes `os.replace` and `os.unlink`
+fail with `PermissionError` until it closes (Python’s `open` does not share delete).
+Both functions therefore retry that briefly, through a [`Retry`](#dol.atomic.Retry) policy (its
+`retry` argument): by default Windows’ `PermissionError` only, ~0.6 s in all.
+Elsewhere the same error is a real permission problem, so nothing is retried.
 
 `file_lock` is its companion: an atomic replace is only safe against concurrent
 appenders and readers when they all hold the same advisory lock.
@@ -19,16 +26,23 @@ appenders and readers when they all hold the same advisory lock.
 'ab'
 ```
 
+### Module Attributes
+
+| [`SHARING_VIOLATIONS`](#dol.atomic.SHARING_VIOLATIONS)   | Windows' sharing violation (another handle has the file open); nothing elsewhere, where `PermissionError` means a real permission problem.   |
+|-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+
 ### Functions
 
-| [`atomic_write`](#dol.atomic.atomic_write)(path, data, \*[, fsync, perms])   | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).   |
-|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| [`file_lock`](#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])  | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.       |
+| [`atomic_delete`](#dol.atomic.atomic_delete)(path, \*[, retry])                  | Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart of [`atomic_write()`](#dol.atomic.atomic_write).   |
+|----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`atomic_write`](#dol.atomic.atomic_write)(path, data, \*[, fsync, perms, ...]) | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).                                                           |
+| [`file_lock`](#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.                                                               |
 
 ### Classes
 
 | [`FileLock`](#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])   | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.   |
 |-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [`Retry`](#dol.atomic.Retry)([on, attempts, backoff_s])               | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.        |
 
 ### *class* dol.atomic.FileLock(path, , sidecar='.lock', poll_interval=0.001)
 
@@ -69,7 +83,62 @@ Release the kept handle (not from inside the `with` block).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### dol.atomic.atomic_write(path, data, , fsync=False, perms=None)
+### *class* dol.atomic.Retry(on=(), attempts=7, backoff_s=0.01)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Call `op(*args)`, retrying on `on` exceptions with doubling backoff.
+
+`attempts` calls at most, sleeping `backoff_s`, then twice that, and so on
+between them (defaults: 7 calls, ~0.6 s of sleep in all; the backoff is not capped,
+so keep `attempts` small). The last failure is re-raised. Any other exception
+propagates at once. `Retry(attempts=1)` (or `on=()`) calls `op` once.
+
+```pycon
+>>> calls = []
+>>> def flaky():
+...     calls.append(1)
+...     if len(calls) < 3:
+...         raise PermissionError("in use")
+...     return "done"
+>>> Retry(on=(PermissionError,), backoff_s=0)(flaky), len(calls)
+('done', 3)
+```
+
+### dol.atomic.SHARING_VIOLATIONS *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[type](https://docs.python.org/3/builtins/functions.html#type)[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], ...]* *= ()*
+
+Windows’ sharing violation (another handle has the
+file open); nothing elsewhere, where `PermissionError` means a real permission problem.
+Windows reports a sharing violation on `os.replace` with the same error as a genuine
+access denial, so there *every* `PermissionError` is retried: a read-only destination
+still fails, only ~0.6 s later.
+
+* **Type:**
+  What `DFLT_RETRY` retries
+
+### dol.atomic.atomic_delete(path, , retry=Retry(on=(), attempts=7, backoff_s=0.01))
+
+Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart
+of [`atomic_write()`](#dol.atomic.atomic_write).
+
+`os.unlink` is already atomic; what this adds is the same retry, so a delete is
+not refused on Windows because a reader has the file open. (Windows may then keep
+the name “delete pending” until the last handle closes.) A symlink is removed
+itself, not its target. A missing file raises `FileNotFoundError` (not retried).
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "f")
+>>> atomic_write(path, b"x")
+>>> atomic_delete(path)
+>>> os.path.exists(path)
+False
+```
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### dol.atomic.atomic_write(path, data, , fsync=False, perms=None, retry=Retry(on=(), attempts=7, backoff_s=0.01))
 
 Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).
 
@@ -85,6 +154,9 @@ Write `data` to `path` atomically (temp file in the same folder, then `os.replac
   * **perms** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Mode (e.g. `0o600`) for the file, set at creation so the data is
     never readable more widely, even briefly, and not narrowed by the umask.
     Default: the mode of the file being replaced, else the usual umask mode.
+  * **retry** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – How the final `os.replace` is called: `retry(os.replace, tmp,
+    path)`. Default `DFLT_RETRY` retries Windows’ sharing violations (a
+    reader has `path` open); `Retry(attempts=1)` calls it once.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 

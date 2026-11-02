@@ -281,7 +281,13 @@
 <span id="dol-atomic"></span><h1>dol.atomic<a class="headerlink" href="#module-dol.atomic" title="Link to this heading">¶</a></h1>
 <p>Atomic file writes: write to a sibling temp file, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> it into place.</p>
 <p>A crash (or an exception while producing the data) leaves the old content or the new,
-never a torn or empty file. Dependency-free; <code class="docutils literal notranslate"><span class="pre">atomic_write</span></code> is the one entry point.</p>
+never a torn or empty file. Dependency-free; <code class="docutils literal notranslate"><span class="pre">atomic_write</span></code> is the entry point, and
+<code class="docutils literal notranslate"><span class="pre">atomic_delete</span></code> its counterpart for removal.</p>
+<p>On Windows, a reader holding the destination open makes <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> and <code class="docutils literal notranslate"><span class="pre">os.unlink</span></code>
+fail with <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> until it closes (Python’s <code class="docutils literal notranslate"><span class="pre">open</span></code> does not share delete).
+Both functions therefore retry that briefly, through a <a class="reference internal" href="#dol.atomic.Retry" title="dol.atomic.Retry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Retry</span></code></a> policy (its
+<code class="docutils literal notranslate"><span class="pre">retry</span></code> argument): by default Windows’ <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> only, ~0.6 s in all.
+Elsewhere the same error is a real permission problem, so nothing is retried.</p>
 <p><code class="docutils literal notranslate"><span class="pre">file_lock</span></code> is its companion: an atomic replace is only safe against concurrent
 appenders and readers when they all hold the same advisory lock.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
@@ -294,14 +300,27 @@ appenders and readers when they all hold the same advisory lock.</p>
 <span class="go">'ab'</span>
 </pre></div>
 </div>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.SHARING_VIOLATIONS" title="dol.atomic.SHARING_VIOLATIONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SHARING_VIOLATIONS</span></code></a></p></td>
+<td><p>Windows' sharing violation (another handle has the file open); nothing elsewhere, where <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> means a real permission problem.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <p class="rubric">Functions</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_write</span></code></a>(path, data, *[, fsync, perms])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.atomic_delete" title="dol.atomic.atomic_delete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_delete</span></code></a>(path, *[, retry])</p></td>
+<td><p>Remove the file <code class="docutils literal notranslate"><span class="pre">path</span></code>: <code class="docutils literal notranslate"><span class="pre">retry(os.unlink,</span> <span class="pre">path)</span></code>, the delete counterpart of <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">atomic_write</span></code></a>(path, data, *[, fsync, perms, ...])</p></td>
 <td><p>Write <code class="docutils literal notranslate"><span class="pre">data</span></code> to <code class="docutils literal notranslate"><span class="pre">path</span></code> atomically (temp file in the same folder, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_lock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_lock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
 <td><p>Hold an exclusive advisory lock on <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>; yields whether it is held.</p></td>
 </tr>
 </tbody>
@@ -313,6 +332,9 @@ appenders and readers when they all hold the same advisory lock.</p>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileLock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
 <td><p>A reusable, exclusive, advisory lock on a sidecar file <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.Retry" title="dol.atomic.Retry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Retry</span></code></a>([on, attempts, backoff_s])</p></td>
+<td><p>Call <code class="docutils literal notranslate"><span class="pre">op(*args)</span></code>, retrying on <code class="docutils literal notranslate"><span class="pre">on</span></code> exceptions with doubling backoff.</p></td>
 </tr>
 </tbody>
 </table>
@@ -359,9 +381,71 @@ the same path from the same thread would deadlock). For a one-off section, use
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.atomic.Retry">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">Retry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backoff_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#Retry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.Retry" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Call <code class="docutils literal notranslate"><span class="pre">op(*args)</span></code>, retrying on <code class="docutils literal notranslate"><span class="pre">on</span></code> exceptions with doubling backoff.</p>
+<p><code class="docutils literal notranslate"><span class="pre">attempts</span></code> calls at most, sleeping <code class="docutils literal notranslate"><span class="pre">backoff_s</span></code>, then twice that, and so on
+between them (defaults: 7 calls, ~0.6 s of sleep in all; the backoff is not capped,
+so keep <code class="docutils literal notranslate"><span class="pre">attempts</span></code> small). The last failure is re-raised. Any other exception
+propagates at once. <code class="docutils literal notranslate"><span class="pre">Retry(attempts=1)</span></code> (or <code class="docutils literal notranslate"><span class="pre">on=()</span></code>) calls <code class="docutils literal notranslate"><span class="pre">op</span></code> once.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">calls</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span><span class="w"> </span><span class="nf">flaky</span><span class="p">():</span>
+<span class="gp">... </span>    <span class="n">calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">calls</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="s2">"in use"</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="s2">"done"</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Retry</span><span class="p">(</span><span class="n">on</span><span class="o">=</span><span class="p">(</span><span class="ne">PermissionError</span><span class="p">,),</span> <span class="n">backoff_s</span><span class="o">=</span><span class="mi">0</span><span class="p">)(</span><span class="n">flaky</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">calls</span><span class="p">)</span>
+<span class="go">('done', 3)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="dol.atomic.SHARING_VIOLATIONS">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">SHARING_VIOLATIONS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#type" title="(in Python v3.15)"><span class="pre">type</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">()</span></span><a class="headerlink" href="#dol.atomic.SHARING_VIOLATIONS" title="Link to this definition">¶</a></dt>
+<dd><p>Windows’ sharing violation (another handle has the
+file open); nothing elsewhere, where <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> means a real permission problem.
+Windows reports a sharing violation on <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> with the same error as a genuine
+access denial, so there <em>every</em> <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> is retried: a read-only destination
+still fails, only ~0.6 s later.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>What <code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_RETRY</span></code> retries</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.atomic.atomic_delete">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Retry(on=(),</span> <span class="pre">attempts=7,</span> <span class="pre">backoff_s=0.01)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#atomic_delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.atomic_delete" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the file <code class="docutils literal notranslate"><span class="pre">path</span></code>: <code class="docutils literal notranslate"><span class="pre">retry(os.unlink,</span> <span class="pre">path)</span></code>, the delete counterpart
+of <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">os.unlink</span></code> is already atomic; what this adds is the same retry, so a delete is
+not refused on Windows because a reader has the file open. (Windows may then keep
+the name “delete pending” until the last handle closes.) A symlink is removed
+itself, not its target. A missing file raises <code class="docutils literal notranslate"><span class="pre">FileNotFoundError</span></code> (not retried).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"f"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">atomic_write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"x"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">atomic_delete</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.atomic.atomic_write">
-<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#atomic_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.atomic_write" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Retry(on=(),</span> <span class="pre">attempts=7,</span> <span class="pre">backoff_s=0.01)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#atomic_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.atomic_write" title="Link to this definition">¶</a></dt>
 <dd><p>Write <code class="docutils literal notranslate"><span class="pre">data</span></code> to <code class="docutils literal notranslate"><span class="pre">path</span></code> atomically (temp file in the same folder, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -377,6 +461,9 @@ durable across power loss, not just across a process crash. Slower. (On macOS
 <li><p><strong>perms</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span>) – Mode (e.g. <code class="docutils literal notranslate"><span class="pre">0o600</span></code>) for the file, set at creation so the data is
 never readable more widely, even briefly, and not narrowed by the umask.
 Default: the mode of the file being replaced, else the usual umask mode.</p></li>
+<li><p><strong>retry</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – How the final <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> is called: <code class="docutils literal notranslate"><span class="pre">retry(os.replace,</span> <span class="pre">tmp,</span>
+<span class="pre">path)</span></code>. Default <code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_RETRY</span></code> retries Windows’ sharing violations (a
+reader has <code class="docutils literal notranslate"><span class="pre">path</span></code> open); <code class="docutils literal notranslate"><span class="pre">Retry(attempts=1)</span></code> calls it once.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -485,6 +572,9 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
 <li><a class="reference internal" href="#dol.atomic.FileLock.close"><code class="docutils literal notranslate"><span class="pre">FileLock.close()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#dol.atomic.Retry"><code class="docutils literal notranslate"><span class="pre">Retry</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.SHARING_VIOLATIONS"><code class="docutils literal notranslate"><span class="pre">SHARING_VIOLATIONS</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.atomic_delete"><code class="docutils literal notranslate"><span class="pre">atomic_delete()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.atomic_write"><code class="docutils literal notranslate"><span class="pre">atomic_write()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.file_lock"><code class="docutils literal notranslate"><span class="pre">file_lock()</span></code></a></li>
 </ul>
@@ -498,7 +588,7 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=009019f7"></script>
+</div><script src="../_static/documentation_options.js?v=a9d06d91"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

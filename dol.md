@@ -1,4 +1,4 @@
-> built 2026-10-26 20:55 UTC from 9ffcc21 (master) · dol 0.3.100. Details: build_info.json
+> built 2026-11-02 19:31 UTC from 4fda3b7 (master) · dol 0.3.101. Details: build_info.json
 
 # index.html.md
 
@@ -455,7 +455,14 @@ using the “return_keys” flag.
 Atomic file writes: write to a sibling temp file, then `os.replace` it into place.
 
 A crash (or an exception while producing the data) leaves the old content or the new,
-never a torn or empty file. Dependency-free; `atomic_write` is the one entry point.
+never a torn or empty file. Dependency-free; `atomic_write` is the entry point, and
+`atomic_delete` its counterpart for removal.
+
+On Windows, a reader holding the destination open makes `os.replace` and `os.unlink`
+fail with `PermissionError` until it closes (Python’s `open` does not share delete).
+Both functions therefore retry that briefly, through a [`Retry`](_autosummary/dol.atomic.html.md#dol.atomic.Retry) policy (its
+`retry` argument): by default Windows’ `PermissionError` only, ~0.6 s in all.
+Elsewhere the same error is a real permission problem, so nothing is retried.
 
 `file_lock` is its companion: an atomic replace is only safe against concurrent
 appenders and readers when they all hold the same advisory lock.
@@ -471,16 +478,23 @@ appenders and readers when they all hold the same advisory lock.
 'ab'
 ```
 
+### Module Attributes
+
+| [`SHARING_VIOLATIONS`](_autosummary/dol.atomic.html.md#dol.atomic.SHARING_VIOLATIONS)   | Windows' sharing violation (another handle has the file open); nothing elsewhere, where `PermissionError` means a real permission problem.   |
+|-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+
 ### Functions
 
-| [`atomic_write`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)(path, data, \*[, fsync, perms])   | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).   |
-|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------|
-| [`file_lock`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])  | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.       |
+| [`atomic_delete`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_delete)(path, \*[, retry])                  | Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart of [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write).   |
+|----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`atomic_write`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)(path, data, \*[, fsync, perms, ...]) | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).                                                           |
+| [`file_lock`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.                                                               |
 
 ### Classes
 
 | [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])   | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.   |
 |-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| [`Retry`](_autosummary/dol.atomic.html.md#dol.atomic.Retry)([on, attempts, backoff_s])               | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.        |
 
 ### *class* dol.atomic.FileLock(path, , sidecar='.lock', poll_interval=0.001)
 
@@ -521,7 +535,62 @@ Release the kept handle (not from inside the `with` block).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### dol.atomic.atomic_write(path, data, , fsync=False, perms=None)
+### *class* dol.atomic.Retry(on=(), attempts=7, backoff_s=0.01)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Call `op(*args)`, retrying on `on` exceptions with doubling backoff.
+
+`attempts` calls at most, sleeping `backoff_s`, then twice that, and so on
+between them (defaults: 7 calls, ~0.6 s of sleep in all; the backoff is not capped,
+so keep `attempts` small). The last failure is re-raised. Any other exception
+propagates at once. `Retry(attempts=1)` (or `on=()`) calls `op` once.
+
+```pycon
+>>> calls = []
+>>> def flaky():
+...     calls.append(1)
+...     if len(calls) < 3:
+...         raise PermissionError("in use")
+...     return "done"
+>>> Retry(on=(PermissionError,), backoff_s=0)(flaky), len(calls)
+('done', 3)
+```
+
+### dol.atomic.SHARING_VIOLATIONS *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[type](https://docs.python.org/3/builtins/functions.html#type)[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)], ...]* *= ()*
+
+Windows’ sharing violation (another handle has the
+file open); nothing elsewhere, where `PermissionError` means a real permission problem.
+Windows reports a sharing violation on `os.replace` with the same error as a genuine
+access denial, so there *every* `PermissionError` is retried: a read-only destination
+still fails, only ~0.6 s later.
+
+* **Type:**
+  What `DFLT_RETRY` retries
+
+### dol.atomic.atomic_delete(path, , retry=Retry(on=(), attempts=7, backoff_s=0.01))
+
+Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart
+of [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write).
+
+`os.unlink` is already atomic; what this adds is the same retry, so a delete is
+not refused on Windows because a reader has the file open. (Windows may then keep
+the name “delete pending” until the last handle closes.) A symlink is removed
+itself, not its target. A missing file raises `FileNotFoundError` (not retried).
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "f")
+>>> atomic_write(path, b"x")
+>>> atomic_delete(path)
+>>> os.path.exists(path)
+False
+```
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### dol.atomic.atomic_write(path, data, , fsync=False, perms=None, retry=Retry(on=(), attempts=7, backoff_s=0.01))
 
 Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).
 
@@ -537,6 +606,9 @@ Write `data` to `path` atomically (temp file in the same folder, then `os.replac
   * **perms** ([`int`](https://docs.python.org/3/builtins/functions.html#int) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Mode (e.g. `0o600`) for the file, set at creation so the data is
     never readable more widely, even briefly, and not narrowed by the umask.
     Default: the mode of the file being replaced, else the usual umask mode.
+  * **retry** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – How the final `os.replace` is called: `retry(os.replace, tmp,
+    path)`. Default `DFLT_RETRY` retries Windows’ sharing violations (a
+    reader has `path` open); `Retry(attempts=1)` calls it once.
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
@@ -17733,7 +17805,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-10-26 20:55 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9ffcc212ff99f5fdd8ea445ecef5cc896d536527"><code>9ffcc21</code></a> on branch <code>master</code>, for **dol 0.3.100** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:31 UTC** from commit <a href="https://github.com/i2mint/dol/commit/4fda3b7960ab659fcc21926d8147e51a4e60b6d5"><code>4fda3b7</code></a> on branch <code>master</code>, for **dol 0.3.101** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17742,9 +17814,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/9ffcc212ff99f5fdd8ea445ecef5cc896d536527"><code>9ffcc212ff99f5fdd8ea445ecef5cc896d536527</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/4fda3b7960ab659fcc21926d8147e51a4e60b6d5"><code>4fda3b7960ab659fcc21926d8147e51a4e60b6d5</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.100</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.101</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17753,9 +17825,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/40399627160">40399627160</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41510393958">41510393958</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>8d6cced7d8b2fb9440ba459b766e43abd2ab0aae</code> (in the history of the built commit) |
+| Event commit | <code>9e8fabad110b94b7e32102362a819fa553b98b7f</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17780,13 +17852,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.100/">0.3.100</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.101/">0.3.101</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 9ffcc212ff99f5fdd8ea445ecef5cc896d536527
+git checkout 4fda3b7960ab659fcc21926d8147e51a4e60b6d5
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

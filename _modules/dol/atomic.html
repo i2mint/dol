@@ -272,7 +272,14 @@
 <span></span><span class="sd">"""Atomic file writes: write to a sibling temp file, then ``os.replace`` it into place.</span>
 
 <span class="sd">A crash (or an exception while producing the data) leaves the old content or the new,</span>
-<span class="sd">never a torn or empty file. Dependency-free; ``atomic_write`` is the one entry point.</span>
+<span class="sd">never a torn or empty file. Dependency-free; ``atomic_write`` is the entry point, and</span>
+<span class="sd">``atomic_delete`` its counterpart for removal.</span>
+
+<span class="sd">On Windows, a reader holding the destination open makes ``os.replace`` and ``os.unlink``</span>
+<span class="sd">fail with ``PermissionError`` until it closes (Python's ``open`` does not share delete).</span>
+<span class="sd">Both functions therefore retry that briefly, through a :class:`Retry` policy (its</span>
+<span class="sd">``retry`` argument): by default Windows' ``PermissionError`` only, ~0.6 s in all.</span>
+<span class="sd">Elsewhere the same error is a real permission problem, so nothing is retried.</span>
 
 <span class="sd">``file_lock`` is its companion: an atomic replace is only safe against concurrent</span>
 <span class="sd">appenders and readers when they all hold the same advisory lock.</span>
@@ -294,8 +301,9 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
 
 <span class="n">_BYTES_LIKE</span> <span class="o">=</span> <span class="p">(</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">,</span> <span class="nb">memoryview</span><span class="p">)</span>
 
@@ -312,6 +320,67 @@
         <span class="k">pass</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+
+
+<span class="c1">#: What :data:`DFLT_RETRY` retries: Windows' sharing violation (another handle has the</span>
+<span class="c1">#: file open); nothing elsewhere, where ``PermissionError`` means a real permission problem.</span>
+<span class="c1">#: Windows reports a sharing violation on ``os.replace`` with the same error as a genuine</span>
+<span class="c1">#: access denial, so there *every* ``PermissionError`` is retried: a read-only destination</span>
+<span class="c1">#: still fails, only ~0.6 s later.</span>
+<span class="n">SHARING_VIOLATIONS</span><span class="p">:</span> <span class="s2">"tuple[type[BaseException], ...]"</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="ne">PermissionError</span><span class="p">,)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">"nt"</span> <span class="k">else</span> <span class="p">()</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Retry">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.Retry">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Retry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Call ``op(*args)``, retrying on ``on`` exceptions with doubling backoff.</span>
+
+<span class="sd">    ``attempts`` calls at most, sleeping ``backoff_s``, then twice that, and so on</span>
+<span class="sd">    between them (defaults: 7 calls, ~0.6 s of sleep in all; the backoff is not capped,</span>
+<span class="sd">    so keep ``attempts`` small). The last failure is re-raised. Any other exception</span>
+<span class="sd">    propagates at once. ``Retry(attempts=1)`` (or ``on=()``) calls ``op`` once.</span>
+
+<span class="sd">    &gt;&gt;&gt; calls = []</span>
+<span class="sd">    &gt;&gt;&gt; def flaky():</span>
+<span class="sd">    ...     calls.append(1)</span>
+<span class="sd">    ...     if len(calls) &lt; 3:</span>
+<span class="sd">    ...         raise PermissionError("in use")</span>
+<span class="sd">    ...     return "done"</span>
+<span class="sd">    &gt;&gt;&gt; Retry(on=(PermissionError,), backoff_s=0)(flaky), len(calls)</span>
+<span class="sd">    ('done', 3)</span>
+<span class="sd">    """</span>
+
+    <span class="n">on</span><span class="p">:</span> <span class="s2">"tuple[type[BaseException], ...]"</span> <span class="o">=</span> <span class="n">SHARING_VIOLATIONS</span>
+    <span class="n">attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">backoff_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># checked here, not at the first contended call, where a bad `on` would mask</span>
+        <span class="c1"># the real error with a TypeError</span>
+        <span class="n">on</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on</span><span class="p">,)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">on</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"on must be exception classes, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">on</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"on"</span><span class="p">,</span> <span class="n">on</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">attempts</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"attempts must be an int &gt;= 1, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">backoff_s</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># also refuses NaN</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"backoff_s must be &gt;= 0, got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">backoff_s</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attempts</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">op</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">on</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">attempt</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">attempts</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backoff_s</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="n">attempt</span><span class="p">)</span></div>
+
+
+
+<span class="n">DFLT_RETRY</span> <span class="o">=</span> <span class="n">Retry</span><span class="p">()</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_mode_to_apply</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">perms</span><span class="p">:</span> <span class="s2">"int | None"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"int | None"</span><span class="p">:</span>
@@ -332,6 +401,7 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">fsync</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">perms</span><span class="p">:</span> <span class="s2">"int | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">retry</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">DFLT_RETRY</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Write ``data`` to ``path`` atomically (temp file in the same folder, then ``os.replace``).</span>
 
@@ -346,6 +416,9 @@
 <span class="sd">    :param perms: Mode (e.g. ``0o600``) for the file, set at creation so the data is</span>
 <span class="sd">        never readable more widely, even briefly, and not narrowed by the umask.</span>
 <span class="sd">        Default: the mode of the file being replaced, else the usual umask mode.</span>
+<span class="sd">    :param retry: How the final ``os.replace`` is called: ``retry(os.replace, tmp,</span>
+<span class="sd">        path)``. Default :data:`DFLT_RETRY` retries Windows' sharing violations (a</span>
+<span class="sd">        reader has ``path`` open); ``Retry(attempts=1)`` calls it once.</span>
 
 <span class="sd">    The temp file is a hidden, uniquely named sibling (``.&lt;name&gt;.&lt;random&gt;.tmp``), created</span>
 <span class="sd">    with ``O_EXCL``, so concurrent writers never share one and key listings skip it.</span>
@@ -388,7 +461,7 @@
             <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
                 <span class="n">fh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">fsync</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">retry</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
@@ -397,6 +470,28 @@
         <span class="k">raise</span>
     <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
         <span class="n">_fsync_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="atomic_delete">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.atomic_delete">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">atomic_delete</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">retry</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">DFLT_RETRY</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Remove the file ``path``: ``retry(os.unlink, path)``, the delete counterpart</span>
+<span class="sd">    of :func:`atomic_write`.</span>
+
+<span class="sd">    ``os.unlink`` is already atomic; what this adds is the same retry, so a delete is</span>
+<span class="sd">    not refused on Windows because a reader has the file open. (Windows may then keep</span>
+<span class="sd">    the name "delete pending" until the last handle closes.) A symlink is removed</span>
+<span class="sd">    itself, not its target. A missing file raises ``FileNotFoundError`` (not retried).</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "f")</span>
+<span class="sd">    &gt;&gt;&gt; atomic_write(path, b"x")</span>
+<span class="sd">    &gt;&gt;&gt; atomic_delete(path)</span>
+<span class="sd">    &gt;&gt;&gt; os.path.exists(path)</span>
+<span class="sd">    False</span>
+<span class="sd">    """</span>
+    <span class="n">retry</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
 
 
 
@@ -652,7 +747,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=009019f7"></script>
+</div><script src="../../_static/documentation_options.js?v=a9d06d91"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
