@@ -434,3 +434,82 @@ def test_a_hashed_lock_excludes_another_holder(tmp_path):
         with open(tmp_path / lock_file, "rb") as other:  # another descriptor
             with pytest.raises(BlockingIOError):
                 fcntl.flock(other.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+# ---------------------------------------------------------------------------
+# a second lock on a path this thread holds (#185)
+
+
+def _within(seconds, fn):
+    """``fn()``'s exception (or None), failing the test instead of hanging on a deadlock."""
+    out = []
+
+    def run():
+        try:
+            fn()
+            out.append(None)
+        except BaseException as e:
+            out.append(e)
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    t.join(seconds)
+    assert out, f"still blocked after {seconds}s: deadlock"
+    return out[0]
+
+
+def test_nested_file_lock_on_one_path_raises_instead_of_deadlocking(tmp_path):
+    p = tmp_path / "f"
+
+    def nested():
+        with file_lock(p):
+            with file_lock(p):
+                pass
+
+    assert isinstance(_within(5, nested), RuntimeError)
+    with file_lock(p) as held:  # and the outer lock was released
+        assert held
+
+
+def test_update_json_inside_file_lock_raises_and_nullcontext_works(tmp_path):
+    import contextlib
+    import json
+
+    from dol import update_json
+
+    p = tmp_path / "m.json"
+
+    def nested():
+        with file_lock(p):
+            update_json(p, lambda m: m.update(a=1))
+
+    assert isinstance(_within(5, nested), RuntimeError)
+    with file_lock(p):
+        update_json(p, lambda m: m.update(a=1), lock=contextlib.nullcontext())
+    assert json.loads(p.read_text()) == {"a": 1}
+
+
+def test_other_threads_still_wait_their_turn(tmp_path):
+    p = tmp_path / "f"
+    order = []
+    with file_lock(p):
+        t = threading.Thread(target=lambda: _hold_and_note(p, order))
+        t.start()
+        time.sleep(0.2)
+        order.append("main")
+    t.join(10)
+    assert order == ["main", "thread"]
+    with file_lock(p):  # the registry was cleared on release
+        pass
+
+
+def _hold_and_note(p, order):
+    with file_lock(p):
+        order.append("thread")
+
+
+def test_a_different_sidecar_is_a_different_lock(tmp_path):
+    p = tmp_path / "f"
+    with file_lock(p):
+        with file_lock(p, sidecar=".other") as held:
+            assert held

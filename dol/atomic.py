@@ -372,9 +372,14 @@ def _open_lock_file(path: str):
 
 _live_locks = weakref.WeakSet()
 
+#: Lock files held in this process, by the thread holding each: a second FileLock on
+#: a path its thread already holds would wait on itself forever, so it raises instead.
+_holder_of_path: "dict[str, int]" = {}
+
 
 def _renew_in_child() -> None:
     # after a fork the child must not use, nor release, what the parent holds
+    _holder_of_path.clear()
     for lock in list(_live_locks):
         lock._thread_lock = threading.Lock()
         lock._owner = None  # the parent's section; __exit__ in the child is a no-op
@@ -425,8 +430,9 @@ class FileLock:
     so a forked child that inherited the handle would not exclude its parent; the pid
     is remembered and the handle reopened on a mismatch (and a child never releases
     its parent's lock). Threads of one process exclude each other too. Not reentrant:
-    entering again from the holding thread raises ``RuntimeError`` (a second lock on
-    the same path from the same thread would deadlock). For a one-off section, use
+    entering again from the holding thread raises ``RuntimeError``, and so does
+    entering another ``FileLock`` (or :func:`file_lock`) of the same path from a
+    thread that already holds it, which would otherwise wait on itself forever. For a one-off section, use
     :func:`file_lock`.
 
     The lock file is a separate sidecar, not ``path`` itself, so that
@@ -460,6 +466,7 @@ class FileLock:
                 "sidecar must be non-empty: the lock file cannot be `path`"
             )
         self.path = _lock_path(os.fsdecode(path), os.fsdecode(sidecar))
+        self._key = os.path.normcase(os.path.abspath(self.path))
         self.poll_interval = poll_interval
         self.held = False
         self._fh = None
@@ -492,13 +499,21 @@ class FileLock:
             raise
 
     def __enter__(self) -> "FileLock":
-        if self._owner == threading.get_ident():
+        me = threading.get_ident()
+        if self._owner == me:
             raise RuntimeError(f"FileLock({self.path!r}) is not reentrant")
+        if _holder_of_path.get(self._key) == me:
+            raise RuntimeError(
+                f"{self.path!r} is already locked by this thread (another FileLock or "
+                "file_lock of the same path): waiting would deadlock"
+            )
         self._thread_lock.acquire()
         try:
             self._ensure_handle()
             self.held = self._try_lock()
-            self._owner = threading.get_ident()
+            if self.held:
+                _holder_of_path[self._key] = me
+            self._owner = me
         except BaseException:
             self._thread_lock.release()
             raise
@@ -510,6 +525,8 @@ class FileLock:
         try:
             if self.held:
                 self.held = False
+                # forgotten before the unlock: the next holder registers itself
+                _holder_of_path.pop(self._key, None)
                 _unlock(self._fh)
         finally:
             self._owner = None
@@ -540,7 +557,8 @@ def file_lock(
     so they cannot interleave. The body still runs when locking is unavailable
     (read-only folder, filesystem without lock support): the yielded value is then
     ``False``. A lock file that exists but is not writable is opened read-only.
-    Nesting it on the same path in one thread deadlocks; use one section.
+    Nesting it on the same path in one thread raises ``RuntimeError`` (it would
+    deadlock); use one section.
 
     >>> import tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "data.json")
@@ -736,8 +754,9 @@ def update_json(
     :param lock: The context manager to hold. Default: the :class:`FileLock` every
         :func:`file_lock` of ``path`` takes. Any other works; whether it is held is
         the ``held`` of what it yields, else the truth of what it yields (``None``,
-        e.g. ``nullcontext()``, counts as held). Do not call this while already holding the same file's
-        lock in this thread: the lock is not reentrant, and that deadlocks.
+        e.g. ``nullcontext()``, counts as held). Called while this thread already
+        holds the file's lock, the default lock raises ``RuntimeError``; pass that
+        lock's holder as ``lock=contextlib.nullcontext()`` to update inside it.
     :param warn_unlocked: Warn when the lock is not held (read-only folder,
         filesystem without locks), so the loss of the guarantee is not silent.
 
