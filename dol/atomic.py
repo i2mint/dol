@@ -451,39 +451,56 @@ def file_lock(
 # LockedAppender
 
 #: Whether a :class:`LockedAppender` keeps its file open between appends. Not on
-#: Windows: an open handle there would make the ``os.replace`` of a compaction fail.
+#: Windows: an open handle there makes the ``os.replace`` of a compaction fail.
 DFLT_KEEP_HANDLE = os.name != "nt"
 
+_APPEND_FLAGS = os.O_RDWR | os.O_APPEND | os.O_CREAT | getattr(os, "O_BINARY", 0)
 
-def _is_same_file(fh, path: str) -> bool:
-    """Whether the open file ``fh`` is still the file at ``path``."""
+
+def _is_same_file(fd: int, path: str) -> bool:
+    """Whether the open descriptor ``fd`` is still the file at ``path``."""
     try:
         st = os.stat(path)
     except FileNotFoundError:
         return False
-    fst = os.fstat(fh.fileno())
+    fst = os.fstat(fd)
     return (st.st_ino, st.st_dev) == (fst.st_ino, fst.st_dev)
 
 
-def _open_for_append(path: str, line_end: "bytes | None"):
-    fh = open(path, "a+b")
-    if line_end and fh.tell():  # a torn last record must not swallow the next one
-        fh.seek(-len(line_end), os.SEEK_END)
-        if fh.read(len(line_end)) != line_end:
-            fh.write(line_end)  # append mode: lands at the end whatever the position
-    return fh
+def _missing_end(fd: int, line_end: bytes) -> bytes:
+    """What the file ``fd`` lacks to end with ``line_end``: ``b""`` when it is empty or
+    ends with it; the rest of it when it ends with a part of it (a torn ``\\r`` of
+    ``\\r\\n`` gets just ``\\n``); else all of it."""
+    size = os.fstat(fd).st_size
+    if not size:
+        return b""
+    n = min(len(line_end), size)
+    os.lseek(fd, size - n, os.SEEK_SET)  # O_APPEND: writes still go to the end
+    tail = os.read(fd, n)
+    k = next(k for k in range(n, -1, -1) if tail.endswith(line_end[:k]))
+    return line_end[k:]
+
+
+def _write_all(fd: int, data: bytes) -> None:
+    view = memoryview(data)
+    while view:
+        view = view[os.write(fd, view) :]
 
 
 class LockedAppender:
     r"""Appends to ``path`` under a :class:`FileLock`, following the file when an
     :func:`atomic_write` (made under the same lock, e.g. a compaction) replaces it.
 
-    The handle is kept open between appends (``keep_handle``, default except on
-    Windows) and reopened when the file at ``path`` is no longer the one it holds.
-    Each append is flushed. Fork-safe: a child reopens its own handle.
+    Each append is one unbuffered ``O_APPEND`` write, so nothing is pending between
+    appends: a failed append leaves nothing to land later, and an inherited handle
+    (after a fork) is safe to share. The handle is kept between appends
+    (``keep_handle``) and reopened when the file at ``path`` is no longer the one it
+    holds, or after a failed append.
 
-    To replace the file, take the appender's lock, so no append lands in the old file
-    after it was read: ``with appender.lock: atomic_write(path, compacted)``.
+    To replace the file, hold the appender's lock, so no append lands in the old file
+    after it was read: ``with appender.lock: atomic_write(path, compacted)``. Whether
+    the lock is actually held there is ``appender.lock.held`` (see :class:`FileLock`).
+    ``with appender:`` does not lock; it only closes on exit.
 
     >>> import tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "log.jsonl")
@@ -510,43 +527,46 @@ class LockedAppender:
         :param lock: The lock to append under. Default ``FileLock(path)``: the same
             sidecar every :func:`file_lock` of ``path`` uses.
         :param line_end: Record terminator. When given, a file whose last record is
-            torn (a crash mid-write) gets one before the next append, so the torn
-            record cannot swallow it. ``None``: bytes are appended as given.
-        :param keep_handle: Keep the file open between appends.
+            torn (a crash or a failed write, by any writer) is completed with it
+            before the next append, so the torn record cannot swallow that append.
+            ``None``: bytes are appended as given.
+        :param keep_handle: Keep the file open between appends (fewer opens). Leave it
+            off on Windows, where the open handle makes replacing the file fail, and
+            on NFS, where attribute caching can hide a replacement.
         """
-        self.path = os.fspath(path)
+        self.path = os.fsdecode(os.fspath(path))
         self.lock = FileLock(self.path) if lock is None else lock
         self.line_end = line_end
         self.keep_handle = keep_handle
-        self._fh = None
-        self._pid = None  # the process the handle belongs to
+        self._fd = None
 
     def append(self, data: bytes) -> None:
         """Append ``data`` under the lock, to the file now at ``path``."""
         with self.lock:
-            if self._pid != os.getpid():
-                self._fh = None  # inherited over a fork: leave it to the parent
-                self._pid = os.getpid()
-            if self._fh is not None and not _is_same_file(self._fh, self.path):
-                self._close_fh()  # replaced since the last append
-            if self._fh is None:
-                self._fh = _open_for_append(self.path, self.line_end)
             try:
-                self._fh.write(data)
-                self._fh.flush()
-            finally:
-                if not self.keep_handle:
-                    self._close_fh()
+                if self._fd is not None and not _is_same_file(self._fd, self.path):
+                    self._close_fd()  # replaced since the last append
+                if self._fd is None:
+                    self._fd = os.open(self.path, _APPEND_FLAGS, 0o666)
+                if self.line_end:
+                    _write_all(self._fd, _missing_end(self._fd, self.line_end))
+                _write_all(self._fd, data)
+            except BaseException:
+                self._close_fd()  # the next append reopens and heals the tail
+                raise
+            if not self.keep_handle:
+                self._close_fd()
 
-    def _close_fh(self) -> None:
-        if self._fh is not None:
-            self._fh.close()
-            self._fh = None
+    def _close_fd(self) -> None:
+        fd, self._fd = self._fd, None  # forgotten first: a failed close cannot wedge us
+        if fd is not None:
+            os.close(fd)
 
     def close(self) -> None:
-        """Close the file and the lock's handle (both reopen on the next append)."""
+        """Close the file and the lock's handle (both reopen on the next append).
+        Not from inside ``with appender.lock:`` (the lock is not reentrant)."""
         with self.lock:
-            self._close_fh()
+            self._close_fd()
         self.lock.close()
 
     def __enter__(self) -> "LockedAppender":

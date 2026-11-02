@@ -189,11 +189,11 @@ def test_appender_keeps_the_handle_only_when_asked(tmp_path):
     p = tmp_path / "log"
     with LockedAppender(p, keep_handle=True) as log:
         log.append(b"a")
-        assert log._fh is not None
-    assert log._fh is None
+        assert log._fd is not None
+    assert log._fd is None
     with LockedAppender(p, keep_handle=False) as log:
         log.append(b"b")
-        assert log._fh is None
+        assert log._fd is None
     assert p.read_bytes() == b"ab"
 
 
@@ -211,6 +211,57 @@ def test_line_end_heals_a_torn_last_record(tmp_path, existing, expected):
     with LockedAppender(p, line_end=b"\n") as log:
         log.append(b"x\n")
     assert p.read_bytes() == expected
+
+
+@pytest.mark.parametrize(
+    "existing, expected",
+    [
+        (b"x", b"x\r\nr\r\n"),  # shorter than line_end
+        (b"ab\r", b"ab\r\nr\r\n"),  # a torn terminator is completed, not doubled
+        (b"ab\r\n", b"ab\r\nr\r\n"),
+    ],
+)
+def test_multibyte_line_end(tmp_path, existing, expected):
+    p = tmp_path / "log"
+    p.write_bytes(existing)
+    with LockedAppender(p, line_end=b"\r\n") as log:
+        log.append(b"r\r\n")
+    assert p.read_bytes() == expected
+
+
+def test_a_kept_handle_heals_a_tail_torn_by_another_writer(tmp_path):
+    p = tmp_path / "log"
+    with LockedAppender(p, line_end=b"\n", keep_handle=True) as a:
+        a.append(b"a\n")
+        with LockedAppender(p) as b:  # no line_end: leaves a torn record
+            b.append(b"torn")
+        a.append(b"x\n")
+    assert p.read_bytes() == b"a\ntorn\nx\n"
+
+
+@pytest.mark.parametrize("keep_handle", [True, False])
+def test_a_failed_write_does_not_wedge_the_appender(tmp_path, monkeypatch, keep_handle):
+    import errno
+
+    p = tmp_path / "log"
+    real_write = os.write
+    fail = [True]
+
+    def write(fd, data):
+        if fail[0]:  # a short write, then the disk fills up
+            fail[0] = False
+            real_write(fd, bytes(data[:2]))
+            raise OSError(errno.ENOSPC, "No space left on device")
+        return real_write(fd, data)
+
+    with LockedAppender(p, line_end=b"\n", keep_handle=keep_handle) as log:
+        log.append(b"a\n")
+        monkeypatch.setattr(os, "write", write)
+        with pytest.raises(OSError):
+            log.append(b"12345\n")
+        assert log._fd is None  # dropped: the next append reopens
+        log.append(b"next\n")
+    assert p.read_bytes() == b"a\n12\nnext\n"  # nothing pending lands later
 
 
 def test_without_line_end_bytes_are_appended_as_given(tmp_path):
@@ -245,13 +296,15 @@ def test_append_waits_for_the_lock(tmp_path):
     assert done == [1] and p.read_bytes() == b"a"
 
 
-def _append_n(path, n):
+def _append_n(path, n, start):
+    start.wait()
     with LockedAppender(path, line_end=b"\n") as log:
         for i in range(n):
             log.append(b"%d\n" % i)
 
 
-def _compact_n(path, n):
+def _compact_n(path, n, start):
+    start.wait()
     for _ in range(n):
         with file_lock(path):
             lines = open(path, "rb").read().splitlines(keepends=True)
@@ -261,29 +314,11 @@ def _compact_n(path, n):
 def test_no_append_is_lost_across_concurrent_compactions(tmp_path):
     p = str(tmp_path / "log")
     open(p, "wb").close()
-    procs = [mp.Process(target=_append_n, args=(p, 100)) for _ in range(3)]
-    procs.append(mp.Process(target=_compact_n, args=(p, 30)))
+    start = mp.Barrier(4)  # all start together, so appends and compactions overlap
+    procs = [mp.Process(target=_append_n, args=(p, 100, start)) for _ in range(3)]
+    procs.append(mp.Process(target=_compact_n, args=(p, 30, start)))
     [pr.start() for pr in procs]
     [pr.join(60) for pr in procs]
     assert all(pr.exitcode == 0 for pr in procs)
     lines = open(p, "rb").read().splitlines()
     assert sorted(lines) == sorted([b"%d" % i for i in range(100)] * 3)
-
-
-@posix_only
-def test_forked_child_appends_through_its_own_handle(tmp_path):
-    p = tmp_path / "log"
-    log = LockedAppender(p, keep_handle=True)
-    log.append(b"parent\n")
-    pid = os.fork()
-    if pid == 0:
-        try:
-            log.append(b"child\n")
-        finally:
-            os._exit(0)
-    os.waitpid(pid, 0)
-    with log.lock:
-        atomic_write(p, p.read_bytes())  # replace: the parent must follow
-    log.append(b"parent2\n")
-    log.close()
-    assert p.read_bytes() == b"parent\nchild\nparent2\n"
