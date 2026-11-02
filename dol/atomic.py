@@ -11,7 +11,8 @@ Both functions therefore retry that briefly, through a :class:`Retry` policy (it
 Elsewhere the same error is a real permission problem, so nothing is retried.
 
 ``file_lock`` is its companion: an atomic replace is only safe against concurrent
-appenders and readers when they all hold the same advisory lock.
+appenders and readers when they all hold the same advisory lock. ``LockedAppender``
+appends under that lock and follows the file when an atomic replace swaps it.
 
     >>> import os, tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "f.txt")
@@ -444,3 +445,112 @@ def file_lock(
             yield lock.held
     finally:
         lock.close()
+
+
+# ---------------------------------------------------------------------------
+# LockedAppender
+
+#: Whether a :class:`LockedAppender` keeps its file open between appends. Not on
+#: Windows: an open handle there would make the ``os.replace`` of a compaction fail.
+DFLT_KEEP_HANDLE = os.name != "nt"
+
+
+def _is_same_file(fh, path: str) -> bool:
+    """Whether the open file ``fh`` is still the file at ``path``."""
+    try:
+        st = os.stat(path)
+    except FileNotFoundError:
+        return False
+    fst = os.fstat(fh.fileno())
+    return (st.st_ino, st.st_dev) == (fst.st_ino, fst.st_dev)
+
+
+def _open_for_append(path: str, line_end: "bytes | None"):
+    fh = open(path, "a+b")
+    if line_end and fh.tell():  # a torn last record must not swallow the next one
+        fh.seek(-len(line_end), os.SEEK_END)
+        if fh.read(len(line_end)) != line_end:
+            fh.write(line_end)  # append mode: lands at the end whatever the position
+    return fh
+
+
+class LockedAppender:
+    r"""Appends to ``path`` under a :class:`FileLock`, following the file when an
+    :func:`atomic_write` (made under the same lock, e.g. a compaction) replaces it.
+
+    The handle is kept open between appends (``keep_handle``, default except on
+    Windows) and reopened when the file at ``path`` is no longer the one it holds.
+    Each append is flushed. Fork-safe: a child reopens its own handle.
+
+    To replace the file, take the appender's lock, so no append lands in the old file
+    after it was read: ``with appender.lock: atomic_write(path, compacted)``.
+
+    >>> import tempfile
+    >>> path = os.path.join(tempfile.mkdtemp(), "log.jsonl")
+    >>> log = LockedAppender(path, line_end=b"\n")
+    >>> log.append(b'{"a": 1}\n')
+    >>> with log.lock:
+    ...     atomic_write(path, b'{"compacted": true}\n')
+    >>> log.append(b'{"b": 2}\n')
+    >>> open(path, "rb").read()
+    b'{"compacted": true}\n{"b": 2}\n'
+    >>> log.close()
+    """
+
+    def __init__(
+        self,
+        path,
+        *,
+        lock: "FileLock | None" = None,
+        line_end: "bytes | None" = None,
+        keep_handle: bool = DFLT_KEEP_HANDLE,
+    ) -> None:
+        """
+        :param path: The file appended to (created if missing; its folder must exist).
+        :param lock: The lock to append under. Default ``FileLock(path)``: the same
+            sidecar every :func:`file_lock` of ``path`` uses.
+        :param line_end: Record terminator. When given, a file whose last record is
+            torn (a crash mid-write) gets one before the next append, so the torn
+            record cannot swallow it. ``None``: bytes are appended as given.
+        :param keep_handle: Keep the file open between appends.
+        """
+        self.path = os.fspath(path)
+        self.lock = FileLock(self.path) if lock is None else lock
+        self.line_end = line_end
+        self.keep_handle = keep_handle
+        self._fh = None
+        self._pid = None  # the process the handle belongs to
+
+    def append(self, data: bytes) -> None:
+        """Append ``data`` under the lock, to the file now at ``path``."""
+        with self.lock:
+            if self._pid != os.getpid():
+                self._fh = None  # inherited over a fork: leave it to the parent
+                self._pid = os.getpid()
+            if self._fh is not None and not _is_same_file(self._fh, self.path):
+                self._close_fh()  # replaced since the last append
+            if self._fh is None:
+                self._fh = _open_for_append(self.path, self.line_end)
+            try:
+                self._fh.write(data)
+                self._fh.flush()
+            finally:
+                if not self.keep_handle:
+                    self._close_fh()
+
+    def _close_fh(self) -> None:
+        if self._fh is not None:
+            self._fh.close()
+            self._fh = None
+
+    def close(self) -> None:
+        """Close the file and the lock's handle (both reopen on the next append)."""
+        with self.lock:
+            self._close_fh()
+        self.lock.close()
+
+    def __enter__(self) -> "LockedAppender":
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self.close()

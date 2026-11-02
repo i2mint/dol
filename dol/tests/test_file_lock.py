@@ -9,7 +9,7 @@ import time
 
 import pytest
 
-from dol import FileLock, atomic_write, file_lock
+from dol import FileLock, LockedAppender, atomic_write, file_lock
 
 posix_only = pytest.mark.skipif(sys.platform == "win32", reason="POSIX only")
 
@@ -158,3 +158,132 @@ def test_close_inside_the_block_raises(tmp_path):
         with pytest.raises(RuntimeError, match="close"):
             lock.close()
     lock.close()
+
+
+# ---------------------------------------------------------------------------
+# LockedAppender (#165)
+
+
+@pytest.mark.parametrize("keep_handle", [True, False])
+def test_appender_follows_a_replaced_file(tmp_path, keep_handle):
+    p = tmp_path / "log"
+    with LockedAppender(p, keep_handle=keep_handle) as log:
+        log.append(b"a\n")
+        with log.lock:
+            atomic_write(p, b"compacted\n")
+        log.append(b"b\n")
+    assert p.read_bytes() == b"compacted\nb\n"
+
+
+def test_appender_recreates_a_deleted_file(tmp_path):
+    p = tmp_path / "log"
+    with LockedAppender(p, keep_handle=True) as log:
+        log.append(b"a")
+        with log.lock:
+            os.unlink(p)
+        log.append(b"b")
+    assert p.read_bytes() == b"b"
+
+
+def test_appender_keeps_the_handle_only_when_asked(tmp_path):
+    p = tmp_path / "log"
+    with LockedAppender(p, keep_handle=True) as log:
+        log.append(b"a")
+        assert log._fh is not None
+    assert log._fh is None
+    with LockedAppender(p, keep_handle=False) as log:
+        log.append(b"b")
+        assert log._fh is None
+    assert p.read_bytes() == b"ab"
+
+
+@pytest.mark.parametrize(
+    "existing, expected",
+    [
+        (b"", b"x\n"),
+        (b"ok\n", b"ok\nx\n"),
+        (b"torn", b"torn\nx\n"),
+    ],
+)
+def test_line_end_heals_a_torn_last_record(tmp_path, existing, expected):
+    p = tmp_path / "log"
+    p.write_bytes(existing)
+    with LockedAppender(p, line_end=b"\n") as log:
+        log.append(b"x\n")
+    assert p.read_bytes() == expected
+
+
+def test_without_line_end_bytes_are_appended_as_given(tmp_path):
+    p = tmp_path / "log"
+    p.write_bytes(b"torn")
+    with LockedAppender(p) as log:
+        log.append(b"x")
+    assert p.read_bytes() == b"tornx"
+
+
+def test_appender_uses_the_injected_lock(tmp_path):
+    p = tmp_path / "log"
+    lock = FileLock(p, sidecar=".mylock")
+    with LockedAppender(p, lock=lock) as log:
+        assert log.lock is lock
+        log.append(b"a")
+    assert (tmp_path / "log.mylock").exists()
+    assert not (tmp_path / "log.lock").exists()
+
+
+def test_append_waits_for_the_lock(tmp_path):
+    p = tmp_path / "log"
+    log = LockedAppender(p)
+    done = []
+    with file_lock(p):  # a separate FileLock: another writer, e.g. a compaction
+        t = threading.Thread(target=lambda: (log.append(b"a"), done.append(1)))
+        t.start()
+        time.sleep(0.2)
+        assert done == [] and not p.exists()
+    t.join(10)
+    log.close()
+    assert done == [1] and p.read_bytes() == b"a"
+
+
+def _append_n(path, n):
+    with LockedAppender(path, line_end=b"\n") as log:
+        for i in range(n):
+            log.append(b"%d\n" % i)
+
+
+def _compact_n(path, n):
+    for _ in range(n):
+        with file_lock(path):
+            lines = open(path, "rb").read().splitlines(keepends=True)
+            atomic_write(path, b"".join(lines))  # same content, new file
+
+
+def test_no_append_is_lost_across_concurrent_compactions(tmp_path):
+    p = str(tmp_path / "log")
+    open(p, "wb").close()
+    procs = [mp.Process(target=_append_n, args=(p, 100)) for _ in range(3)]
+    procs.append(mp.Process(target=_compact_n, args=(p, 30)))
+    [pr.start() for pr in procs]
+    [pr.join(60) for pr in procs]
+    assert all(pr.exitcode == 0 for pr in procs)
+    lines = open(p, "rb").read().splitlines()
+    assert sorted(lines) == sorted([b"%d" % i for i in range(100)] * 3)
+
+
+@posix_only
+def test_forked_child_appends_through_its_own_handle(tmp_path):
+    p = tmp_path / "log"
+    log = LockedAppender(p, keep_handle=True)
+    log.append(b"parent\n")
+    pid = os.fork()
+    if pid == 0:
+        try:
+            log.append(b"child\n")
+        finally:
+            os._exit(0)
+    os.waitpid(pid, 0)
+    with log.lock:
+        atomic_write(p, p.read_bytes())  # replace: the parent must follow
+    log.append(b"parent2\n")
+    log.close()
+    assert p.read_bytes() == b"parent\nchild\nparent2\n"
