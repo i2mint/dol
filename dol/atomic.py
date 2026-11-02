@@ -454,7 +454,7 @@ def file_lock(
 #: Windows: an open handle there makes the ``os.replace`` of a compaction fail.
 DFLT_KEEP_HANDLE = os.name != "nt"
 
-_APPEND_FLAGS = os.O_RDWR | os.O_APPEND | os.O_CREAT | getattr(os, "O_BINARY", 0)
+_APPEND_FLAGS = os.O_APPEND | os.O_CREAT | getattr(os, "O_BINARY", 0)
 
 
 def _is_same_file(fd: int, path: str) -> bool:
@@ -482,7 +482,7 @@ def _missing_end(fd: int, line_end: bytes) -> bytes:
 
 
 def _write_all(fd: int, data: bytes) -> None:
-    view = memoryview(data)
+    view = memoryview(data).cast("B")  # os.write counts bytes, not items
     while view:
         view = view[os.write(fd, view) :]
 
@@ -500,7 +500,9 @@ class LockedAppender:
     To replace the file, hold the appender's lock, so no append lands in the old file
     after it was read: ``with appender.lock: atomic_write(path, compacted)``. Whether
     the lock is actually held there is ``appender.lock.held`` (see :class:`FileLock`).
-    ``with appender:`` does not lock; it only closes on exit.
+    ``with appender:`` does not lock; it only closes on exit. Atomic appends and tail
+    healing assume the lock is held by every writer: when it cannot be (read-only
+    folder, filesystem without locks), appends are best effort.
 
     >>> import tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "log.jsonl")
@@ -539,6 +541,7 @@ class LockedAppender:
         self.line_end = line_end
         self.keep_handle = keep_handle
         self._fd = None
+        self._closer = None  # weakref.finalize closing the fd if we are never closed
 
     def append(self, data: bytes) -> None:
         """Append ``data`` under the lock, to the file now at ``path``."""
@@ -547,7 +550,7 @@ class LockedAppender:
                 if self._fd is not None and not _is_same_file(self._fd, self.path):
                     self._close_fd()  # replaced since the last append
                 if self._fd is None:
-                    self._fd = os.open(self.path, _APPEND_FLAGS, 0o666)
+                    self._open()
                 if self.line_end:
                     _write_all(self._fd, _missing_end(self._fd, self.line_end))
                 _write_all(self._fd, data)
@@ -557,10 +560,16 @@ class LockedAppender:
             if not self.keep_handle:
                 self._close_fd()
 
+    def _open(self) -> None:
+        access = os.O_RDWR if self.line_end else os.O_WRONLY  # healing reads the tail
+        self._fd = os.open(self.path, _APPEND_FLAGS | access, 0o666)
+        self._closer = weakref.finalize(self, os.close, self._fd)
+
     def _close_fd(self) -> None:
-        fd, self._fd = self._fd, None  # forgotten first: a failed close cannot wedge us
-        if fd is not None:
-            os.close(fd)
+        # forgotten first: a failed close cannot leave us holding a dead fd
+        closer, self._closer, self._fd = self._closer, None, None
+        if closer is not None:
+            closer()  # closes the fd, once
 
     def close(self) -> None:
         """Close the file and the lock's handle (both reopen on the next append).

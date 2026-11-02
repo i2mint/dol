@@ -322,3 +322,37 @@ def test_no_append_is_lost_across_concurrent_compactions(tmp_path):
     assert all(pr.exitcode == 0 for pr in procs)
     lines = open(p, "rb").read().splitlines()
     assert sorted(lines) == sorted([b"%d" % i for i in range(100)] * 3)
+
+
+def test_an_unclosed_appender_releases_its_fd(tmp_path):
+    import gc
+
+    log = LockedAppender(tmp_path / "log", keep_handle=True)
+    log.append(b"a")
+    fd = log._fd
+    del log
+    gc.collect()
+    with pytest.raises(OSError):
+        os.fstat(fd)
+
+
+def test_typed_memoryview_is_written_whole(tmp_path):
+    from array import array
+
+    p = tmp_path / "log"
+    data = array("i", range(4))
+    with LockedAppender(p) as log:
+        log.append(memoryview(data))
+    assert p.read_bytes() == data.tobytes()
+
+
+def test_without_line_end_a_write_only_file_is_enough(tmp_path):
+    p = tmp_path / "log"
+    p.write_bytes(b"a")
+    os.chmod(p, 0o200)  # write-only
+    try:
+        with LockedAppender(p) as log:
+            log.append(b"b")
+    finally:
+        os.chmod(p, 0o600)
+    assert p.read_bytes() == b"ab"
