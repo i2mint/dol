@@ -569,3 +569,19 @@ def test_a_case_variant_on_a_case_insensitive_filesystem_is_caught(tmp_path):
         "        pass"
     )
     assert _outcome_isolated(code, tmp_path) == "RuntimeError"
+
+
+@posix_only
+def test_a_kept_handle_follows_a_recreated_lock_file(tmp_path):
+    import fcntl
+
+    lock = FileLock(tmp_path / "f")
+    with lock:
+        pass
+    os.unlink(lock.path)  # swept by a cleanup, say
+    with lock:
+        # whoever opens the path now must be excluded
+        with open(lock.path, "rb") as other:
+            with pytest.raises(BlockingIOError):
+                fcntl.flock(other.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    lock.close()
