@@ -54,7 +54,9 @@ def _pytest_ini_options() -> dict:
     pyproject = PKG_DIR.parent / "pyproject.toml"
     if not pyproject.is_file():
         pytest.skip("Not running from a source tree (no pyproject.toml)")
-    return _load_toml(pyproject).get("tool", {}).get("pytest", {}).get("ini_options", {})
+    return (
+        _load_toml(pyproject).get("tool", {}).get("pytest", {}).get("ini_options", {})
+    )
 
 
 def test_py_typed_marker_is_present():
@@ -99,3 +101,22 @@ def test_doctest_optionflags_match_ci():
     assert flags == CI_DOCTEST_OPTIONFLAGS, (
         f"doctest_optionflags {sorted(flags)} != CI's {sorted(CI_DOCTEST_OPTIONFLAGS)}"
     )
+
+
+def test_every_module_compiles_without_syntax_warnings():
+    """An invalid escape (``"\\."`` in a non-raw docstring) warns at every import of a
+    fresh install from Python 3.12, and is an error under ``-W error``; pytest's
+    cached bytecode would hide it, so compile the sources here."""
+    import warnings
+
+    pkg = Path(dol.__file__).parent
+    offenders = []
+    for src in sorted(pkg.rglob("*.py")):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", SyntaxWarning)
+            warnings.simplefilter("error", DeprecationWarning)  # its form before 3.12
+            try:
+                compile(src.read_text(encoding="utf-8"), str(src), "exec")
+            except SyntaxError as e:
+                offenders.append(f"{src.relative_to(pkg)}:{e.lineno}: {e.msg}")
+    assert not offenders, "\n".join(offenders)

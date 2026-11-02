@@ -150,7 +150,7 @@ def interrupted_writes(
     pattern: "re.Pattern | str" = TEMP_NAME_PATTERN,
     recursive: bool = False,
 ) -> "list[str]":
-    """The temp files writes killed mid-way left in ``folder``: sorted absolute paths
+    r"""The temp files writes killed mid-way left in ``folder``: sorted absolute paths
     (``str``) of the regular files (never a symlink or folder) whose name fully
     matches ``pattern`` (default: :func:`atomic_write`'s temps; pass another writer's,
     e.g. ``r"\.blob-.+\.part"``).
@@ -161,7 +161,7 @@ def interrupted_writes(
     (``os.stat(p).st_mtime``), or while holding the lock every writer takes.
 
     :param recursive: Also search subfolders (symlinked folders are not followed;
-        unreadable subfolders are skipped).
+        subfolders that cannot be read, or vanish, are skipped).
 
     A missing ``folder`` holds none (``[]``); any other failure to list it raises
     ``OSError``.
@@ -180,10 +180,10 @@ def interrupted_writes(
             entries = os.scandir(dirpath)
         except FileNotFoundError:
             return
-        except OSError:
+        except (PermissionError, NotADirectoryError):
             if top:
                 raise
-            return  # an unreadable subfolder
+            return  # an unreadable subfolder (other errors, e.g. EMFILE, propagate)
         with entries:
             for e in entries:
                 if e.is_file(follow_symlinks=False):

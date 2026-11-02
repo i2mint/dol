@@ -413,6 +413,20 @@ def test_interrupted_writes_recursive_skips_symlinked_and_unreadable_dirs(tmp_pa
         os.chmod(locked, 0o700)
 
 
+@posix_only
+def test_interrupted_writes_unreadable_top_folder_raises(tmp_path):
+    locked = tmp_path / "locked"
+    locked.mkdir()
+    os.chmod(locked, 0)
+    try:
+        if os.access(locked, os.R_OK):
+            pytest.skip("running as root: permissions are not enforced")
+        with pytest.raises(PermissionError):
+            interrupted_writes(locked, recursive=True)
+    finally:
+        os.chmod(locked, 0o700)
+
+
 @pytest.mark.parametrize("bad", ["", "a/b", os.path.join("a", "b")])
 def test_temp_name_takes_a_file_name(bad):
     with pytest.raises(ValueError):
