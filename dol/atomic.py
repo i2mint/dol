@@ -129,8 +129,8 @@ def atomic_write(
 ) -> None:
     """Write ``data`` to ``path`` atomically (temp file in the same folder, then ``os.replace``).
 
-    :param path: Target file; its parent folder must exist. A symlink is followed:
-        its target is what gets replaced.
+    :param path: Target file (``str``, ``bytes`` or path-like); its parent folder must
+        exist. A symlink is followed: its target is what gets replaced.
     :param data: Bytes-like, or an iterable of bytes-like chunks (written one at a
         time, so a large payload need not be held in memory). If the iterable raises,
         ``path`` is untouched. Text must be encoded first.
@@ -168,7 +168,7 @@ def atomic_write(
         raise TypeError(
             "atomic_write takes bytes (or chunks of bytes); encode text first"
         )
-    path = os.path.realpath(os.fspath(path))
+    path = os.path.realpath(os.fsdecode(path))  # str, so the temp name joins
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
     tmp = os.path.join(dirname, f".{name[:100]}.{uuid.uuid4().hex[:8]}.tmp")
@@ -335,7 +335,7 @@ class FileLock:
             raise ValueError(
                 "sidecar must be non-empty: the lock file cannot be `path`"
             )
-        self.path = os.fspath(path) + sidecar
+        self.path = os.fsdecode(path) + os.fsdecode(sidecar)  # bytes paths too
         self.poll_interval = poll_interval
         self.held = False
         self._fh = None
