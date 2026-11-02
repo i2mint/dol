@@ -2,18 +2,20 @@
 
 # About this build
 
-This documentation was built on **2026-11-02 19:50 UTC** from commit <a href="https://github.com/i2mint/dol/commit/d94f6476fb8091c0e81a538db341a4669c2ec99c"><code>d94f647</code></a> on branch <code>master</code>, for **dol 0.3.103** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:55 UTC** from commit <a href="https://github.com/i2mint/dol/commit/75323ef7a78d2849125993e9d30ee4109005c246"><code>75323ef</code></a> on branch <code>master</code>, for **dol 0.3.104** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.3.104) is ahead of the latest release on PyPI (0.3.103): these docs describe unreleased code.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/d94f6476fb8091c0e81a538db341a4669c2ec99c"><code>d94f6476fb8091c0e81a538db341a4669c2ec99c</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/75323ef7a78d2849125993e9d30ee4109005c246"><code>75323ef7a78d2849125993e9d30ee4109005c246</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.103</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.104</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -22,9 +24,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41513298148">41513298148</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41514073421">41514073421</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>5b0a898abea597750e125588869eb86193d26bfe</code> (in the history of the built commit) |
+| Event commit | <code>96eef77bdb46e2f6efee579008d47d80260710ac</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -49,13 +51,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.103/">0.3.103</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.103/">0.3.103</a>, older than the documented version (0.3.104).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout d94f6476fb8091c0e81a538db341a4669c2ec99c
+git checkout 75323ef7a78d2849125993e9d30ee4109005c246
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

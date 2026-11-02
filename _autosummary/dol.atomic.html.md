@@ -13,7 +13,8 @@ Both functions therefore retry that briefly, through a [`Retry`](#dol.atomic.Ret
 Elsewhere the same error is a real permission problem, so nothing is retried.
 
 `file_lock` is its companion: an atomic replace is only safe against concurrent
-appenders and readers when they all hold the same advisory lock.
+appenders and readers when they all hold the same advisory lock. `LockedAppender`
+appends under that lock and follows the file when an atomic replace swaps it.
 
 ```pycon
 >>> import os, tempfile
@@ -30,6 +31,7 @@ appenders and readers when they all hold the same advisory lock.
 
 | [`SHARING_VIOLATIONS`](#dol.atomic.SHARING_VIOLATIONS)   | Windows' sharing violation (another handle has the file open); nothing elsewhere, where `PermissionError` means a real permission problem.   |
 |-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DFLT_KEEP_HANDLE`](#dol.atomic.DFLT_KEEP_HANDLE)     | Whether a [`LockedAppender`](#dol.atomic.LockedAppender) keeps its file open between appends.                               |
 
 ### Functions
 
@@ -40,9 +42,15 @@ appenders and readers when they all hold the same advisory lock.
 
 ### Classes
 
-| [`FileLock`](#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])   | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.   |
-|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [`Retry`](#dol.atomic.Retry)([on, attempts, backoff_s])               | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.        |
+| [`FileLock`](#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])    | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.                                                                                                                                                                  |
+|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`LockedAppender`](#dol.atomic.LockedAppender)(path, \*[, lock, line_end, ...]) | Appends to `path` under a [`FileLock`](#dol.atomic.FileLock), following the file when an [`atomic_write()`](#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it. |
+| [`Retry`](#dol.atomic.Retry)([on, attempts, backoff_s])                | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.                                                                                                                                                                       |
+
+### dol.atomic.DFLT_KEEP_HANDLE *= True*
+
+Whether a [`LockedAppender`](#dol.atomic.LockedAppender) keeps its file open between appends. Not on
+Windows: an open handle there makes the `os.replace` of a compaction fail.
 
 ### *class* dol.atomic.FileLock(path, , sidecar='.lock', poll_interval=0.001)
 
@@ -79,6 +87,54 @@ True
 #### close()
 
 Release the kept handle (not from inside the `with` block).
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### *class* dol.atomic.LockedAppender(path, , lock=None, line_end=None, keep_handle=True)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Appends to `path` under a [`FileLock`](#dol.atomic.FileLock), following the file when an
+[`atomic_write()`](#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it.
+
+Each append is one unbuffered `O_APPEND` write, so nothing is pending between
+appends: a failed append leaves nothing to land later, and an inherited handle
+(after a fork) is safe to share. The handle is kept between appends
+(`keep_handle`) and reopened when the file at `path` is no longer the one it
+holds, or after a failed append.
+
+To replace the file, hold the appender’s lock, so no append lands in the old file
+after it was read: `with appender.lock: atomic_write(path, compacted)`. Whether
+the lock is actually held there is `appender.lock.held` (see [`FileLock`](#dol.atomic.FileLock)).
+`with appender:` does not lock; it only closes on exit. Atomic appends and tail
+healing assume the lock is held by every writer: when it cannot be (read-only
+folder, filesystem without locks), appends are best effort.
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "log.jsonl")
+>>> log = LockedAppender(path, line_end=b"\n")
+>>> log.append(b'{"a": 1}\n')
+>>> with log.lock:
+...     atomic_write(path, b'{"compacted": true}\n')
+>>> log.append(b'{"b": 2}\n')
+>>> open(path, "rb").read()
+b'{"compacted": true}\n{"b": 2}\n'
+>>> log.close()
+```
+
+#### append(data)
+
+Append `data` under the lock, to the file now at `path`.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+#### close()
+
+Close the file and the lock’s handle (both reopen on the next append).
+Not from inside `with appender.lock:` (the lock is not reentrant).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)

@@ -1,4 +1,4 @@
-> built 2026-11-02 19:50 UTC from d94f647 (master) · dol 0.3.103. Details: build_info.json
+> built 2026-11-02 19:55 UTC from 75323ef (master) · dol 0.3.104. Details: build_info.json
 
 # index.html.md
 
@@ -465,7 +465,8 @@ Both functions therefore retry that briefly, through a [`Retry`](_autosummary/do
 Elsewhere the same error is a real permission problem, so nothing is retried.
 
 `file_lock` is its companion: an atomic replace is only safe against concurrent
-appenders and readers when they all hold the same advisory lock.
+appenders and readers when they all hold the same advisory lock. `LockedAppender`
+appends under that lock and follows the file when an atomic replace swaps it.
 
 ```pycon
 >>> import os, tempfile
@@ -482,6 +483,7 @@ appenders and readers when they all hold the same advisory lock.
 
 | [`SHARING_VIOLATIONS`](_autosummary/dol.atomic.html.md#dol.atomic.SHARING_VIOLATIONS)   | Windows' sharing violation (another handle has the file open); nothing elsewhere, where `PermissionError` means a real permission problem.   |
 |-----------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DFLT_KEEP_HANDLE`](_autosummary/dol.atomic.html.md#dol.atomic.DFLT_KEEP_HANDLE)     | Whether a [`LockedAppender`](_autosummary/dol.atomic.html.md#dol.atomic.LockedAppender) keeps its file open between appends.                               |
 
 ### Functions
 
@@ -492,9 +494,15 @@ appenders and readers when they all hold the same advisory lock.
 
 ### Classes
 
-| [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])   | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.   |
-|-------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| [`Retry`](_autosummary/dol.atomic.html.md#dol.atomic.Retry)([on, attempts, backoff_s])               | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.        |
+| [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])    | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.                                                                                                                                                                  |
+|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`LockedAppender`](_autosummary/dol.atomic.html.md#dol.atomic.LockedAppender)(path, \*[, lock, line_end, ...]) | Appends to `path` under a [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock), following the file when an [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it. |
+| [`Retry`](_autosummary/dol.atomic.html.md#dol.atomic.Retry)([on, attempts, backoff_s])                | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.                                                                                                                                                                       |
+
+### dol.atomic.DFLT_KEEP_HANDLE *= True*
+
+Whether a [`LockedAppender`](_autosummary/dol.atomic.html.md#dol.atomic.LockedAppender) keeps its file open between appends. Not on
+Windows: an open handle there makes the `os.replace` of a compaction fail.
 
 ### *class* dol.atomic.FileLock(path, , sidecar='.lock', poll_interval=0.001)
 
@@ -531,6 +539,54 @@ True
 #### close()
 
 Release the kept handle (not from inside the `with` block).
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### *class* dol.atomic.LockedAppender(path, , lock=None, line_end=None, keep_handle=True)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+Appends to `path` under a [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock), following the file when an
+[`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it.
+
+Each append is one unbuffered `O_APPEND` write, so nothing is pending between
+appends: a failed append leaves nothing to land later, and an inherited handle
+(after a fork) is safe to share. The handle is kept between appends
+(`keep_handle`) and reopened when the file at `path` is no longer the one it
+holds, or after a failed append.
+
+To replace the file, hold the appender’s lock, so no append lands in the old file
+after it was read: `with appender.lock: atomic_write(path, compacted)`. Whether
+the lock is actually held there is `appender.lock.held` (see [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)).
+`with appender:` does not lock; it only closes on exit. Atomic appends and tail
+healing assume the lock is held by every writer: when it cannot be (read-only
+folder, filesystem without locks), appends are best effort.
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "log.jsonl")
+>>> log = LockedAppender(path, line_end=b"\n")
+>>> log.append(b'{"a": 1}\n')
+>>> with log.lock:
+...     atomic_write(path, b'{"compacted": true}\n')
+>>> log.append(b'{"b": 2}\n')
+>>> open(path, "rb").read()
+b'{"compacted": true}\n{"b": 2}\n'
+>>> log.close()
+```
+
+#### append(data)
+
+Append `data` under the lock, to the file now at `path`.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+#### close()
+
+Close the file and the lock’s handle (both reopen on the next append).
+Not from inside `with appender.lock:` (the lock is not reentrant).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
@@ -17805,18 +17861,20 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-02 19:50 UTC** from commit <a href="https://github.com/i2mint/dol/commit/d94f6476fb8091c0e81a538db341a4669c2ec99c"><code>d94f647</code></a> on branch <code>master</code>, for **dol 0.3.103** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:55 UTC** from commit <a href="https://github.com/i2mint/dol/commit/75323ef7a78d2849125993e9d30ee4109005c246"><code>75323ef</code></a> on branch <code>master</code>, for **dol 0.3.104** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.3.104) is ahead of the latest release on PyPI (0.3.103): these docs describe unreleased code.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/d94f6476fb8091c0e81a538db341a4669c2ec99c"><code>d94f6476fb8091c0e81a538db341a4669c2ec99c</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/75323ef7a78d2849125993e9d30ee4109005c246"><code>75323ef7a78d2849125993e9d30ee4109005c246</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.103</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.104</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17825,9 +17883,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41513298148">41513298148</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41514073421">41514073421</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>5b0a898abea597750e125588869eb86193d26bfe</code> (in the history of the built commit) |
+| Event commit | <code>96eef77bdb46e2f6efee579008d47d80260710ac</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17852,13 +17910,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.103/">0.3.103</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.103/">0.3.103</a>, older than the documented version (0.3.104).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout d94f6476fb8091c0e81a538db341a4669c2ec99c
+git checkout 75323ef7a78d2849125993e9d30ee4109005c246
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

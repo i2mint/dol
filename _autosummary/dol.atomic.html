@@ -289,7 +289,8 @@ Both functions therefore retry that briefly, through a <a class="reference inter
 <code class="docutils literal notranslate"><span class="pre">retry</span></code> argument): by default Windows’ <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> only, ~0.6 s in all.
 Elsewhere the same error is a real permission problem, so nothing is retried.</p>
 <p><code class="docutils literal notranslate"><span class="pre">file_lock</span></code> is its companion: an atomic replace is only safe against concurrent
-appenders and readers when they all hold the same advisory lock.</p>
+appenders and readers when they all hold the same advisory lock. <code class="docutils literal notranslate"><span class="pre">LockedAppender</span></code>
+appends under that lock and follows the file when an atomic replace swaps it.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"f.txt"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">atomic_write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"hello"</span><span class="p">)</span>
@@ -306,6 +307,9 @@ appenders and readers when they all hold the same advisory lock.</p>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.SHARING_VIOLATIONS" title="dol.atomic.SHARING_VIOLATIONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SHARING_VIOLATIONS</span></code></a></p></td>
 <td><p>Windows' sharing violation (another handle has the file open); nothing elsewhere, where <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> means a real permission problem.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.DFLT_KEEP_HANDLE" title="dol.atomic.DFLT_KEEP_HANDLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_KEEP_HANDLE</span></code></a></p></td>
+<td><p>Whether a <a class="reference internal" href="#dol.atomic.LockedAppender" title="dol.atomic.LockedAppender"><code class="xref py py-class docutils literal notranslate"><span class="pre">LockedAppender</span></code></a> keeps its file open between appends.</p></td>
 </tr>
 </tbody>
 </table>
@@ -333,12 +337,22 @@ appenders and readers when they all hold the same advisory lock.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileLock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
 <td><p>A reusable, exclusive, advisory lock on a sidecar file <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.Retry" title="dol.atomic.Retry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Retry</span></code></a>([on, attempts, backoff_s])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.LockedAppender" title="dol.atomic.LockedAppender"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LockedAppender</span></code></a>(path, *[, lock, line_end, ...])</p></td>
+<td><p>Appends to <code class="docutils literal notranslate"><span class="pre">path</span></code> under a <a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileLock</span></code></a>, following the file when an <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> (made under the same lock, e.g. a compaction) replaces it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.Retry" title="dol.atomic.Retry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Retry</span></code></a>([on, attempts, backoff_s])</p></td>
 <td><p>Call <code class="docutils literal notranslate"><span class="pre">op(*args)</span></code>, retrying on <code class="docutils literal notranslate"><span class="pre">on</span></code> exceptions with doubling backoff.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<dl class="py data">
+<dt class="sig sig-object py" id="dol.atomic.DFLT_KEEP_HANDLE">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">DFLT_KEEP_HANDLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></span><a class="headerlink" href="#dol.atomic.DFLT_KEEP_HANDLE" title="Link to this definition">¶</a></dt>
+<dd><p>Whether a <a class="reference internal" href="#dol.atomic.LockedAppender" title="dol.atomic.LockedAppender"><code class="xref py py-class docutils literal notranslate"><span class="pre">LockedAppender</span></code></a> keeps its file open between appends. Not on
+Windows: an open handle there makes the <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> of a compaction fail.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="dol.atomic.FileLock">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">FileLock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">sidecar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.lock'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">poll_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#FileLock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.FileLock" title="Link to this definition">¶</a></dt>
@@ -372,6 +386,62 @@ the same path from the same thread would deadlock). For a one-off section, use
 <dt class="sig sig-object py" id="dol.atomic.FileLock.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#FileLock.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.FileLock.close" title="Link to this definition">¶</a></dt>
 <dd><p>Release the kept handle (not from inside the <code class="docutils literal notranslate"><span class="pre">with</span></code> block).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="dol.atomic.LockedAppender">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">LockedAppender</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_handle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#LockedAppender"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.LockedAppender" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Appends to <code class="docutils literal notranslate"><span class="pre">path</span></code> under a <a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileLock</span></code></a>, following the file when an
+<a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> (made under the same lock, e.g. a compaction) replaces it.</p>
+<p>Each append is one unbuffered <code class="docutils literal notranslate"><span class="pre">O_APPEND</span></code> write, so nothing is pending between
+appends: a failed append leaves nothing to land later, and an inherited handle
+(after a fork) is safe to share. The handle is kept between appends
+(<code class="docutils literal notranslate"><span class="pre">keep_handle</span></code>) and reopened when the file at <code class="docutils literal notranslate"><span class="pre">path</span></code> is no longer the one it
+holds, or after a failed append.</p>
+<p>To replace the file, hold the appender’s lock, so no append lands in the old file
+after it was read: <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">appender.lock:</span> <span class="pre">atomic_write(path,</span> <span class="pre">compacted)</span></code>. Whether
+the lock is actually held there is <code class="docutils literal notranslate"><span class="pre">appender.lock.held</span></code> (see <a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileLock</span></code></a>).
+<code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">appender:</span></code> does not lock; it only closes on exit. Atomic appends and tail
+healing assume the lock is held by every writer: when it cannot be (read-only
+folder, filesystem without locks), appends are best effort.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"log.jsonl"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log</span> <span class="o">=</span> <span class="n">LockedAppender</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">line_end</span><span class="o">=</span><span class="sa">b</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">b</span><span class="s1">'{"a": 1}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">log</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">atomic_write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="sa">b</span><span class="s1">'{"compacted": true}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">b</span><span class="s1">'{"b": 2}</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="go">b'{"compacted": true}\n{"b": 2}\n'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.atomic.LockedAppender.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#LockedAppender.append"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.LockedAppender.append" title="Link to this definition">¶</a></dt>
+<dd><p>Append <code class="docutils literal notranslate"><span class="pre">data</span></code> under the lock, to the file now at <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dol.atomic.LockedAppender.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#LockedAppender.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.LockedAppender.close" title="Link to this definition">¶</a></dt>
+<dd><p>Close the file and the lock’s handle (both reopen on the next append).
+Not from inside <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">appender.lock:</span></code> (the lock is not reentrant).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
@@ -568,8 +638,14 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">dol.atomic</a><ul>
+<li><a class="reference internal" href="#dol.atomic.DFLT_KEEP_HANDLE"><code class="docutils literal notranslate"><span class="pre">DFLT_KEEP_HANDLE</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.FileLock"><code class="docutils literal notranslate"><span class="pre">FileLock</span></code></a><ul>
 <li><a class="reference internal" href="#dol.atomic.FileLock.close"><code class="docutils literal notranslate"><span class="pre">FileLock.close()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dol.atomic.LockedAppender"><code class="docutils literal notranslate"><span class="pre">LockedAppender</span></code></a><ul>
+<li><a class="reference internal" href="#dol.atomic.LockedAppender.append"><code class="docutils literal notranslate"><span class="pre">LockedAppender.append()</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.LockedAppender.close"><code class="docutils literal notranslate"><span class="pre">LockedAppender.close()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#dol.atomic.Retry"><code class="docutils literal notranslate"><span class="pre">Retry</span></code></a></li>
@@ -588,7 +664,7 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=2021831c"></script>
+</div><script src="../_static/documentation_options.js?v=c802c2ac"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

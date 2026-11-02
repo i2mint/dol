@@ -282,7 +282,8 @@
 <span class="sd">Elsewhere the same error is a real permission problem, so nothing is retried.</span>
 
 <span class="sd">``file_lock`` is its companion: an atomic replace is only safe against concurrent</span>
-<span class="sd">appenders and readers when they all hold the same advisory lock.</span>
+<span class="sd">appenders and readers when they all hold the same advisory lock. ``LockedAppender``</span>
+<span class="sd">appends under that lock and follows the file when an atomic replace swaps it.</span>
 
 <span class="sd">    &gt;&gt;&gt; import os, tempfile</span>
 <span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "f.txt")</span>
@@ -733,6 +734,153 @@
     <span class="k">finally</span><span class="p">:</span>
         <span class="n">lock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># LockedAppender</span>
+
+<span class="c1">#: Whether a :class:`LockedAppender` keeps its file open between appends. Not on</span>
+<span class="c1">#: Windows: an open handle there makes the ``os.replace`` of a compaction fail.</span>
+<span class="n">DFLT_KEEP_HANDLE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s2">"nt"</span>
+
+<span class="n">_APPEND_FLAGS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">O_APPEND</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_CREAT</span> <span class="o">|</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="s2">"O_BINARY"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_same_file</span><span class="p">(</span><span class="n">fd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether the open descriptor ``fd`` is still the file at ``path``."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">fst</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fstat</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_ino</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_dev</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">fst</span><span class="o">.</span><span class="n">st_ino</span><span class="p">,</span> <span class="n">fst</span><span class="o">.</span><span class="n">st_dev</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_missing_end</span><span class="p">(</span><span class="n">fd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">line_end</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What the file ``fd`` lacks to end with ``line_end``: ``b""`` when it is empty or</span>
+<span class="sd">    ends with it; the rest of it when it ends with a part of it (a torn ``\\r`` of</span>
+<span class="sd">    ``\\r\\n`` gets just ``\\n``); else all of it."""</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fstat</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span><span class="o">.</span><span class="n">st_size</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">size</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">""</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line_end</span><span class="p">),</span> <span class="n">size</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">lseek</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">size</span> <span class="o">-</span> <span class="n">n</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span>  <span class="c1"># O_APPEND: writes still go to the end</span>
+    <span class="n">tail</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">tail</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">line_end</span><span class="p">[:</span><span class="n">k</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">line_end</span><span class="p">[</span><span class="n">k</span><span class="p">:]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_all</span><span class="p">(</span><span class="n">fd</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>  <span class="c1"># os.write counts bytes, not items</span>
+    <span class="k">while</span> <span class="n">view</span><span class="p">:</span>
+        <span class="n">view</span> <span class="o">=</span> <span class="n">view</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">view</span><span class="p">)</span> <span class="p">:]</span>
+
+
+<div class="viewcode-block" id="LockedAppender">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.LockedAppender">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LockedAppender</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""Appends to ``path`` under a :class:`FileLock`, following the file when an</span>
+<span class="sd">    :func:`atomic_write` (made under the same lock, e.g. a compaction) replaces it.</span>
+
+<span class="sd">    Each append is one unbuffered ``O_APPEND`` write, so nothing is pending between</span>
+<span class="sd">    appends: a failed append leaves nothing to land later, and an inherited handle</span>
+<span class="sd">    (after a fork) is safe to share. The handle is kept between appends</span>
+<span class="sd">    (``keep_handle``) and reopened when the file at ``path`` is no longer the one it</span>
+<span class="sd">    holds, or after a failed append.</span>
+
+<span class="sd">    To replace the file, hold the appender's lock, so no append lands in the old file</span>
+<span class="sd">    after it was read: ``with appender.lock: atomic_write(path, compacted)``. Whether</span>
+<span class="sd">    the lock is actually held there is ``appender.lock.held`` (see :class:`FileLock`).</span>
+<span class="sd">    ``with appender:`` does not lock; it only closes on exit. Atomic appends and tail</span>
+<span class="sd">    healing assume the lock is held by every writer: when it cannot be (read-only</span>
+<span class="sd">    folder, filesystem without locks), appends are best effort.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "log.jsonl")</span>
+<span class="sd">    &gt;&gt;&gt; log = LockedAppender(path, line_end=b"\n")</span>
+<span class="sd">    &gt;&gt;&gt; log.append(b'{"a": 1}\n')</span>
+<span class="sd">    &gt;&gt;&gt; with log.lock:</span>
+<span class="sd">    ...     atomic_write(path, b'{"compacted": true}\n')</span>
+<span class="sd">    &gt;&gt;&gt; log.append(b'{"b": 2}\n')</span>
+<span class="sd">    &gt;&gt;&gt; open(path, "rb").read()</span>
+<span class="sd">    b'{"compacted": true}\n{"b": 2}\n'</span>
+<span class="sd">    &gt;&gt;&gt; log.close()</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">lock</span><span class="p">:</span> <span class="s2">"FileLock | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">line_end</span><span class="p">:</span> <span class="s2">"bytes | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">keep_handle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">DFLT_KEEP_HANDLE</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        :param path: The file appended to (created if missing; its folder must exist).</span>
+<span class="sd">        :param lock: The lock to append under. Default ``FileLock(path)``: the same</span>
+<span class="sd">            sidecar every :func:`file_lock` of ``path`` uses.</span>
+<span class="sd">        :param line_end: Record terminator. When given, a file whose last record is</span>
+<span class="sd">            torn (a crash or a failed write, by any writer) is completed with it</span>
+<span class="sd">            before the next append, so the torn record cannot swallow that append.</span>
+<span class="sd">            ``None``: bytes are appended as given.</span>
+<span class="sd">        :param keep_handle: Keep the file open between appends (fewer opens). Leave it</span>
+<span class="sd">            off on Windows, where the open handle makes replacing the file fail, and</span>
+<span class="sd">            on NFS, where attribute caching can hide a replacement.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span> <span class="k">if</span> <span class="n">lock</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lock</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_end</span> <span class="o">=</span> <span class="n">line_end</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keep_handle</span> <span class="o">=</span> <span class="n">keep_handle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># weakref.finalize closing the fd if we are never closed</span>
+
+<div class="viewcode-block" id="LockedAppender.append">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.LockedAppender.append">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Append ``data`` under the lock, to the file now at ``path``."""</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_same_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_close_fd</span><span class="p">()</span>  <span class="c1"># replaced since the last append</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_open</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_end</span><span class="p">:</span>
+                    <span class="n">_write_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fd</span><span class="p">,</span> <span class="n">_missing_end</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_end</span><span class="p">))</span>
+                <span class="n">_write_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fd</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_close_fd</span><span class="p">()</span>  <span class="c1"># the next append reopens and heals the tail</span>
+                <span class="k">raise</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_handle</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_close_fd</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_open</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">access</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">O_RDWR</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_end</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span>  <span class="c1"># healing reads the tail</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">_APPEND_FLAGS</span> <span class="o">|</span> <span class="n">access</span><span class="p">,</span> <span class="mo">0o666</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fd</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_close_fd</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># forgotten first: a failed close cannot leave us holding a dead fd</span>
+        <span class="n">closer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">closer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">closer</span><span class="p">()</span>  <span class="c1"># closes the fd, once</span>
+
+<div class="viewcode-block" id="LockedAppender.close">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.LockedAppender.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Close the file and the lock's handle (both reopen on the next append).</span>
+<span class="sd">        Not from inside ``with appender.lock:`` (the lock is not reentrant)."""</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_close_fd</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"LockedAppender"</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">exc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
 </pre></div>
         </article>
       </div>
@@ -761,7 +909,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2021831c"></script>
+</div><script src="../../_static/documentation_options.js?v=c802c2ac"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
