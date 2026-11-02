@@ -26,12 +26,14 @@ appends under that lock and follows the file when an atomic replace swaps it.
 """
 
 import errno
+import json
 import os
 import re
 import stat
 import threading
 import time
 import uuid
+import warnings
 import weakref
 from collections.abc import Callable, Iterable
 from contextlib import contextmanager
@@ -654,3 +656,79 @@ class LockedAppender:
 
     def __exit__(self, *exc) -> None:
         self.close()
+
+
+# ---------------------------------------------------------------------------
+# update_json: a locked read-modify-write of one JSON file
+
+
+def update_json(
+    path,
+    change: Callable,
+    *,
+    default: Callable = dict,
+    loads: Callable = json.loads,
+    dumps: Callable = json.dumps,
+    lock: "FileLock | None" = None,
+    warn_unlocked: bool = True,
+):
+    """Apply ``change`` to the JSON document at ``path`` under its lock; return what
+    ``change`` returned.
+
+    Under :func:`file_lock` of ``path``: read the document, call ``change(obj)``, which
+    mutates ``obj`` in place (and may raise, to write nothing), then
+    :func:`atomic_write` it back, only if ``dumps`` of it changed. So a no-op neither
+    creates the file nor moves its mtime, and a file nobody changed keeps its
+    formatting.
+
+    The read is strict: only a missing file starts from ``default()``. Any other read
+    error propagates, and invalid JSON raises ``ValueError``: writing "default plus
+    this change" over a file that could not be read would destroy what it held.
+
+    :param default: Factory for the document when ``path`` does not exist.
+    :param loads, dumps: The codec (e.g. ``functools.partial(json.dumps, indent=2)``).
+    :param lock: The lock to hold. Default: ``FileLock(path)``, the lock every
+        :func:`file_lock` of ``path`` takes.
+    :param warn_unlocked: Warn when the lock cannot be held (read-only folder,
+        filesystem without locks), so the loss of the guarantee is not silent.
+
+    >>> import tempfile
+    >>> path = os.path.join(tempfile.mkdtemp(), "manifest.json")
+    >>> update_json(path, lambda m: m.setdefault("clips", []).append("a.mp4"))
+    >>> update_json(path, lambda m: len(m["clips"]))
+    1
+    >>> open(path).read()
+    '{"clips": ["a.mp4"]}'
+    """
+    path = os.fsdecode(path)
+    own_lock = lock is None
+    lock = FileLock(path) if own_lock else lock
+    try:
+        with lock:
+            if not lock.held and warn_unlocked:
+                warnings.warn(
+                    f"update_json: could not lock {path!r}; "
+                    "concurrent updates may be lost",
+                    stacklevel=2,
+                )
+            try:
+                with open(path, "rb") as fh:
+                    data = fh.read()
+            except FileNotFoundError:
+                obj = default()
+            else:
+                try:
+                    obj = loads(data)
+                except ValueError as e:
+                    raise ValueError(
+                        f"{path!r} is not valid JSON; nothing was written"
+                    ) from e
+            before = dumps(obj)
+            result = change(obj)
+            after = dumps(obj)
+            if after != before:
+                atomic_write(path, after.encode("utf-8"))
+            return result
+    finally:
+        if own_lock:
+            lock.close()
