@@ -337,6 +337,9 @@ appends under that lock and follows the file when an atomic replace swaps it.</p
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.temp_name" title="dol.atomic.temp_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temp_name</span></code></a>(name)</p></td>
 <td><p>The name <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> stages a write to <code class="docutils literal notranslate"><span class="pre">name</span></code> under: a hidden sibling <code class="docutils literal notranslate"><span class="pre">.&lt;name,</span> <span class="pre">clipped</span> <span class="pre">to</span> <span class="pre">100</span> <span class="pre">bytes&gt;.&lt;8</span> <span class="pre">random</span> <span class="pre">hex&gt;.tmp</span></code>, always matched by <a class="reference internal" href="#dol.atomic.TEMP_NAME_PATTERN" title="dol.atomic.TEMP_NAME_PATTERN"><code class="xref py py-data docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code></a>.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.update_json" title="dol.atomic.update_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_json</span></code></a>(path, change, *[, default, ...])</p></td>
+<td><p>Apply <code class="docutils literal notranslate"><span class="pre">change</span></code> to the JSON document at <code class="docutils literal notranslate"><span class="pre">path</span></code> under its lock; return what <code class="docutils literal notranslate"><span class="pre">change</span></code> returned.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -352,6 +355,16 @@ appends under that lock and follows the file when an atomic replace swaps it.</p
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.Retry" title="dol.atomic.Retry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Retry</span></code></a>([on, attempts, backoff_s])</p></td>
 <td><p>Call <code class="docutils literal notranslate"><span class="pre">op(*args)</span></code>, retrying on <code class="docutils literal notranslate"><span class="pre">on</span></code> exceptions with doubling backoff.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Exceptions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.InvalidJSONError" title="dol.atomic.InvalidJSONError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InvalidJSONError</span></code></a></p></td>
+<td><p>The file <a class="reference internal" href="#dol.atomic.update_json" title="dol.atomic.update_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_json()</span></code></a> was asked to update does not hold valid JSON.</p></td>
 </tr>
 </tbody>
 </table>
@@ -403,6 +416,13 @@ the same path from the same thread would deadlock). For a one-off section, use
 </dl>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="dol.atomic.InvalidJSONError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">InvalidJSONError</span></span><a class="reference internal" href="../_modules/dol/atomic.html#InvalidJSONError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.InvalidJSONError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>The file <a class="reference internal" href="#dol.atomic.update_json" title="dol.atomic.update_json"><code class="xref py py-func docutils literal notranslate"><span class="pre">update_json()</span></code></a> was asked to update does not hold valid JSON.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -650,6 +670,57 @@ subfolders that cannot be read, or vanish, are skipped).</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.atomic.update_json">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">update_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">change</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;class</span> <span class="pre">'dict'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">loads&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dumps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">dumps&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lock</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn_unlocked</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#update_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.update_json" title="Link to this definition">¶</a></dt>
+<dd><p>Apply <code class="docutils literal notranslate"><span class="pre">change</span></code> to the JSON document at <code class="docutils literal notranslate"><span class="pre">path</span></code> under its lock; return what
+<code class="docutils literal notranslate"><span class="pre">change</span></code> returned.</p>
+<p>Under <a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a> of <code class="docutils literal notranslate"><span class="pre">path</span></code>: read the document (a <code class="docutils literal notranslate"><span class="pre">dict</span></code> or <code class="docutils literal notranslate"><span class="pre">list</span></code>),
+call <code class="docutils literal notranslate"><span class="pre">change(obj)</span></code>, which mutates <code class="docutils literal notranslate"><span class="pre">obj</span></code> in place (and may raise, to write
+nothing), then <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> it back, only if <code class="docutils literal notranslate"><span class="pre">dumps</span></code> of it changed. So a
+no-op neither creates the file nor moves its mtime, and a file nobody changed
+keeps its formatting. What <code class="docutils literal notranslate"><span class="pre">change</span></code> returns is handed back, never written.</p>
+<p>The read is strict: only a missing file starts from <code class="docutils literal notranslate"><span class="pre">default()</span></code>. Any other read
+error propagates, and invalid JSON raises <a class="reference internal" href="#dol.atomic.InvalidJSONError" title="dol.atomic.InvalidJSONError"><code class="xref py py-class docutils literal notranslate"><span class="pre">InvalidJSONError</span></code></a> (a
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code>): writing “default plus this change” over a file that could not
+be read would destroy what it held.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – The JSON file; its folder must exist.</p></li>
+<li><p><strong>default</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – Factory for the document when <code class="docutils literal notranslate"><span class="pre">path</span></code> does not exist.</p></li>
+<li><p><strong>dumps</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – The codec. <code class="docutils literal notranslate"><span class="pre">loads</span></code> gets bytes; <code class="docutils literal notranslate"><span class="pre">dumps</span></code> may return str or
+bytes (e.g. <code class="docutils literal notranslate"><span class="pre">functools.partial(json.dumps,</span> <span class="pre">indent=2)</span></code>, or orjson’s). Change
+is detected by comparing <code class="docutils literal notranslate"><span class="pre">dumps</span></code> before and after, so it must be
+deterministic.</p></li>
+<li><p><strong>lock</strong> – <p>The context manager to hold. Default: the <a class="reference internal" href="#dol.atomic.FileLock" title="dol.atomic.FileLock"><code class="xref py py-class docutils literal notranslate"><span class="pre">FileLock</span></code></a> every
+<a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a> of <code class="docutils literal notranslate"><span class="pre">path</span></code> takes. Any other works; whether it is held is</p>
+<blockquote>
+<div><p>the <code class="docutils literal notranslate"><span class="pre">held</span></code> of what it yields, else the truth of what it yields (<code class="docutils literal notranslate"><span class="pre">None</span></code>,
+e.g. <code class="docutils literal notranslate"><span class="pre">nullcontext()</span></code>, counts as held). Do not call this while already holding the same file’s
+lock in this thread: the lock is not reentrant, and that deadlocks.</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>warn_unlocked</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Warn when the lock is not held (read-only folder,
+filesystem without locks), so the loss of the guarantee is not silent.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"manifest.json"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_json</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="n">m</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"clips"</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">"a.mp4"</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_json</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">[</span><span class="s2">"clips"</span><span class="p">]))</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="go">'{"clips": ["a.mp4"]}'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">update_json</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">m</span><span class="p">:</span> <span class="p">{</span><span class="o">**</span><span class="n">m</span><span class="p">,</span> <span class="s2">"lost"</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>  <span class="c1"># returned, not written</span>
+<span class="go">{'clips': ['a.mp4'], 'lost': True}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="go">'{"clips": ["a.mp4"]}'</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
         </article>
@@ -709,6 +780,7 @@ subfolders that cannot be read, or vanish, are skipped).</p>
 <li><a class="reference internal" href="#dol.atomic.FileLock.close"><code class="docutils literal notranslate"><span class="pre">FileLock.close()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#dol.atomic.InvalidJSONError"><code class="docutils literal notranslate"><span class="pre">InvalidJSONError</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.LockedAppender"><code class="docutils literal notranslate"><span class="pre">LockedAppender</span></code></a><ul>
 <li><a class="reference internal" href="#dol.atomic.LockedAppender.append"><code class="docutils literal notranslate"><span class="pre">LockedAppender.append()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.LockedAppender.close"><code class="docutils literal notranslate"><span class="pre">LockedAppender.close()</span></code></a></li>
@@ -722,6 +794,7 @@ subfolders that cannot be read, or vanish, are skipped).</p>
 <li><a class="reference internal" href="#dol.atomic.file_lock"><code class="docutils literal notranslate"><span class="pre">file_lock()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.interrupted_writes"><code class="docutils literal notranslate"><span class="pre">interrupted_writes()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.temp_name"><code class="docutils literal notranslate"><span class="pre">temp_name()</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.update_json"><code class="docutils literal notranslate"><span class="pre">update_json()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -733,7 +806,7 @@ subfolders that cannot be read, or vanish, are skipped).</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=6142b6ca"></script>
+</div><script src="../_static/documentation_options.js?v=41f32c21"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

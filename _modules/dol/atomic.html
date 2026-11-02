@@ -297,12 +297,14 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
@@ -958,6 +960,123 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">exc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># update_json: a locked read-modify-write of one JSON file</span>
+
+
+<div class="viewcode-block" id="InvalidJSONError">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.InvalidJSONError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">InvalidJSONError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The file :func:`update_json` was asked to update does not hold valid JSON."""</span></div>
+
+
+
+<div class="viewcode-block" id="update_json">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.update_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_json</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">,</span>
+    <span class="n">change</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">default</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">loads</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span>
+    <span class="n">dumps</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span>
+    <span class="n">lock</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">warn_unlocked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Apply ``change`` to the JSON document at ``path`` under its lock; return what</span>
+<span class="sd">    ``change`` returned.</span>
+
+<span class="sd">    Under :func:`file_lock` of ``path``: read the document (a ``dict`` or ``list``),</span>
+<span class="sd">    call ``change(obj)``, which mutates ``obj`` in place (and may raise, to write</span>
+<span class="sd">    nothing), then :func:`atomic_write` it back, only if ``dumps`` of it changed. So a</span>
+<span class="sd">    no-op neither creates the file nor moves its mtime, and a file nobody changed</span>
+<span class="sd">    keeps its formatting. What ``change`` returns is handed back, never written.</span>
+
+<span class="sd">    The read is strict: only a missing file starts from ``default()``. Any other read</span>
+<span class="sd">    error propagates, and invalid JSON raises :class:`InvalidJSONError` (a</span>
+<span class="sd">    ``ValueError``): writing "default plus this change" over a file that could not</span>
+<span class="sd">    be read would destroy what it held.</span>
+
+<span class="sd">    :param path: The JSON file; its folder must exist.</span>
+<span class="sd">    :param default: Factory for the document when ``path`` does not exist.</span>
+<span class="sd">    :param loads, dumps: The codec. ``loads`` gets bytes; ``dumps`` may return str or</span>
+<span class="sd">        bytes (e.g. ``functools.partial(json.dumps, indent=2)``, or orjson's). Change</span>
+<span class="sd">        is detected by comparing ``dumps`` before and after, so it must be</span>
+<span class="sd">        deterministic.</span>
+<span class="sd">    :param lock: The context manager to hold. Default: the :class:`FileLock` every</span>
+<span class="sd">        :func:`file_lock` of ``path`` takes. Any other works; whether it is held is</span>
+<span class="sd">        the ``held`` of what it yields, else the truth of what it yields (``None``,</span>
+<span class="sd">        e.g. ``nullcontext()``, counts as held). Do not call this while already holding the same file's</span>
+<span class="sd">        lock in this thread: the lock is not reentrant, and that deadlocks.</span>
+<span class="sd">    :param warn_unlocked: Warn when the lock is not held (read-only folder,</span>
+<span class="sd">        filesystem without locks), so the loss of the guarantee is not silent.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "manifest.json")</span>
+<span class="sd">    &gt;&gt;&gt; update_json(path, lambda m: m.setdefault("clips", []).append("a.mp4"))</span>
+<span class="sd">    &gt;&gt;&gt; update_json(path, lambda m: len(m["clips"]))</span>
+<span class="sd">    1</span>
+<span class="sd">    &gt;&gt;&gt; open(path).read()</span>
+<span class="sd">    '{"clips": ["a.mp4"]}'</span>
+<span class="sd">    &gt;&gt;&gt; update_json(path, lambda m: {**m, "lost": True})  # returned, not written</span>
+<span class="sd">    {'clips': ['a.mp4'], 'lost': True}</span>
+<span class="sd">    &gt;&gt;&gt; open(path).read()</span>
+<span class="sd">    '{"clips": ["a.mp4"]}'</span>
+<span class="sd">    """</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"update_json takes a file path, not </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"update_json: the folder of </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> does not exist"</span><span class="p">)</span>
+    <span class="n">own_lock</span> <span class="o">=</span> <span class="n">lock</span> <span class="ow">is</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">own_lock</span><span class="p">:</span>
+        <span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">lock</span> <span class="k">as</span> <span class="n">entered</span><span class="p">:</span>
+            <span class="n">held</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">entered</span><span class="p">,</span> <span class="s2">"held"</span><span class="p">,</span> <span class="n">entered</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">bool</span><span class="p">(</span><span class="n">entered</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">held</span> <span class="ow">and</span> <span class="n">warn_unlocked</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"update_json: could not lock </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">; "</span>
+                    <span class="s2">"concurrent updates may be lost"</span><span class="p">,</span>
+                    <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>  <span class="c1"># the caller of update_json</span>
+                <span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">_read_json_strictly</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">loads</span><span class="p">)</span>
+            <span class="n">before</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">change</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">after</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">after</span> <span class="o">!=</span> <span class="n">before</span><span class="p">:</span>
+                <span class="n">atomic_write</span><span class="p">(</span>
+                    <span class="n">path</span><span class="p">,</span> <span class="n">after</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">after</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">own_lock</span><span class="p">:</span>
+            <span class="n">lock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_json_strictly</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">loads</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">default</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidJSONError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> is not valid JSON; nothing was written"</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"update_json changes a dict or list in place, so it cannot update a "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> document (</span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">)"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span>
 </pre></div>
         </article>
       </div>
@@ -986,7 +1105,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=6142b6ca"></script>
+</div><script src="../../_static/documentation_options.js?v=41f32c21"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

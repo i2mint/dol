@@ -43,6 +43,7 @@ appends under that lock and follows the file when an atomic replace swaps it.
 | [`file_lock`](#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.                                                                                                                                                                                                                               |
 | [`interrupted_writes`](#dol.atomic.interrupted_writes)(folder, \*[, pattern, ...])    | The temp files writes killed mid-way left in `folder`: sorted absolute paths (`str`) of the regular files (never a symlink or folder) whose name fully matches `pattern` (default: [`atomic_write()`](#dol.atomic.atomic_write)'s temps; pass another writer's, e.g. `r"\.blob-.+\.part"`). |
 | [`temp_name`](#dol.atomic.temp_name)(name)                                   | The name [`atomic_write()`](#dol.atomic.atomic_write) stages a write to `name` under: a hidden sibling `.<name, clipped to 100 bytes>.<8 random hex>.tmp`, always matched by [`TEMP_NAME_PATTERN`](#dol.atomic.TEMP_NAME_PATTERN).                                            |
+| [`update_json`](#dol.atomic.update_json)(path, change, \*[, default, ...])     | Apply `change` to the JSON document at `path` under its lock; return what `change` returned.                                                                                                                                                                                                                   |
 
 ### Classes
 
@@ -50,6 +51,11 @@ appends under that lock and follows the file when an atomic replace swaps it.
 |--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`LockedAppender`](#dol.atomic.LockedAppender)(path, \*[, lock, line_end, ...]) | Appends to `path` under a [`FileLock`](#dol.atomic.FileLock), following the file when an [`atomic_write()`](#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it. |
 | [`Retry`](#dol.atomic.Retry)([on, attempts, backoff_s])                | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.                                                                                                                                                                       |
+
+### Exceptions
+
+| [`InvalidJSONError`](#dol.atomic.InvalidJSONError)   | The file [`update_json()`](#dol.atomic.update_json) was asked to update does not hold valid JSON.   |
+|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 
 ### dol.atomic.DFLT_KEEP_HANDLE *= True*
 
@@ -94,6 +100,12 @@ Release the kept handle (not from inside the `with` block).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### *exception* dol.atomic.InvalidJSONError
+
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
+
+The file [`update_json()`](#dol.atomic.update_json) was asked to update does not hold valid JSON.
 
 ### *class* dol.atomic.LockedAppender(path, , lock=None, line_end=None, keep_handle=True)
 
@@ -310,3 +322,50 @@ True
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### dol.atomic.update_json(path, change, \*, default=<class 'dict'>, loads=<function loads>, dumps=<function dumps>, lock=None, warn_unlocked=True)
+
+Apply `change` to the JSON document at `path` under its lock; return what
+`change` returned.
+
+Under [`file_lock()`](#dol.atomic.file_lock) of `path`: read the document (a `dict` or `list`),
+call `change(obj)`, which mutates `obj` in place (and may raise, to write
+nothing), then [`atomic_write()`](#dol.atomic.atomic_write) it back, only if `dumps` of it changed. So a
+no-op neither creates the file nor moves its mtime, and a file nobody changed
+keeps its formatting. What `change` returns is handed back, never written.
+
+The read is strict: only a missing file starts from `default()`. Any other read
+error propagates, and invalid JSON raises [`InvalidJSONError`](#dol.atomic.InvalidJSONError) (a
+`ValueError`): writing “default plus this change” over a file that could not
+be read would destroy what it held.
+
+* **Parameters:**
+  * **path** – The JSON file; its folder must exist.
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – Factory for the document when `path` does not exist.
+  * **dumps** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The codec. `loads` gets bytes; `dumps` may return str or
+    bytes (e.g. `functools.partial(json.dumps, indent=2)`, or orjson’s). Change
+    is detected by comparing `dumps` before and after, so it must be
+    deterministic.
+  * **lock** – 
+
+    The context manager to hold. Default: the [`FileLock`](#dol.atomic.FileLock) every
+    [`file_lock()`](#dol.atomic.file_lock) of `path` takes. Any other works; whether it is held is
+    > the `held` of what it yields, else the truth of what it yields (`None`,
+    > e.g. `nullcontext()`, counts as held). Do not call this while already holding the same file’s
+    > lock in this thread: the lock is not reentrant, and that deadlocks.
+  * **warn_unlocked** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Warn when the lock is not held (read-only folder,
+    filesystem without locks), so the loss of the guarantee is not silent.
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "manifest.json")
+>>> update_json(path, lambda m: m.setdefault("clips", []).append("a.mp4"))
+>>> update_json(path, lambda m: len(m["clips"]))
+1
+>>> open(path).read()
+'{"clips": ["a.mp4"]}'
+>>> update_json(path, lambda m: {**m, "lost": True})  # returned, not written
+{'clips': ['a.mp4'], 'lost': True}
+>>> open(path).read()
+'{"clips": ["a.mp4"]}'
+```

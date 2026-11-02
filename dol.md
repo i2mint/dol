@@ -1,4 +1,4 @@
-> built 2026-11-02 20:09 UTC from ca92024 (master) · dol 0.3.105. Details: build_info.json
+> built 2026-11-02 20:22 UTC from 9b5f1e1 (master) · dol 0.3.106. Details: build_info.json
 
 # index.html.md
 
@@ -495,6 +495,7 @@ appends under that lock and follows the file when an atomic replace swaps it.
 | [`file_lock`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.                                                                                                                                                                                                                               |
 | [`interrupted_writes`](_autosummary/dol.atomic.html.md#dol.atomic.interrupted_writes)(folder, \*[, pattern, ...])    | The temp files writes killed mid-way left in `folder`: sorted absolute paths (`str`) of the regular files (never a symlink or folder) whose name fully matches `pattern` (default: [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)'s temps; pass another writer's, e.g. `r"\.blob-.+\.part"`). |
 | [`temp_name`](_autosummary/dol.atomic.html.md#dol.atomic.temp_name)(name)                                   | The name [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) stages a write to `name` under: a hidden sibling `.<name, clipped to 100 bytes>.<8 random hex>.tmp`, always matched by [`TEMP_NAME_PATTERN`](_autosummary/dol.atomic.html.md#dol.atomic.TEMP_NAME_PATTERN).                                            |
+| [`update_json`](_autosummary/dol.atomic.html.md#dol.atomic.update_json)(path, change, \*[, default, ...])     | Apply `change` to the JSON document at `path` under its lock; return what `change` returned.                                                                                                                                                                                                                   |
 
 ### Classes
 
@@ -502,6 +503,11 @@ appends under that lock and follows the file when an atomic replace swaps it.
 |--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`LockedAppender`](_autosummary/dol.atomic.html.md#dol.atomic.LockedAppender)(path, \*[, lock, line_end, ...]) | Appends to `path` under a [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock), following the file when an [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it. |
 | [`Retry`](_autosummary/dol.atomic.html.md#dol.atomic.Retry)([on, attempts, backoff_s])                | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.                                                                                                                                                                       |
+
+### Exceptions
+
+| [`InvalidJSONError`](_autosummary/dol.atomic.html.md#dol.atomic.InvalidJSONError)   | The file [`update_json()`](_autosummary/dol.atomic.html.md#dol.atomic.update_json) was asked to update does not hold valid JSON.   |
+|---------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 
 ### dol.atomic.DFLT_KEEP_HANDLE *= True*
 
@@ -546,6 +552,12 @@ Release the kept handle (not from inside the `with` block).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### *exception* dol.atomic.InvalidJSONError
+
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
+
+The file [`update_json()`](_autosummary/dol.atomic.html.md#dol.atomic.update_json) was asked to update does not hold valid JSON.
 
 ### *class* dol.atomic.LockedAppender(path, , lock=None, line_end=None, keep_handle=True)
 
@@ -762,6 +774,53 @@ True
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### dol.atomic.update_json(path, change, \*, default=<class 'dict'>, loads=<function loads>, dumps=<function dumps>, lock=None, warn_unlocked=True)
+
+Apply `change` to the JSON document at `path` under its lock; return what
+`change` returned.
+
+Under [`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock) of `path`: read the document (a `dict` or `list`),
+call `change(obj)`, which mutates `obj` in place (and may raise, to write
+nothing), then [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) it back, only if `dumps` of it changed. So a
+no-op neither creates the file nor moves its mtime, and a file nobody changed
+keeps its formatting. What `change` returns is handed back, never written.
+
+The read is strict: only a missing file starts from `default()`. Any other read
+error propagates, and invalid JSON raises [`InvalidJSONError`](_autosummary/dol.atomic.html.md#dol.atomic.InvalidJSONError) (a
+`ValueError`): writing “default plus this change” over a file that could not
+be read would destroy what it held.
+
+* **Parameters:**
+  * **path** – The JSON file; its folder must exist.
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – Factory for the document when `path` does not exist.
+  * **dumps** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The codec. `loads` gets bytes; `dumps` may return str or
+    bytes (e.g. `functools.partial(json.dumps, indent=2)`, or orjson’s). Change
+    is detected by comparing `dumps` before and after, so it must be
+    deterministic.
+  * **lock** – 
+
+    The context manager to hold. Default: the [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock) every
+    [`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock) of `path` takes. Any other works; whether it is held is
+    > the `held` of what it yields, else the truth of what it yields (`None`,
+    > e.g. `nullcontext()`, counts as held). Do not call this while already holding the same file’s
+    > lock in this thread: the lock is not reentrant, and that deadlocks.
+  * **warn_unlocked** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Warn when the lock is not held (read-only folder,
+    filesystem without locks), so the loss of the guarantee is not silent.
+
+```pycon
+>>> import tempfile
+>>> path = os.path.join(tempfile.mkdtemp(), "manifest.json")
+>>> update_json(path, lambda m: m.setdefault("clips", []).append("a.mp4"))
+>>> update_json(path, lambda m: len(m["clips"]))
+1
+>>> open(path).read()
+'{"clips": ["a.mp4"]}'
+>>> update_json(path, lambda m: {**m, "lost": True})  # returned, not written
+{'clips': ['a.mp4'], 'lost': True}
+>>> open(path).read()
+'{"clips": ["a.mp4"]}'
+```
 
 
 # _autosummary/dol.base.html.md
@@ -17914,20 +17973,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-02 20:09 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ca920243d7e4e37cfa029f51ba42e5f4cd1794cd"><code>ca92024</code></a> on branch <code>master</code>, for **dol 0.3.105** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 20:22 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9b5f1e10bf3a7be337b961e741a8c9ba34e24af4"><code>9b5f1e1</code></a> on branch <code>master</code>, for **dol 0.3.106** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.105) is ahead of the latest release on PyPI (0.3.104): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/ca920243d7e4e37cfa029f51ba42e5f4cd1794cd"><code>ca920243d7e4e37cfa029f51ba42e5f4cd1794cd</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/9b5f1e10bf3a7be337b961e741a8c9ba34e24af4"><code>9b5f1e10bf3a7be337b961e741a8c9ba34e24af4</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.105</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.106</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17936,9 +17993,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41516174676">41516174676</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41518193307">41518193307</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>a118e3f47f74ce0d061c6acba29cce3d0eac479c</code> (in the history of the built commit) |
+| Event commit | <code>589c18ae8aeee7316b1eaa67a9e764d7de61b4a3</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -17963,13 +18020,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.104/">0.3.104</a>, older than the documented version (0.3.105).
+Latest release: <a href="https://pypi.org/project/dol/0.3.106/">0.3.106</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout ca920243d7e4e37cfa029f51ba42e5f4cd1794cd
+git checkout 9b5f1e10bf3a7be337b961e741a8c9ba34e24af4
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
