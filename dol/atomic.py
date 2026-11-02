@@ -109,6 +109,19 @@ class Retry:
 DFLT_RETRY = Retry()
 
 
+#: Most bytes of the target's name kept in its temp file's name, leaving room for the
+#: random suffix within the usual 255-byte name limit.
+_TMP_NAME_PREFIX_BYTES = 100
+
+
+def _clip(name: str, max_bytes: int = _TMP_NAME_PREFIX_BYTES) -> str:
+    """``name`` cut, on a character boundary, to at most ``max_bytes`` encoded bytes
+    (filesystems limit names in bytes, and a non-ASCII character takes several)."""
+    while len(os.fsencode(name)) > max_bytes:
+        name = name[:-1]
+    return name
+
+
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
     """``perms`` if given, else the mode of the file being replaced (``None`` if new)."""
     if perms is not None:
@@ -171,7 +184,7 @@ def atomic_write(
     path = os.path.realpath(os.fsdecode(path))  # str, so the temp name joins
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
-    tmp = os.path.join(dirname, f".{name[:100]}.{uuid.uuid4().hex[:8]}.tmp")
+    tmp = os.path.join(dirname, f".{_clip(name)}.{uuid.uuid4().hex[:8]}.tmp")
     mode = _mode_to_apply(path, perms)
     try:
         fd = os.open(
