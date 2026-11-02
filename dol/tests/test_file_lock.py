@@ -33,6 +33,12 @@ def test_creates_sidecar_and_reports_held(tmp_path):
         FileLock(p, sidecar="")
 
 
+def test_bytes_path(tmp_path):
+    with file_lock(os.fsencode(tmp_path / "f")) as held:
+        assert held is True
+    assert (tmp_path / "f.lock").exists()
+
+
 def test_processes_exclude_each_other(tmp_path):
     p = str(tmp_path / "f")
     procs = [mp.Process(target=_increment_n, args=(p, 50)) for _ in range(4)]

@@ -53,12 +53,12 @@ def _test_codec(codec, obj, encoded=None, decoded=None):
     else:
         if decoded is None:
             decoded = obj
-        assert (
-            codec.encoder(obj) == encoded
-        ), f"Expected {codec.encoder(obj)=} to equal {encoded=}"
-        assert (
-            codec.decoder(encoded) == decoded
-        ), f"Expected {codec.decoder(encoded)=} to equal {decoded=}"
+        assert codec.encoder(obj) == encoded, (
+            f"Expected {codec.encoder(obj)=} to equal {encoded=}"
+        )
+        assert codec.decoder(encoded) == decoded, (
+            f"Expected {codec.decoder(encoded)=} to equal {decoded=}"
+        )
 
 
 def _test_codec_part(codec, obj, encoded, slice_):

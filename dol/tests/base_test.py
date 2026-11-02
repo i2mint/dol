@@ -206,6 +206,7 @@ def test_wrap_kvs_vs_class_and_static_methods():
 # Module-level named transforms + a non-rebound base class so the wrapped store is
 # picklable (lambdas and name-rebound classes are not — pre-existing dol limitations).
 
+
 def _square(x):
     return x * x
 
@@ -334,7 +335,9 @@ def test_wrapped_self_copy_copy_preserves_original():
     assert s.via_wrapped_self("2") == 2.0
     del c
     gc.collect()
-    assert s.via_wrapped_self("2") == 2.0  # would have been 4 before the multi-valued fix
+    assert (
+        s.via_wrapped_self("2") == 2.0
+    )  # would have been 4 before the multi-valued fix
 
 
 def test_wrapped_self_deepcopy_is_independent():

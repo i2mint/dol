@@ -26,6 +26,14 @@ def test_bytes_and_chunks_and_overwrite(tmp_path):
     assert os.listdir(tmp_path) == ["f"]
 
 
+def test_bytes_path(tmp_path):
+    p = tmp_path / "f"
+    atomic_write(os.fsencode(p), b"x")
+    assert p.read_bytes() == b"x" and os.listdir(tmp_path) == ["f"]
+    atomic_delete(os.fsencode(p))
+    assert os.listdir(tmp_path) == []
+
+
 def test_empty_data(tmp_path):
     atomic_write(tmp_path / "f", iter([]))
     assert (tmp_path / "f").read_bytes() == b""

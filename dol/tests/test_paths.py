@@ -222,9 +222,9 @@ def test_filter_then_strip_suffix_is_unchanged():
     from dol import KeyCodecs, Pipe, filt_iter
 
     base = {"foo.txt": 1, "bar.txt": 2, ".DS_Store": 3, "README": 4}
-    s = Pipe(
-        filt_iter(filt=lambda k: k.endswith(".txt")), KeyCodecs.suffixed(".txt")
-    )(dict(base))
+    s = Pipe(filt_iter(filt=lambda k: k.endswith(".txt")), KeyCodecs.suffixed(".txt"))(
+        dict(base)
+    )
     assert sorted(s) == ["bar", "foo"]
 
 

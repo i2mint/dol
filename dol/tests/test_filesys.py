@@ -140,9 +140,9 @@ def test_json_files():
     assert s["foo"] == {"bar": 1}
     foo_path = Path(os.path.join(rootdir, "foo"))
     assert foo_path.is_file(), "Should have created a file"
-    assert (
-        foo_path.read_text() == '{\n    "bar": 1\n}'
-    ), "Should be json encoded, with indent, so on multiple lines"
+    assert foo_path.read_text() == '{\n    "bar": 1\n}', (
+        "Should be json encoded, with indent, so on multiple lines"
+    )
 
     ss = Jsons(rootdir)
     assert "foo" not in ss, "foo should be filtered out because no .json extension"
@@ -152,9 +152,9 @@ def test_json_files():
     assert ss["apple"] == {"crumble": True}
     apple_path = Path(os.path.join(rootdir, "apple.json"))
     assert apple_path.is_file(), "Should have created a file (with .json extension)"
-    assert (
-        apple_path.read_text() == '{\n    "crumble": true\n}'
-    ), "Should be json encoded, with indent, so on multiple lines"
+    assert apple_path.read_text() == '{\n    "crumble": true\n}', (
+        "Should be json encoded, with indent, so on multiple lines"
+    )
 
 
 def test_mk_dirs_if_missing():
@@ -224,15 +224,18 @@ def test_subfolder_stores():
         }
 
         # Assert that the discovered subfolders match the expected ones
-        assert (
-            store_keys == expected_subfolders
-        ), f"Expected {expected_subfolders}, got {store_keys}"
+        assert store_keys == expected_subfolders, (
+            f"Expected {expected_subfolders}, got {store_keys}"
+        )
 
         # Test that the stores can access the files in their respective folders
         # Testing folder1
         folder1_store = stores["folder1"]
         assert isinstance(folder1_store, Files)
-        assert set(folder1_store.keys()) == {"day.doc", os.path.join("subfolder", "apple.p")}
+        assert set(folder1_store.keys()) == {
+            "day.doc",
+            os.path.join("subfolder", "apple.p"),
+        }
         assert folder1_store["day.doc"] == b"time"
 
         # Testing folder1/subfolder
@@ -484,9 +487,10 @@ def test_symlink_then_dotdot_is_refused_by_every_containment_user(tmp_path):
         s[os.path.join("lnk", "..", "made", "x.txt")] = b"pwned"
     assert not (tmp_path / "outside" / "made").exists()
     # allow_escape=True is the explicit opt-out
-    assert Files(str(root), allow_escape=True)[
-        os.path.join("lnk", "..", "secret.txt")
-    ] == b"secret"
+    assert (
+        Files(str(root), allow_escape=True)[os.path.join("lnk", "..", "secret.txt")]
+        == b"secret"
+    )
 
 
 def test_rootdir_with_dotdot_after_a_symlink_lists_and_reads(tmp_path):

@@ -171,7 +171,9 @@ def test_failed_write_removes_only_the_directories_it_made(tmp_path):
     s = mk_dirs_if_missing(filt_iter(Files, filt=_txt_only))(root)
     with pytest.raises(KeyError):
         s["keep/sub/new1/new2/b.bin"] = b"x"
-    assert os.path.isdir(root + "keep/sub") and not os.path.exists(root + "keep/sub/new1")
+    assert os.path.isdir(root + "keep/sub") and not os.path.exists(
+        root + "keep/sub/new1"
+    )
 
 
 def test_failed_write_keeps_a_directory_that_got_content_meanwhile(tmp_path):
@@ -179,7 +181,9 @@ def test_failed_write_keeps_a_directory_that_got_content_meanwhile(tmp_path):
 
     class Racy(Files):
         def __setitem__(self, k, v):
-            open(os.path.join(root, "d", "other.txt"), "wb").close()  # someone else writes
+            open(
+                os.path.join(root, "d", "other.txt"), "wb"
+            ).close()  # someone else writes
             raise KeyError(k)
 
     s = mk_dirs_if_missing(Racy)(root)
@@ -188,7 +192,9 @@ def test_failed_write_keeps_a_directory_that_got_content_meanwhile(tmp_path):
     assert os.listdir(root + "d") == ["other.txt"]  # not empty: not removed
 
 
-def test_a_directory_made_meanwhile_by_someone_else_is_not_removed(tmp_path, monkeypatch):
+def test_a_directory_made_meanwhile_by_someone_else_is_not_removed(
+    tmp_path, monkeypatch
+):
     """Only directories this call made are cleaned up, not ones that appeared in between."""
     import dol.filesys as fs
 

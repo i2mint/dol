@@ -162,6 +162,7 @@ def test_next_layer():
 
 def test_recursive_calls():
     """Test recursive function calls generator"""
+
     # Test with simple increment until sentinel
     def increment(x):
         if x >= 5:
@@ -354,10 +355,14 @@ def test_key_in_scope_follows_the_layers_in_order():
 
     txt = lambda k: k.endswith(".txt")
     # filter above the prefix codec: sees the outer key
-    above = filt_iter(KeyCodecs.prefixed("data/")(dict)(), filt=lambda k: k.startswith("a"))
+    above = filt_iter(
+        KeyCodecs.prefixed("data/")(dict)(), filt=lambda k: k.startswith("a")
+    )
     assert key_in_scope(above, "a.txt") and not key_in_scope(above, "b.txt")
     # filter below the codec: sees the mapped key
-    below = KeyCodecs.prefixed("data/")(filt_iter(dict, filt=lambda k: k.startswith("data/a")))()
+    below = KeyCodecs.prefixed("data/")(
+        filt_iter(dict, filt=lambda k: k.startswith("data/a"))
+    )()
     assert key_in_scope(below, "a.txt") and not key_in_scope(below, "b.txt")
     # stacked filters compose, in either form
     both = filt_iter(filt_iter(dict, filt=txt), filt=lambda k: k.startswith("a"))()
@@ -387,7 +392,9 @@ def test_key_in_scope_asks_the_leaf_and_refuses_opaque_layers(tmp_path):
 
     s = Files(str(tmp_path))
     assert key_in_scope(s, "a") is True
-    assert key_in_scope(s, "../a") is False  # the leaf's is_valid_key: leaves rootdir (#107)
+    assert (
+        key_in_scope(s, "../a") is False
+    )  # the leaf's is_valid_key: leaves rootdir (#107)
 
     class Opaque:
         store = {}
