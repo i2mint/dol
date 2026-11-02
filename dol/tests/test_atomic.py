@@ -1,4 +1,4 @@
-"""Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete`` and ``Retry``."""
+"""Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete``, ``Retry``, temp naming."""
 
 import os
 import re
@@ -318,7 +318,8 @@ def test_atomic_write_stages_under_temp_name(tmp_path, monkeypatch):
     seen = []
     real = os.replace
     monkeypatch.setattr(os, "replace", lambda a, b: (seen.append(a), real(a, b)))
-    for name in ("f", "a\nb", "文" * 85, "x.tmp"):
+    names = ["f", "文" * 85, "x.tmp"] + (["a\nb"] if os.name != "nt" else [])
+    for name in names:
         atomic_write(tmp_path / name, b"x")
     assert all(TEMP_NAME_PATTERN.fullmatch(os.path.basename(a)) for a in seen)
 
@@ -338,7 +339,7 @@ def test_interrupted_writes_lists_only_regular_temp_files(tmp_path):
     sub = tmp_path / "sub"
     sub.mkdir()
     (sub / temp_name("deep")).write_bytes(b"")  # not directly in folder
-    assert interrupted_writes(tmp_path) == [str(temp.resolve())]
+    assert interrupted_writes(tmp_path) == [os.path.abspath(temp)]
 
 
 @posix_only
