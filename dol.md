@@ -1,4 +1,4 @@
-> built 2026-11-02 20:38 UTC from 9628ce9 (master) · dol 0.3.108. Details: build_info.json
+> built 2026-11-02 20:49 UTC from 4c9bd35 (master) · dol 0.3.109. Details: build_info.json
 
 # index.html.md
 
@@ -531,8 +531,10 @@ it when done. It is fork-safe: `flock` locks belong to the open file description
 so a forked child that inherited the handle would not exclude its parent; the pid
 is remembered and the handle reopened on a mismatch (and a child never releases
 its parent’s lock). Threads of one process exclude each other too. Not reentrant:
-entering again from the holding thread raises `RuntimeError` (a second lock on
-the same path from the same thread would deadlock). For a one-off section, use
+entering again from the holding thread raises `RuntimeError`, and so does
+entering another `FileLock` (or [`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)) of the same path from a
+thread that already holds it, which would otherwise wait on itself forever. For
+a one-off section, use
 [`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock).
 
 The lock file is a separate sidecar, not `path` itself, so that
@@ -722,7 +724,8 @@ Windows). Take it around every append, read and [`atomic_write()`](_autosummary/
 so they cannot interleave. The body still runs when locking is unavailable
 (read-only folder, filesystem without lock support): the yielded value is then
 `False`. A lock file that exists but is not writable is opened read-only.
-Nesting it on the same path in one thread deadlocks; use one section.
+Nesting it on the same path in one thread raises `RuntimeError` (it would
+deadlock); use one section.
 
 ```pycon
 >>> import tempfile
@@ -805,8 +808,9 @@ be read would destroy what it held.
     The context manager to hold. Default: the [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock) every
     [`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock) of `path` takes. Any other works; whether it is held is
     > the `held` of what it yields, else the truth of what it yields (`None`,
-    > e.g. `nullcontext()`, counts as held). Do not call this while already holding the same file’s
-    > lock in this thread: the lock is not reentrant, and that deadlocks.
+    > e.g. `nullcontext()`, counts as held). Called while this thread already
+    > holds the file’s lock, the default lock raises `RuntimeError`; inside a
+    > section that already holds it, pass `lock=contextlib.nullcontext()`.
   * **warn_unlocked** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Warn when the lock is not held (read-only folder,
     filesystem without locks), so the loss of the guarantee is not silent.
 
@@ -17975,20 +17979,20 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-02 20:38 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9628ce90b00374fd9de306d141704bdb8eb2faea"><code>9628ce9</code></a> on branch <code>master</code>, for **dol 0.3.108** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 20:49 UTC** from commit <a href="https://github.com/i2mint/dol/commit/4c9bd35f2aabd87a6f8d0dbe8dc50edcb5189440"><code>4c9bd35</code></a> on branch <code>master</code>, for **dol 0.3.109** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.3.108) is ahead of the latest release on PyPI (0.3.107): these docs describe unreleased code.
+- The documented version (0.3.109) is ahead of the latest release on PyPI (0.3.108): these docs describe unreleased code.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/9628ce90b00374fd9de306d141704bdb8eb2faea"><code>9628ce90b00374fd9de306d141704bdb8eb2faea</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/4c9bd35f2aabd87a6f8d0dbe8dc50edcb5189440"><code>4c9bd35f2aabd87a6f8d0dbe8dc50edcb5189440</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.108</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.109</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -17997,9 +18001,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41520733121">41520733121</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41522307373">41522307373</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>68725f910143e078ce1a72cbea35962d77abfbc4</code> (in the history of the built commit) |
+| Event commit | <code>c94b9e0eeed7423547fb54827bd922589c4889a7</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18024,13 +18028,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.107/">0.3.107</a>, older than the documented version (0.3.108).
+Latest release: <a href="https://pypi.org/project/dol/0.3.108/">0.3.108</a>, older than the documented version (0.3.109).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 9628ce90b00374fd9de306d141704bdb8eb2faea
+git checkout 4c9bd35f2aabd87a6f8d0dbe8dc50edcb5189440
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

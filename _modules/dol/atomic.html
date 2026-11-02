@@ -658,9 +658,23 @@
 
 <span class="n">_live_locks</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakSet</span><span class="p">()</span>
 
+<span class="c1">#: Lock files held in this process, by file identity (any spelling of the path), with</span>
+<span class="c1">#: the holding thread and lock: a second FileLock on a file its thread already holds</span>
+<span class="c1">#: would wait on itself forever, so it raises instead.</span>
+<span class="n">_holder_of_file</span><span class="p">:</span> <span class="s2">"dict[object, tuple[int, weakref.ref]]"</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_holding_thread</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"int | None"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The thread holding the lock file ``key`` in this process, if any (an entry</span>
+<span class="sd">    whose lock was collected or released without leaving is ignored)."""</span>
+    <span class="n">ident</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="n">_holder_of_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+    <span class="n">lock</span> <span class="o">=</span> <span class="n">ref</span><span class="p">()</span> <span class="k">if</span> <span class="n">ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">ident</span> <span class="k">if</span> <span class="n">lock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lock</span><span class="o">.</span><span class="n">held</span> <span class="k">else</span> <span class="kc">None</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_renew_in_child</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="c1"># after a fork the child must not use, nor release, what the parent holds</span>
+    <span class="n">_holder_of_file</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">lock</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">_live_locks</span><span class="p">):</span>
         <span class="n">lock</span><span class="o">.</span><span class="n">_thread_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="n">lock</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># the parent's section; __exit__ in the child is a no-op</span>
@@ -713,8 +727,10 @@
 <span class="sd">    so a forked child that inherited the handle would not exclude its parent; the pid</span>
 <span class="sd">    is remembered and the handle reopened on a mismatch (and a child never releases</span>
 <span class="sd">    its parent's lock). Threads of one process exclude each other too. Not reentrant:</span>
-<span class="sd">    entering again from the holding thread raises ``RuntimeError`` (a second lock on</span>
-<span class="sd">    the same path from the same thread would deadlock). For a one-off section, use</span>
+<span class="sd">    entering again from the holding thread raises ``RuntimeError``, and so does</span>
+<span class="sd">    entering another ``FileLock`` (or :func:`file_lock`) of the same path from a</span>
+<span class="sd">    thread that already holds it, which would otherwise wait on itself forever. For</span>
+<span class="sd">    a one-off section, use</span>
 <span class="sd">    :func:`file_lock`.</span>
 
 <span class="sd">    The lock file is a separate sidecar, not ``path`` itself, so that</span>
@@ -748,6 +764,7 @@
                 <span class="s2">"sidecar must be non-empty: the lock file cannot be `path`"</span>
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">_lock_path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># the lock file's identity, once opened</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="kc">None</span>
@@ -766,6 +783,16 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_file_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The open lock file's identity, the same for every spelling of its path</span>
+<span class="sd">        (case, symlinked folders...); ``None`` when it could not be opened."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fstat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">st</span><span class="o">.</span><span class="n">st_ino</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_dev</span><span class="p">,</span> <span class="n">st</span><span class="o">.</span><span class="n">st_ino</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normcase</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>  <span class="c1"># no inode numbers</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_try_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -780,13 +807,22 @@
             <span class="k">raise</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"FileLock"</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">():</span>
+        <span class="n">me</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">==</span> <span class="n">me</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FileLock(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">!r}</span><span class="s2">) is not reentrant"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_handle</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_key</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_holding_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">)</span> <span class="o">==</span> <span class="n">me</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> is already locked by this thread (another "</span>
+                    <span class="s2">"FileLock or file_lock of the same file): waiting would deadlock"</span>
+                <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_try_lock</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">held</span><span class="p">:</span>
+                <span class="n">_holder_of_file</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">me</span><span class="p">,</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">me</span>
         <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
             <span class="k">raise</span>
@@ -798,6 +834,10 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">held</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="c1"># forgotten before the unlock: the next holder registers itself</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">ref</span> <span class="o">=</span> <span class="n">_holder_of_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">ref</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ref</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+                    <span class="k">del</span> <span class="n">_holder_of_file</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_key</span><span class="p">]</span>
                 <span class="n">_unlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fh</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="kc">None</span>
@@ -834,7 +874,8 @@
 <span class="sd">    so they cannot interleave. The body still runs when locking is unavailable</span>
 <span class="sd">    (read-only folder, filesystem without lock support): the yielded value is then</span>
 <span class="sd">    ``False``. A lock file that exists but is not writable is opened read-only.</span>
-<span class="sd">    Nesting it on the same path in one thread deadlocks; use one section.</span>
+<span class="sd">    Nesting it on the same path in one thread raises ``RuntimeError`` (it would</span>
+<span class="sd">    deadlock); use one section.</span>
 
 <span class="sd">    &gt;&gt;&gt; import tempfile</span>
 <span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "data.json")</span>
@@ -1045,8 +1086,9 @@
 <span class="sd">    :param lock: The context manager to hold. Default: the :class:`FileLock` every</span>
 <span class="sd">        :func:`file_lock` of ``path`` takes. Any other works; whether it is held is</span>
 <span class="sd">        the ``held`` of what it yields, else the truth of what it yields (``None``,</span>
-<span class="sd">        e.g. ``nullcontext()``, counts as held). Do not call this while already holding the same file's</span>
-<span class="sd">        lock in this thread: the lock is not reentrant, and that deadlocks.</span>
+<span class="sd">        e.g. ``nullcontext()``, counts as held). Called while this thread already</span>
+<span class="sd">        holds the file's lock, the default lock raises ``RuntimeError``; inside a</span>
+<span class="sd">        section that already holds it, pass ``lock=contextlib.nullcontext()``.</span>
 <span class="sd">    :param warn_unlocked: Warn when the lock is not held (read-only folder,</span>
 <span class="sd">        filesystem without locks), so the loss of the guarantee is not silent.</span>
 
@@ -1142,7 +1184,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=4ac4a900"></script>
+</div><script src="../../_static/documentation_options.js?v=e384dd66"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

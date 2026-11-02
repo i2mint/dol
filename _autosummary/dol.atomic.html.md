@@ -79,8 +79,10 @@ it when done. It is fork-safe: `flock` locks belong to the open file description
 so a forked child that inherited the handle would not exclude its parent; the pid
 is remembered and the handle reopened on a mismatch (and a child never releases
 its parent’s lock). Threads of one process exclude each other too. Not reentrant:
-entering again from the holding thread raises `RuntimeError` (a second lock on
-the same path from the same thread would deadlock). For a one-off section, use
+entering again from the holding thread raises `RuntimeError`, and so does
+entering another `FileLock` (or [`file_lock()`](#dol.atomic.file_lock)) of the same path from a
+thread that already holds it, which would otherwise wait on itself forever. For
+a one-off section, use
 [`file_lock()`](#dol.atomic.file_lock).
 
 The lock file is a separate sidecar, not `path` itself, so that
@@ -270,7 +272,8 @@ Windows). Take it around every append, read and [`atomic_write()`](#dol.atomic.a
 so they cannot interleave. The body still runs when locking is unavailable
 (read-only folder, filesystem without lock support): the yielded value is then
 `False`. A lock file that exists but is not writable is opened read-only.
-Nesting it on the same path in one thread deadlocks; use one section.
+Nesting it on the same path in one thread raises `RuntimeError` (it would
+deadlock); use one section.
 
 ```pycon
 >>> import tempfile
@@ -353,8 +356,9 @@ be read would destroy what it held.
     The context manager to hold. Default: the [`FileLock`](#dol.atomic.FileLock) every
     [`file_lock()`](#dol.atomic.file_lock) of `path` takes. Any other works; whether it is held is
     > the `held` of what it yields, else the truth of what it yields (`None`,
-    > e.g. `nullcontext()`, counts as held). Do not call this while already holding the same file’s
-    > lock in this thread: the lock is not reentrant, and that deadlocks.
+    > e.g. `nullcontext()`, counts as held). Called while this thread already
+    > holds the file’s lock, the default lock raises `RuntimeError`; inside a
+    > section that already holds it, pass `lock=contextlib.nullcontext()`.
   * **warn_unlocked** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Warn when the lock is not held (read-only folder,
     filesystem without locks), so the loss of the guarantee is not silent.
 

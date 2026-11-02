@@ -391,8 +391,10 @@ it when done. It is fork-safe: <code class="docutils literal notranslate"><span 
 so a forked child that inherited the handle would not exclude its parent; the pid
 is remembered and the handle reopened on a mismatch (and a child never releases
 its parent’s lock). Threads of one process exclude each other too. Not reentrant:
-entering again from the holding thread raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (a second lock on
-the same path from the same thread would deadlock). For a one-off section, use
+entering again from the holding thread raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>, and so does
+entering another <code class="docutils literal notranslate"><span class="pre">FileLock</span></code> (or <a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a>) of the same path from a
+thread that already holds it, which would otherwise wait on itself forever. For
+a one-off section, use
 <a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a>.</p>
 <p>The lock file is a separate sidecar, not <code class="docutils literal notranslate"><span class="pre">path</span></code> itself, so that
 <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> replacing <code class="docutils literal notranslate"><span class="pre">path</span></code> does not swap the file being locked.</p>
@@ -610,7 +612,8 @@ Windows). Take it around every append, read and <a class="reference internal" hr
 so they cannot interleave. The body still runs when locking is unavailable
 (read-only folder, filesystem without lock support): the yielded value is then
 <code class="docutils literal notranslate"><span class="pre">False</span></code>. A lock file that exists but is not writable is opened read-only.
-Nesting it on the same path in one thread deadlocks; use one section.</p>
+Nesting it on the same path in one thread raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (it would
+deadlock); use one section.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"data.json"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">file_lock</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">held</span><span class="p">:</span>
@@ -699,8 +702,9 @@ deterministic.</p></li>
 <a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a> of <code class="docutils literal notranslate"><span class="pre">path</span></code> takes. Any other works; whether it is held is</p>
 <blockquote>
 <div><p>the <code class="docutils literal notranslate"><span class="pre">held</span></code> of what it yields, else the truth of what it yields (<code class="docutils literal notranslate"><span class="pre">None</span></code>,
-e.g. <code class="docutils literal notranslate"><span class="pre">nullcontext()</span></code>, counts as held). Do not call this while already holding the same file’s
-lock in this thread: the lock is not reentrant, and that deadlocks.</p>
+e.g. <code class="docutils literal notranslate"><span class="pre">nullcontext()</span></code>, counts as held). Called while this thread already
+holds the file’s lock, the default lock raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code>; inside a
+section that already holds it, pass <code class="docutils literal notranslate"><span class="pre">lock=contextlib.nullcontext()</span></code>.</p>
 </div></blockquote>
 </p></li>
 <li><p><strong>warn_unlocked</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Warn when the lock is not held (read-only folder,
@@ -808,7 +812,7 @@ filesystem without locks), so the loss of the guarantee is not silent.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=4ac4a900"></script>
+</div><script src="../_static/documentation_options.js?v=e384dd66"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
