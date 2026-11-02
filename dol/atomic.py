@@ -1,7 +1,14 @@
 """Atomic file writes: write to a sibling temp file, then ``os.replace`` it into place.
 
 A crash (or an exception while producing the data) leaves the old content or the new,
-never a torn or empty file. Dependency-free; ``atomic_write`` is the one entry point.
+never a torn or empty file. Dependency-free; ``atomic_write`` is the entry point, and
+``atomic_delete`` its counterpart for removal.
+
+On Windows, a reader holding the destination open makes ``os.replace`` and ``os.unlink``
+fail with ``PermissionError`` until it closes (Python's ``open`` does not share delete).
+Both functions therefore retry that briefly, through a :class:`Retry` policy (its
+``retry`` argument): by default Windows' ``PermissionError`` only, ~0.6 s in all.
+Elsewhere the same error is a real permission problem, so nothing is retried.
 
 ``file_lock`` is its companion: an atomic replace is only safe against concurrent
 appenders and readers when they all hold the same advisory lock.
@@ -23,8 +30,9 @@ import threading
 import time
 import uuid
 import weakref
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from contextlib import contextmanager
+from dataclasses import dataclass
 
 _BYTES_LIKE = (bytes, bytearray, memoryview)
 
@@ -43,6 +51,56 @@ def _fsync_dir(dirpath: str) -> None:
         os.close(fd)
 
 
+#: What :data:`DFLT_RETRY` retries: Windows' sharing violation (another handle has the
+#: file open); nothing elsewhere, where ``PermissionError`` means a real permission problem.
+SHARING_VIOLATIONS: "tuple[type[BaseException], ...]" = (
+    (PermissionError,) if os.name == "nt" else ()
+)
+
+
+@dataclass(frozen=True)
+class Retry:
+    """Call ``op(*args)``, retrying on ``on`` exceptions with doubling backoff.
+
+    ``attempts`` calls at most, sleeping ``backoff_s``, then twice that, and so on
+    between them (defaults: 7 calls, ~0.6 s of sleep in all). The last failure is
+    re-raised. Any other exception propagates at once.
+
+    >>> calls = []
+    >>> def flaky():
+    ...     calls.append(1)
+    ...     if len(calls) < 3:
+    ...         raise PermissionError("in use")
+    ...     return "done"
+    >>> Retry(on=(PermissionError,), backoff_s=0)(flaky), len(calls)
+    ('done', 3)
+    """
+
+    on: "tuple[type[BaseException], ...]" = SHARING_VIOLATIONS
+    attempts: int = 7
+    backoff_s: float = 0.01
+
+    def __post_init__(self):
+        if self.attempts < 1:
+            raise ValueError(f"attempts must be >= 1, got {self.attempts}")
+
+    def __call__(self, op: Callable, *args):
+        for attempt in range(self.attempts):
+            try:
+                return op(*args)
+            except self.on:
+                if attempt == self.attempts - 1:
+                    raise
+                time.sleep(self.backoff_s * 2**attempt)
+
+
+DFLT_RETRY = Retry()
+
+
+def _call_once(op: Callable, *args):
+    return op(*args)
+
+
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
     """``perms`` if given, else the mode of the file being replaced (``None`` if new)."""
     if perms is not None:
@@ -59,6 +117,7 @@ def atomic_write(
     *,
     fsync: bool = False,
     perms: "int | None" = None,
+    retry: "Callable | None" = DFLT_RETRY,
 ) -> None:
     """Write ``data`` to ``path`` atomically (temp file in the same folder, then ``os.replace``).
 
@@ -73,6 +132,9 @@ def atomic_write(
     :param perms: Mode (e.g. ``0o600``) for the file, set at creation so the data is
         never readable more widely, even briefly, and not narrowed by the umask.
         Default: the mode of the file being replaced, else the usual umask mode.
+    :param retry: How the final ``os.replace`` is called: ``retry(os.replace, tmp,
+        path)``. Default :data:`DFLT_RETRY` retries Windows' sharing violations (a
+        reader has ``path`` open); ``None`` calls it once.
 
     The temp file is a hidden, uniquely named sibling (``.<name>.<random>.tmp``), created
     with ``O_EXCL``, so concurrent writers never share one and key listings skip it.
@@ -115,7 +177,7 @@ def atomic_write(
             if fsync:
                 fh.flush()
                 os.fsync(fh.fileno())
-        os.replace(tmp, path)
+        (retry or _call_once)(os.replace, tmp, path)
     except BaseException:
         try:
             os.unlink(tmp)
@@ -124,6 +186,22 @@ def atomic_write(
         raise
     if fsync:
         _fsync_dir(dirname)
+
+
+def atomic_delete(path, *, retry: "Callable | None" = DFLT_RETRY) -> None:
+    """Remove the file ``path`` (``os.unlink``), retrying as :func:`atomic_write` does.
+
+    A symlink is removed itself, not its target. A missing file raises
+    ``FileNotFoundError`` (never retried).
+
+    >>> import tempfile
+    >>> path = os.path.join(tempfile.mkdtemp(), "f")
+    >>> atomic_write(path, b"x")
+    >>> atomic_delete(path)
+    >>> os.path.exists(path)
+    False
+    """
+    (retry or _call_once)(os.unlink, os.fspath(path))
 
 
 # ---------------------------------------------------------------------------

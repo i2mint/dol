@@ -116,6 +116,7 @@ from dol.filesys import (
 )
 
 from dol.atomic import atomic_write  # crash-safe file write (temp file + os.replace)
+from dol.atomic import atomic_delete, Retry  # unlink + Windows sharing-violation retry
 from dol.atomic import file_lock, FileLock  # cross-process advisory lock (sidecar file)
 
 from dol.util import (

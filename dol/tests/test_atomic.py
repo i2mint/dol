@@ -1,4 +1,4 @@
-"""Tests for ``dol.atomic.atomic_write``."""
+"""Tests for ``dol.atomic``: ``atomic_write``, ``atomic_delete`` and ``Retry``."""
 
 import os
 import stat
@@ -6,7 +6,8 @@ import sys
 
 import pytest
 
-from dol import atomic_write
+from dol import Retry, atomic_delete, atomic_write
+from dol.atomic import SHARING_VIOLATIONS
 
 posix_only = pytest.mark.skipif(
     sys.platform == "win32", reason="POSIX mode bits/symlinks"
@@ -127,3 +128,122 @@ def test_symlink_is_followed(tmp_path):
     link.symlink_to(target)
     atomic_write(link, b"new")
     assert link.is_symlink() and target.read_bytes() == b"new"
+
+
+# ---------------------------------------------------------------------------
+# retry (Windows sharing violations, #167)
+
+
+def _refuse(n, real, exc=PermissionError):
+    """A stand-in for ``real`` that raises ``exc`` on its first ``n`` calls."""
+    calls = []
+
+    def op(*args):
+        calls.append(args)
+        if len(calls) <= n:
+            raise exc("file in use")
+        return real(*args)
+
+    return op, calls
+
+
+NO_SLEEP = Retry(on=(PermissionError,), backoff_s=0)
+
+
+def test_sharing_violations_default_is_windows_only():
+    assert SHARING_VIOLATIONS == ((PermissionError,) if os.name == "nt" else ())
+    assert Retry().on == SHARING_VIOLATIONS
+
+
+def test_retry_backoff_doubles_and_reraises_the_last(monkeypatch):
+    sleeps = []
+    monkeypatch.setattr("dol.atomic.time.sleep", sleeps.append)
+    op, calls = _refuse(99, lambda: None)
+    with pytest.raises(PermissionError):
+        Retry(on=(PermissionError,), attempts=4, backoff_s=0.01)(op)
+    assert len(calls) == 4 and sleeps == [0.01, 0.02, 0.04]
+
+
+def test_retry_does_not_catch_other_errors():
+    op, calls = _refuse(1, lambda: None, exc=FileNotFoundError)
+    with pytest.raises(FileNotFoundError):
+        NO_SLEEP(op)
+    assert len(calls) == 1
+
+
+def test_retry_refuses_zero_attempts():
+    with pytest.raises(ValueError, match="attempts"):
+        Retry(attempts=0)
+
+
+def test_write_retries_a_refused_replace(tmp_path, monkeypatch):
+    p = tmp_path / "f"
+    atomic_write(p, b"old")
+    op, calls = _refuse(2, os.replace)
+    monkeypatch.setattr(os, "replace", op)
+    atomic_write(p, b"new", retry=NO_SLEEP)
+    assert len(calls) == 3 and p.read_bytes() == b"new"
+    assert os.listdir(tmp_path) == ["f"]
+
+
+def test_write_gives_up_keeps_old_and_cleans_tmp(tmp_path, monkeypatch):
+    p = tmp_path / "f"
+    atomic_write(p, b"old")
+    op, calls = _refuse(99, os.replace)
+    monkeypatch.setattr(os, "replace", op)
+    with pytest.raises(PermissionError):
+        atomic_write(
+            p, b"new", retry=Retry(on=(PermissionError,), attempts=3, backoff_s=0)
+        )
+    assert len(calls) == 3 and p.read_bytes() == b"old"
+    assert os.listdir(tmp_path) == ["f"]
+
+
+def test_write_retry_none_calls_replace_once(tmp_path, monkeypatch):
+    op, calls = _refuse(1, os.replace)
+    monkeypatch.setattr(os, "replace", op)
+    with pytest.raises(PermissionError):
+        atomic_write(tmp_path / "f", b"x", retry=None)
+    assert len(calls) == 1 and os.listdir(tmp_path) == []
+
+
+def test_delete_retries_and_removes(tmp_path, monkeypatch):
+    p = tmp_path / "f"
+    atomic_write(p, b"x")
+    op, calls = _refuse(2, os.unlink)
+    monkeypatch.setattr(os, "unlink", op)
+    atomic_delete(p, retry=NO_SLEEP)
+    assert len(calls) == 3 and not p.exists()
+
+
+def test_delete_missing_raises_without_retrying(tmp_path, monkeypatch):
+    sleeps = []
+    monkeypatch.setattr("dol.atomic.time.sleep", sleeps.append)
+    with pytest.raises(FileNotFoundError):
+        atomic_delete(tmp_path / "nope", retry=Retry(on=(PermissionError,)))
+    assert sleeps == []
+
+
+@posix_only
+def test_delete_removes_the_link_not_its_target(tmp_path):
+    target, link = tmp_path / "target", tmp_path / "link"
+    target.write_bytes(b"x")
+    link.symlink_to(target)
+    atomic_delete(link)
+    assert not link.is_symlink() and target.read_bytes() == b"x"
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Windows sharing semantics")
+def test_windows_reader_holding_file_open_is_outlasted(tmp_path):
+    import threading
+
+    p = tmp_path / "f"
+    atomic_write(p, b"old")
+    fh = open(p, "rb")  # no FILE_SHARE_DELETE: replace/unlink are refused
+    threading.Timer(0.05, fh.close).start()
+    atomic_write(p, b"new")
+    assert p.read_bytes() == b"new"
+    fh = open(p, "rb")
+    threading.Timer(0.05, fh.close).start()
+    atomic_delete(p)
+    assert not p.exists()
