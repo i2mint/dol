@@ -56,6 +56,23 @@ def priv_junit_summary(junit_path: Path) -> dict | None:
     return dg.junit_summary(junit_path)
 
 
+def _require_priv_seams(*seams) -> None:
+    """Fail before running anything when a default seam needs a priv too old for it
+    (otherwise every dependent is recorded as an ``AttributeError`` ERROR)."""
+    names = {priv_gate_args: "gate_pytest_args", priv_junit_summary: "junit_summary"}
+    needed = [names[f] for f in seams if f in names]
+    if not needed:
+        return
+    from priv import dep_graph as dg
+
+    missing = [n for n in needed if not hasattr(dg, n)]
+    if missing:
+        raise RuntimeError(
+            f"priv.dep_graph lacks {', '.join(missing)} (thorwhalen/priv#218): pull "
+            "priv, or pass gate_args= / junit_summary= explicitly"
+        )
+
+
 def run_suite(
     repo: Path,
     *,
@@ -103,10 +120,7 @@ def run_suite(
             if summary is None:
                 entry["junit"] = "unparseable"
             else:
-                counts, failing = summary["counts"], summary["failed"]
-                # a case is one outcome here, whatever tags it carries
-                counts["passed"] = counts["tests"] - len(failing) - counts["skipped"]
-                entry.update(counts=counts, failing=failing)
+                entry.update(counts=summary["counts"], failing=summary["failed"])
         if entry["status"] not in ("PASS", "NO_TESTS"):
             entry["tail"] = [
                 store.redact(store.scrub(l)) for l in out.strip().splitlines()[-15:]
@@ -187,6 +201,7 @@ def run_baseline(
     """
     from .pins import require_same_source
 
+    _require_priv_seams(gate_args, junit_summary)
     root = Path(root)
     scan_id = scan_id or store.latest_id(root, "scans")
     require_same_source(root, scan_id, repos)
@@ -277,8 +292,9 @@ def diff(a: dict, b: dict) -> dict:
 
     Refuses (``IncomparableBaselines``) when a dependent present in both ran with
     a different command: changing the flags changes what gets reported, which
-    would read exactly like a regression. Two ``DISABLED`` entries ran nothing, so
-    their commands are not compared. A dependent where either side did not
+    would read exactly like a regression. A ``DISABLED`` entry ran nothing, so its
+    command is not compared (the pair is reported ``incomparable`` if the status
+    changed). A dependent where either side did not
     run to completion (``INTERRUPTED``, ``TIMEOUT``, ``ERROR``...) is reported as
     ``incomparable`` when its status changed, never as tests fixed.
     """
@@ -289,7 +305,7 @@ def diff(a: dict, b: dict) -> dict:
         if "command" in ra[n]
         and "command" in rb[n]
         and ra[n]["command"] != rb[n]["command"]
-        and not (ra[n].get("status") == rb[n].get("status") == "DISABLED")
+        and "DISABLED" not in (ra[n].get("status"), rb[n].get("status"))
     ]
     if mismatched:
         raise IncomparableBaselines(

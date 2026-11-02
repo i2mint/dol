@@ -132,18 +132,17 @@ def no_priv(repo):
 
 
 def junit_fixture(path):
-    """Stands in for priv's ``dep_graph.junit_summary`` (dol's CI has no priv)."""
+    """Stands in for priv's ``dep_graph.junit_summary`` (dol's CI has no priv): only
+    the failing ids, in priv's format; the real parser is checked by the contract
+    test below when priv is installed."""
     import xml.etree.ElementTree as ET
 
-    counts = dict(tests=0, failures=0, errors=0, skipped=0)
-    failed = set()
-    for case in ET.parse(path).getroot().iter('testcase'):
-        counts['tests'] += 1
-        for tag, key in (('failure', 'failures'), ('error', 'errors'), ('skipped', 'skipped')):
-            counts[key] += case.find(tag) is not None
-        if case.find('failure') is not None or case.find('error') is not None:
-            failed.add(f"{case.get('classname', '')}::{case.get('name', '')}")
-    return dict(counts=counts, failed=sorted(failed))
+    failed = {
+        f"{c.get('classname')}::{c.get('name')}" if c.get('classname') else c.get('name')
+        for c in ET.parse(path).getroot().iter('testcase')
+        if c.find('failure') is not None or c.find('error') is not None
+    }
+    return dict(counts={}, failed=sorted(failed))
 
 
 NO_PRIV = dict(gate_args=no_priv, junit_summary=junit_fixture)
@@ -162,7 +161,7 @@ def test_baseline_records_failing_ids_and_diff_localises_the_regression(fleet):
     test_a.write_text(test_a.read_text().replace('FLAG = True', 'FLAG = False'))
     b2 = baseline.load_baseline(root, baseline.run_baseline(root, **kw))
     r = b2['results']['dep_a']
-    assert r['status'] == 'FAIL' and r['counts']['failures'] == 1 and r['dirty'] == 1
+    assert r['status'] == 'FAIL' and r['failing'] == ['test_a::test_flaky'] and r['dirty'] == 1
     d = baseline.diff(b1, b2)
     assert d['changed']['dep_a']['new_failures'] == ['test_a::test_flaky']
     assert 'dep_b' not in d['changed']
@@ -178,7 +177,7 @@ def test_diff_refuses_baselines_run_with_different_commands():
 def test_diff_ignores_the_command_of_suites_disabled_on_both_sides():
     a = dict(id='a', results={'x': dict(status='DISABLED', command=['pytest'])})
     b = dict(id='b', results={'x': dict(status='DISABLED', command=['pytest', '-q'])})
-    assert 'x' not in baseline.diff(a, b)
+    assert baseline.diff(a, b)['changed'] == {}
 
 
 def test_an_unreadable_report_is_recorded_as_such(tmp_path):
@@ -198,6 +197,33 @@ def test_the_priv_seams_delegate_to_its_public_api(monkeypatch):
     monkeypatch.setitem(sys.modules, 'priv.dep_graph', fake)
     assert baseline.priv_gate_args('repo') == (False, ['--doctest-modules', '--ignore=x'])
     assert baseline.priv_junit_summary('r.xml') == {'counts': {}, 'failed': ['r.xml']}
+
+
+def test_diff_ignores_the_command_when_either_side_is_disabled():
+    a = dict(id='a', results={'x': dict(status='DISABLED', command=['pytest'])})
+    b = dict(id='b', results={'x': dict(status='PASS', command=['pytest', '-q'], failing=[])})
+    assert baseline.diff(a, b)['changed']['x']['incomparable']
+
+
+def test_a_too_old_priv_fails_before_anything_runs(fleet, monkeypatch):
+    import types
+
+    old = types.SimpleNamespace()  # neither public seam
+    monkeypatch.setitem(sys.modules, 'priv', types.SimpleNamespace(dep_graph=old))
+    monkeypatch.setitem(sys.modules, 'priv.dep_graph', old)
+    with pytest.raises(RuntimeError, match='pull'):
+        baseline.run_baseline(fleet['root'], package='tgt', repos=fleet['repos'])
+
+
+def test_contract_with_the_real_priv(tmp_path):
+    dg = pytest.importorskip('priv.dep_graph')
+    if not hasattr(dg, 'junit_summary'):
+        pytest.skip('local priv predates its public seams (thorwhalen/priv#218)')
+    (tmp_path / 'test_c.py').write_text('def test_ok(): pass\ndef test_bad(): assert 0\n')
+    r = baseline.run_suite(tmp_path, gate_args=no_priv)  # the real junit_summary
+    assert r['failing'] == ['test_c::test_bad'] and r['counts']['tests'] == 2
+    enabled, args = baseline.priv_gate_args(tmp_path)
+    assert enabled is True and '--doctest-modules' in args
 
 
 def test_suite_timeout_is_recorded_not_raised(tmp_path):
