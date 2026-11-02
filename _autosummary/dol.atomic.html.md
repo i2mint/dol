@@ -40,14 +40,14 @@ appends under that lock and follows the file when an atomic replace swaps it.
 | [`atomic_delete`](#dol.atomic.atomic_delete)(path, \*[, retry])                  | Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart of [`atomic_write()`](#dol.atomic.atomic_write).                                                                                                                                                                   |
 |----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`atomic_write`](#dol.atomic.atomic_write)(path, data, \*[, fsync, perms, ...]) | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).                                                                                                                                                                                                                           |
-| [`file_lock`](#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.                                                                                                                                                                                                                               |
+| [`file_lock`](#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `path`'s sidecar (see [`FileLock`](#dol.atomic.FileLock)); yields whether it is held.                                                                                                                                                                |
 | [`interrupted_writes`](#dol.atomic.interrupted_writes)(folder, \*[, pattern, ...])    | The temp files writes killed mid-way left in `folder`: sorted absolute paths (`str`) of the regular files (never a symlink or folder) whose name fully matches `pattern` (default: [`atomic_write()`](#dol.atomic.atomic_write)'s temps; pass another writer's, e.g. `r"\.blob-.+\.part"`). |
 | [`temp_name`](#dol.atomic.temp_name)(name)                                   | The name [`atomic_write()`](#dol.atomic.atomic_write) stages a write to `name` under: a hidden sibling `.<name, clipped to 100 bytes>.<8 random hex>.tmp`, always matched by [`TEMP_NAME_PATTERN`](#dol.atomic.TEMP_NAME_PATTERN).                                            |
 | [`update_json`](#dol.atomic.update_json)(path, change, \*[, default, ...])     | Apply `change` to the JSON document at `path` under its lock; return what `change` returned.                                                                                                                                                                                                                   |
 
 ### Classes
 
-| [`FileLock`](#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])    | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.                                                                                                                                                                  |
+| [`FileLock`](#dol.atomic.FileLock)(path, \*[, sidecar, poll_interval])    | A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>` (a shortened hidden name instead, for names near the 255-byte limit).                                                                                             |
 |--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`LockedAppender`](#dol.atomic.LockedAppender)(path, \*[, lock, line_end, ...]) | Appends to `path` under a [`FileLock`](#dol.atomic.FileLock), following the file when an [`atomic_write()`](#dol.atomic.atomic_write) (made under the same lock, e.g. a compaction) replaces it. |
 | [`Retry`](#dol.atomic.Retry)([on, attempts, backoff_s])                | Call `op(*args)`, retrying on `on` exceptions with doubling backoff.                                                                                                                                                                       |
@@ -66,7 +66,8 @@ Windows: an open handle there makes the `os.replace` of a compaction fail.
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
-A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`.
+A reusable, exclusive, advisory lock on a sidecar file `<path><sidecar>`
+(a shortened hidden name instead, for names near the 255-byte limit).
 
 Use it as `with lock:`; the body runs either way, and `lock.held` says whether
 the lock is actually held (it is not when the lock folder is read-only or the
@@ -261,7 +262,8 @@ RuntimeError: producer died
 
 ### dol.atomic.file_lock(path, , sidecar='.lock', poll_interval=0.001)
 
-Hold an exclusive advisory lock on `<path><sidecar>`; yields whether it is held.
+Hold an exclusive advisory lock on `path`’s sidecar (see [`FileLock`](#dol.atomic.FileLock));
+yields whether it is held.
 
 Cross-process and cross-platform (`flock` on POSIX, `msvcrt.locking` on
 Windows). Take it around every append, read and [`atomic_write()`](#dol.atomic.atomic_write) of `path`

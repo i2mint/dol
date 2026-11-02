@@ -297,12 +297,14 @@
 <span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">errno</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">unicodedata</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">weakref</span>
@@ -393,11 +395,16 @@
 <span class="n">_TMP_NAME_PREFIX_BYTES</span> <span class="o">=</span> <span class="mi">100</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_clip_to_bytes</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""``name`` cut, on a character boundary, to at most :data:`_TMP_NAME_PREFIX_BYTES`</span>
-<span class="sd">    encoded bytes (filesystems limit names in bytes; a character can take several)."""</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="n">_TMP_NAME_PREFIX_BYTES</span><span class="p">]</span>  <span class="c1"># a character is at least one byte</span>
-    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsencode</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">_TMP_NAME_PREFIX_BYTES</span><span class="p">:</span>
+<span class="c1">#: The usual limit on one file name: 255 bytes on ext4 (255 UTF-16 units on APFS and</span>
+<span class="c1">#: NTFS, never more than the UTF-8 byte count, so checking bytes is safe everywhere).</span>
+<span class="n">_NAME_MAX_BYTES</span> <span class="o">=</span> <span class="mi">255</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_clip_to_bytes</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_bytes</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``name`` cut, on a character boundary, to at most ``max_bytes`` encoded bytes</span>
+<span class="sd">    (filesystems limit names in bytes; a character can take several)."""</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="n">max_bytes</span><span class="p">]</span>  <span class="c1"># a character is at least one byte</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsencode</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="o">&gt;</span> <span class="n">max_bytes</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">name</span>
 
@@ -414,7 +421,7 @@
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="ow">in</span> <span class="n">name</span> <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">altsep</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">altsep</span> <span class="ow">in</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"temp_name takes a non-empty file name, not </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="k">return</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">_clip_to_bytes</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">.tmp"</span></div>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">_clip_to_bytes</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">_TMP_NAME_PREFIX_BYTES</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">.tmp"</span></div>
 
 
 
@@ -660,6 +667,32 @@
         <span class="n">lock</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
 
 
+<span class="n">_LOCK_DIGEST_HEX</span> <span class="o">=</span> <span class="mi">12</span>  <span class="c1"># not 8: a hashed lock name must never match TEMP_NAME_PATTERN</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_lock_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sidecar</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``&lt;path&gt;&lt;sidecar&gt;``; or, when that name would exceed 255 bytes, a hidden</span>
+<span class="sd">    ``.&lt;name, clipped&gt;.&lt;12 hex of its hash&gt;&lt;sidecar&gt;`` beside it. The hash is of the</span>
+<span class="sd">    name casefolded and normalised, and the choice measures the name's NFD and</span>
+<span class="sd">    casefolded forms too, so spellings a case- or normalisation-insensitive filesystem</span>
+<span class="sd">    (APFS, NTFS) takes as one file get one lock, and every process derives the same</span>
+<span class="sd">    name. (Not closed: a spelling longer than its casefold, e.g. ``ſ`` vs ``s``, at</span>
+<span class="sd">    the exact boundary.)"""</span>
+    <span class="n">dirname</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">room</span> <span class="o">=</span> <span class="n">_NAME_MAX_BYTES</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsencode</span><span class="p">(</span><span class="sa">f</span><span class="s2">"..</span><span class="si">{</span><span class="s1">'0'</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">_LOCK_DIGEST_HEX</span><span class="si">}{</span><span class="n">sidecar</span><span class="si">}</span><span class="s2">"</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">room</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"sidecar </span><span class="si">{</span><span class="n">sidecar</span><span class="si">!r}</span><span class="s2"> leaves no room for a lock file name"</span><span class="p">)</span>
+    <span class="n">nfd</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s2">"NFD"</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="c1"># every spelling a filesystem may take as this file decides alike, and the plain</span>
+    <span class="c1"># name returned (the caller's spelling) is among those measured</span>
+    <span class="n">longest</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsencode</span><span class="p">(</span><span class="n">s</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">nfd</span><span class="p">,</span> <span class="n">nfd</span><span class="o">.</span><span class="n">casefold</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="n">longest</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsencode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="n">_NAME_MAX_BYTES</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">path</span> <span class="o">+</span> <span class="n">sidecar</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">unicodedata</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s2">"NFC"</span><span class="p">,</span> <span class="n">nfd</span><span class="o">.</span><span class="n">casefold</span><span class="p">())</span>
+    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsencode</span><span class="p">(</span><span class="n">key</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="n">_LOCK_DIGEST_HEX</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">_clip_to_bytes</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">room</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">digest</span><span class="si">}{</span><span class="n">sidecar</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
 <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="s2">"register_at_fork"</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">register_at_fork</span><span class="p">(</span><span class="n">after_in_child</span><span class="o">=</span><span class="n">_renew_in_child</span><span class="p">)</span>
 
@@ -667,7 +700,8 @@
 <div class="viewcode-block" id="FileLock">
 <a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.FileLock">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileLock</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""A reusable, exclusive, advisory lock on a sidecar file ``&lt;path&gt;&lt;sidecar&gt;``.</span>
+<span class="w">    </span><span class="sd">"""A reusable, exclusive, advisory lock on a sidecar file ``&lt;path&gt;&lt;sidecar&gt;``</span>
+<span class="sd">    (a shortened hidden name instead, for names near the 255-byte limit).</span>
 
 <span class="sd">    Use it as ``with lock:``; the body runs either way, and ``lock.held`` says whether</span>
 <span class="sd">    the lock is actually held (it is not when the lock folder is read-only or the</span>
@@ -702,7 +736,9 @@
         <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_POLL_INTERVAL</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        :param path: The file being protected; the lock lives next to it.</span>
+<span class="sd">        :param path: The file being protected; the lock lives next to it, as</span>
+<span class="sd">            ``&lt;path&gt;&lt;sidecar&gt;`` (as a shortened hidden name when that would exceed</span>
+<span class="sd">            255 bytes).</span>
 <span class="sd">        :param sidecar: Non-empty suffix of the lock file.</span>
 <span class="sd">        :param poll_interval: Seconds between attempts on a contended lock (Windows</span>
 <span class="sd">            only; POSIX blocks in the kernel).</span>
@@ -711,7 +747,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"sidecar must be non-empty: the lock file cannot be `path`"</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">)</span>  <span class="c1"># bytes paths too</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">_lock_path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="kc">None</span>
@@ -790,7 +826,8 @@
     <span class="n">sidecar</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_LOCK_SIDECAR</span><span class="p">,</span>
     <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_POLL_INTERVAL</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Hold an exclusive advisory lock on ``&lt;path&gt;&lt;sidecar&gt;``; yields whether it is held.</span>
+<span class="w">    </span><span class="sd">"""Hold an exclusive advisory lock on ``path``'s sidecar (see :class:`FileLock`);</span>
+<span class="sd">    yields whether it is held.</span>
 
 <span class="sd">    Cross-process and cross-platform (``flock`` on POSIX, ``msvcrt.locking`` on</span>
 <span class="sd">    Windows). Take it around every append, read and :func:`atomic_write` of ``path``</span>
@@ -1105,7 +1142,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=41f32c21"></script>
+</div><script src="../../_static/documentation_options.js?v=e8b35847"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
