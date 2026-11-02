@@ -405,8 +405,8 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Write ``data`` to ``path`` atomically (temp file in the same folder, then ``os.replace``).</span>
 
-<span class="sd">    :param path: Target file; its parent folder must exist. A symlink is followed:</span>
-<span class="sd">        its target is what gets replaced.</span>
+<span class="sd">    :param path: Target file (``str``, ``bytes`` or path-like); its parent folder must</span>
+<span class="sd">        exist. A symlink is followed: its target is what gets replaced.</span>
 <span class="sd">    :param data: Bytes-like, or an iterable of bytes-like chunks (written one at a</span>
 <span class="sd">        time, so a large payload need not be held in memory). If the iterable raises,</span>
 <span class="sd">        ``path`` is untouched. Text must be encoded first.</span>
@@ -444,7 +444,7 @@
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
             <span class="s2">"atomic_write takes bytes (or chunks of bytes); encode text first"</span>
         <span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>  <span class="c1"># str, so the temp name joins</span>
     <span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_BYTES_LIKE</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span>
     <span class="n">dirname</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="sa">f</span><span class="s2">".</span><span class="si">{</span><span class="n">name</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">.tmp"</span><span class="p">)</span>
@@ -617,7 +617,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"sidecar must be non-empty: the lock file cannot be `path`"</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="n">sidecar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">)</span>  <span class="c1"># bytes paths too</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="kc">None</span>
@@ -747,7 +747,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=a9d06d91"></script>
+</div><script src="../../_static/documentation_options.js?v=8961f77a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

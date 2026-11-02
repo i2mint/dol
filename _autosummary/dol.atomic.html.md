@@ -143,8 +143,8 @@ False
 Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).
 
 * **Parameters:**
-  * **path** – Target file; its parent folder must exist. A symlink is followed:
-    its target is what gets replaced.
+  * **path** – Target file (`str`, `bytes` or path-like); its parent folder must
+    exist. A symlink is followed: its target is what gets replaced.
   * **data** ([`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes) | [`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]) – Bytes-like, or an iterable of bytes-like chunks (written one at a
     time, so a large payload need not be held in memory). If the iterable raises,
     `path` is untouched. Text must be encoded first.
