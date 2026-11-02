@@ -282,7 +282,8 @@
 <p>Atomic file writes: write to a sibling temp file, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> it into place.</p>
 <p>A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; <code class="docutils literal notranslate"><span class="pre">atomic_write</span></code> is the entry point, and
-<code class="docutils literal notranslate"><span class="pre">atomic_delete</span></code> its counterpart for removal.</p>
+<code class="docutils literal notranslate"><span class="pre">atomic_delete</span></code> its counterpart for removal. A write killed mid-way leaves its temp
+file behind; <code class="docutils literal notranslate"><span class="pre">interrupted_writes</span></code> lists them (<code class="docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code> is their name).</p>
 <p>On Windows, a reader holding the destination open makes <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> and <code class="docutils literal notranslate"><span class="pre">os.unlink</span></code>
 fail with <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> until it closes (Python’s <code class="docutils literal notranslate"><span class="pre">open</span></code> does not share delete).
 Both functions therefore retry that briefly, through a <a class="reference internal" href="#dol.atomic.Retry" title="dol.atomic.Retry"><code class="xref py py-class docutils literal notranslate"><span class="pre">Retry</span></code></a> policy (its
@@ -308,7 +309,10 @@ appends under that lock and follows the file when an atomic replace swaps it.</p
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.SHARING_VIOLATIONS" title="dol.atomic.SHARING_VIOLATIONS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SHARING_VIOLATIONS</span></code></a></p></td>
 <td><p>Windows' sharing violation (another handle has the file open); nothing elsewhere, where <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> means a real permission problem.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.DFLT_KEEP_HANDLE" title="dol.atomic.DFLT_KEEP_HANDLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_KEEP_HANDLE</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.TEMP_NAME_PATTERN" title="dol.atomic.TEMP_NAME_PATTERN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code></a></p></td>
+<td><p>Matches (<code class="docutils literal notranslate"><span class="pre">fullmatch</span></code>) every name <a class="reference internal" href="#dol.atomic.temp_name" title="dol.atomic.temp_name"><code class="xref py py-func docutils literal notranslate"><span class="pre">temp_name()</span></code></a> makes, and so the temp file a killed <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> leaves behind.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.DFLT_KEEP_HANDLE" title="dol.atomic.DFLT_KEEP_HANDLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_KEEP_HANDLE</span></code></a></p></td>
 <td><p>Whether a <a class="reference internal" href="#dol.atomic.LockedAppender" title="dol.atomic.LockedAppender"><code class="xref py py-class docutils literal notranslate"><span class="pre">LockedAppender</span></code></a> keeps its file open between appends.</p></td>
 </tr>
 </tbody>
@@ -326,6 +330,12 @@ appends under that lock and follows the file when an atomic replace swaps it.</p
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">file_lock</span></code></a>(path, *[, sidecar, poll_interval])</p></td>
 <td><p>Hold an exclusive advisory lock on <code class="docutils literal notranslate"><span class="pre">&lt;path&gt;&lt;sidecar&gt;</span></code>; yields whether it is held.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.interrupted_writes" title="dol.atomic.interrupted_writes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interrupted_writes</span></code></a>(folder, *[, pattern, ...])</p></td>
+<td><p>The temp files writes killed mid-way left in <code class="docutils literal notranslate"><span class="pre">folder</span></code>: sorted absolute paths (<code class="docutils literal notranslate"><span class="pre">str</span></code>) of the regular files (never a symlink or folder) whose name fully matches <code class="docutils literal notranslate"><span class="pre">pattern</span></code> (default: <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>'s temps; pass another writer's, e.g. <code class="docutils literal notranslate"><span class="pre">r&quot;\.blob-.+\.part&quot;</span></code>).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.temp_name" title="dol.atomic.temp_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temp_name</span></code></a>(name)</p></td>
+<td><p>The name <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> stages a write to <code class="docutils literal notranslate"><span class="pre">name</span></code> under: a hidden sibling <code class="docutils literal notranslate"><span class="pre">.&lt;name,</span> <span class="pre">clipped</span> <span class="pre">to</span> <span class="pre">100</span> <span class="pre">bytes&gt;.&lt;8</span> <span class="pre">random</span> <span class="pre">hex&gt;.tmp</span></code>, always matched by <a class="reference internal" href="#dol.atomic.TEMP_NAME_PATTERN" title="dol.atomic.TEMP_NAME_PATTERN"><code class="xref py py-data docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code></a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -489,6 +499,13 @@ still fails, only ~0.6 s later.</p>
 </dl>
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="dol.atomic.TEMP_NAME_PATTERN">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">TEMP_NAME_PATTERN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('\\..+\\.[0-9a-f]{8}\\.tmp',</span> <span class="pre">re.DOTALL)</span></span><a class="headerlink" href="#dol.atomic.TEMP_NAME_PATTERN" title="Link to this definition">¶</a></dt>
+<dd><p>Matches (<code class="docutils literal notranslate"><span class="pre">fullmatch</span></code>) every name <a class="reference internal" href="#dol.atomic.temp_name" title="dol.atomic.temp_name"><code class="xref py py-func docutils literal notranslate"><span class="pre">temp_name()</span></code></a> makes, and so the temp file a
+killed <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> leaves behind. <code class="docutils literal notranslate"><span class="pre">DOTALL</span></code>: a file name may hold a newline.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="dol.atomic.atomic_delete">
 <span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">atomic_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Retry(on=(),</span> <span class="pre">attempts=7,</span> <span class="pre">backoff_s=0.01)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#atomic_delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.atomic_delete" title="Link to this definition">¶</a></dt>
@@ -584,6 +601,55 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.atomic.interrupted_writes">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">interrupted_writes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">re.compile('\\..+\\.[0-9a-f]{8}\\.tmp',</span> <span class="pre">re.DOTALL)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#interrupted_writes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.interrupted_writes" title="Link to this definition">¶</a></dt>
+<dd><p>The temp files writes killed mid-way left in <code class="docutils literal notranslate"><span class="pre">folder</span></code>: sorted absolute paths
+(<code class="docutils literal notranslate"><span class="pre">str</span></code>) of the regular files (never a symlink or folder) whose name fully
+matches <code class="docutils literal notranslate"><span class="pre">pattern</span></code> (default: <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>’s temps; pass another writer’s,
+e.g. <code class="docutils literal notranslate"><span class="pre">r&quot;\.blob-.+\.part&quot;</span></code>).</p>
+<p>Matching is by name only: call it on folders your own stores write, where nothing
+else is named like a temp. A listed file may also be a write still in progress in
+another process: delete only those older than any write could take
+(<code class="docutils literal notranslate"><span class="pre">os.stat(p).st_mtime</span></code>), or while holding the lock every writer takes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recursive</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Also search subfolders (symlinked folders are not followed;
+subfolders that cannot be read, or vanish, are skipped).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+<p>A missing <code class="docutils literal notranslate"><span class="pre">folder</span></code> holds none (<code class="docutils literal notranslate"><span class="pre">[]</span></code>); any other failure to list it raises
+<code class="docutils literal notranslate"><span class="pre">OSError</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">d</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"k.mp4"</span><span class="p">,</span> <span class="s2">".k.mp4.ab12cd34.tmp"</span><span class="p">,</span> <span class="s2">".DS_Store"</span><span class="p">,</span> <span class="s2">"x.tmp"</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="s2">"wb"</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">interrupted_writes</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span>
+<span class="go">['.k.mp4.ab12cd34.tmp']</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.atomic.temp_name">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">temp_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#temp_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.temp_name" title="Link to this definition">¶</a></dt>
+<dd><p>The name <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> stages a write to <code class="docutils literal notranslate"><span class="pre">name</span></code> under: a hidden sibling
+<code class="docutils literal notranslate"><span class="pre">.&lt;name,</span> <span class="pre">clipped</span> <span class="pre">to</span> <span class="pre">100</span> <span class="pre">bytes&gt;.&lt;8</span> <span class="pre">random</span> <span class="pre">hex&gt;.tmp</span></code>, always matched by
+<a class="reference internal" href="#dol.atomic.TEMP_NAME_PATTERN" title="dol.atomic.TEMP_NAME_PATTERN"><code class="xref py py-data docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code></a>. Unique per call. <code class="docutils literal notranslate"><span class="pre">name</span></code> is a file name, not a path.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">bool</span><span class="p">(</span><span class="n">TEMP_NAME_PATTERN</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">temp_name</span><span class="p">(</span><span class="s2">"data.json"</span><span class="p">)))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -650,9 +716,12 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
 </li>
 <li><a class="reference internal" href="#dol.atomic.Retry"><code class="docutils literal notranslate"><span class="pre">Retry</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.SHARING_VIOLATIONS"><code class="docutils literal notranslate"><span class="pre">SHARING_VIOLATIONS</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.TEMP_NAME_PATTERN"><code class="docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.atomic_delete"><code class="docutils literal notranslate"><span class="pre">atomic_delete()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.atomic_write"><code class="docutils literal notranslate"><span class="pre">atomic_write()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.file_lock"><code class="docutils literal notranslate"><span class="pre">file_lock()</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.interrupted_writes"><code class="docutils literal notranslate"><span class="pre">interrupted_writes()</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.temp_name"><code class="docutils literal notranslate"><span class="pre">temp_name()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -664,7 +733,7 @@ Nesting it on the same path in one thread deadlocks; use one section.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=c802c2ac"></script>
+</div><script src="../_static/documentation_options.js?v=6142b6ca"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
