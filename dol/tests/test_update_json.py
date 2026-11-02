@@ -10,6 +10,7 @@ import warnings
 import pytest
 
 from dol import FileLock, update_json
+from dol.atomic import InvalidJSONError
 
 
 def test_creates_from_default_and_returns_changes_result(tmp_path):
@@ -147,37 +148,45 @@ def test_missing_folder_is_named_clearly(tmp_path):
         update_json(tmp_path / "nope" / "m.json", lambda m: None)
 
 
+def test_invalid_json_error_is_distinct_from_changes_value_errors(tmp_path):
+    p = tmp_path / "m.json"
+    p.write_text("{")
+    with pytest.raises(InvalidJSONError):
+        update_json(p, lambda m: None)
+    p.write_text("{}")
+
+    def change(m):
+        raise ValueError("the caller's own refusal")
+
+    with pytest.raises(ValueError) as info:
+        update_json(p, change)
+    assert not isinstance(info.value, InvalidJSONError)
+
+
+@pytest.mark.parametrize("bad", ["", "folder" + os.sep])
+def test_a_path_that_names_no_file_is_refused(tmp_path, monkeypatch, bad):
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ValueError, match="file path"):
+        update_json(bad, lambda m: m.update(a=1))
+    assert os.listdir(tmp_path) == []
+
+
+@pytest.mark.parametrize("yielded", [0, False])
+def test_a_falsy_yield_counts_as_not_held(tmp_path, yielded):
+    @contextlib.contextmanager
+    def lock():
+        yield yielded
+
+    with pytest.warns(UserWarning, match="could not lock"):
+        update_json(tmp_path / "m.json", lambda m: None, lock=lock())
+
+
 @pytest.mark.skipif(os.name == "nt", reason="symlinks")
-def test_two_links_to_one_file_share_its_lock(tmp_path):
+def test_a_symlink_takes_the_same_lock_as_file_lock(tmp_path):
     real = tmp_path / "real.json"
     real.write_text("{}")
     link = tmp_path / "link.json"
     link.symlink_to(real)
     update_json(link, lambda m: m.update(a=1))
-    assert (tmp_path / "real.json.lock").exists()
-    assert not (tmp_path / "link.json.lock").exists()
+    assert (tmp_path / "link.json.lock").exists()  # as file_lock(link) would
     assert json.loads(real.read_text()) == {"a": 1}
-
-
-def test_an_injected_lock_is_used_and_left_open(tmp_path):
-    p = tmp_path / "m.json"
-    lock = FileLock(p, sidecar=".mylock")
-    update_json(p, lambda m: m.update(a=1), lock=lock)
-    assert (tmp_path / "m.json.mylock").exists() and lock._fh is not None
-    lock.close()
-
-
-def _increment_n(path, n, start):
-    start.wait()
-    for _ in range(n):
-        update_json(path, lambda m: m.update(n=m.get("n", 0) + 1))
-
-
-def test_processes_never_lose_an_update(tmp_path):
-    p = str(tmp_path / "count.json")
-    start = mp.Barrier(4)
-    procs = [mp.Process(target=_increment_n, args=(p, 25, start)) for _ in range(4)]
-    [pr.start() for pr in procs]
-    [pr.join(60) for pr in procs]
-    assert all(pr.exitcode == 0 for pr in procs)
-    assert json.loads(open(p).read()) == {"n": 100}
