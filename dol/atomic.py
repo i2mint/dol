@@ -490,6 +490,11 @@ class FileLock:
         if self._pid != os.getpid():
             self._fh = self._closer = None  # inherited over a fork: leave it be
             self._pid = os.getpid()
+        if self._fh is not None and not _is_same_file(self._fh.fileno(), self.path):
+            # the lock file was deleted (and maybe recreated): a lock on the old one
+            # would exclude nobody who opens the path now
+            self._closer()
+            self._fh = self._closer = None
         if self._fh is None:
             self._fh = _open_lock_file(self.path)
             if self._fh is not None:
