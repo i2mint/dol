@@ -5,12 +5,13 @@ import functools
 import json
 import multiprocessing as mp
 import os
+import stat
 import warnings
 
 import pytest
 
 from dol import FileLock, update_json
-from dol.atomic import InvalidJSONError
+from dol.atomic import InvalidJSONError, atomic_write
 
 
 def test_creates_from_default_and_returns_changes_result(tmp_path):
@@ -190,3 +191,18 @@ def test_a_symlink_takes_the_same_lock_as_file_lock(tmp_path):
     update_json(link, lambda m: m.update(a=1))
     assert (tmp_path / "link.json.lock").exists()  # as file_lock(link) would
     assert json.loads(real.read_text()) == {"a": 1}
+
+
+def test_write_is_how_the_bytes_land_and_only_on_a_change(tmp_path):
+    calls = []
+
+    def write(path, data):
+        calls.append((path, data))
+        atomic_write(path, data, perms=0o600)
+
+    p = tmp_path / "m.json"
+    update_json(p, lambda m: m.update(a=1), write=write)
+    update_json(p, lambda m: None, write=write)  # no change: nothing written
+    assert calls == [(str(p), b'{"a": 1}')]
+    if os.name != "nt":
+        assert stat.S_IMODE(os.stat(p).st_mode) == 0o600
