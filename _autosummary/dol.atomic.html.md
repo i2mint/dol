@@ -328,7 +328,7 @@ True
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### dol.atomic.update_json(path, change, \*, default=<class 'dict'>, loads=<function loads>, dumps=<function dumps>, lock=None, warn_unlocked=True)
+### dol.atomic.update_json(path, change, \*, default=<class 'dict'>, loads=<function loads>, dumps=<function dumps>, lock=None, warn_unlocked=True, write=<function atomic_write>)
 
 Apply `change` to the JSON document at `path` under its lock; return what
 `change` returned.
@@ -361,6 +361,11 @@ be read would destroy what it held.
     > section that already holds it, pass `lock=contextlib.nullcontext()`.
   * **warn_unlocked** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – Warn when the lock is not held (read-only folder,
     filesystem without locks), so the loss of the guarantee is not silent.
+  * **write** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – How the new document’s bytes reach `path`: `write(path, data)`,
+    called under the lock. Default [`atomic_write()`](#dol.atomic.atomic_write) as is; e.g.
+    `functools.partial(atomic_write, fsync=True, perms=0o600)` for a durable,
+    owner-only record. It must replace `path` atomically, or a reader can see a
+    torn document.
 
 ```pycon
 >>> import tempfile

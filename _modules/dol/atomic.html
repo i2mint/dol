@@ -1062,6 +1062,7 @@
     <span class="n">dumps</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">,</span>
     <span class="n">lock</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">warn_unlocked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">write</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">atomic_write</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">"""Apply ``change`` to the JSON document at ``path`` under its lock; return what</span>
 <span class="sd">    ``change`` returned.</span>
@@ -1091,6 +1092,11 @@
 <span class="sd">        section that already holds it, pass ``lock=contextlib.nullcontext()``.</span>
 <span class="sd">    :param warn_unlocked: Warn when the lock is not held (read-only folder,</span>
 <span class="sd">        filesystem without locks), so the loss of the guarantee is not silent.</span>
+<span class="sd">    :param write: How the new document's bytes reach ``path``: ``write(path, data)``,</span>
+<span class="sd">        called under the lock. Default :func:`atomic_write` as is; e.g.</span>
+<span class="sd">        ``functools.partial(atomic_write, fsync=True, perms=0o600)`` for a durable,</span>
+<span class="sd">        owner-only record. It must replace ``path`` atomically, or a reader can see a</span>
+<span class="sd">        torn document.</span>
 
 <span class="sd">    &gt;&gt;&gt; import tempfile</span>
 <span class="sd">    &gt;&gt;&gt; path = os.path.join(tempfile.mkdtemp(), "manifest.json")</span>
@@ -1127,9 +1133,7 @@
             <span class="n">result</span> <span class="o">=</span> <span class="n">change</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
             <span class="n">after</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">after</span> <span class="o">!=</span> <span class="n">before</span><span class="p">:</span>
-                <span class="n">atomic_write</span><span class="p">(</span>
-                    <span class="n">path</span><span class="p">,</span> <span class="n">after</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">after</span>
-                <span class="p">)</span>
+                <span class="n">write</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">after</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">after</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">result</span>
     <span class="k">finally</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">own_lock</span><span class="p">:</span>
@@ -1184,7 +1188,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=e384dd66"></script>
+</div><script src="../../_static/documentation_options.js?v=a4e89dee"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
