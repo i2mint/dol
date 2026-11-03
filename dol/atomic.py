@@ -824,9 +824,7 @@ def update_json(
             result = change(obj)
             after = dumps(obj)
             if after != before:
-                write(
-                    path, after.encode("utf-8") if isinstance(after, str) else after
-                )
+                write(path, after.encode("utf-8") if isinstance(after, str) else after)
             return result
     finally:
         if own_lock:
