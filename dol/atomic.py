@@ -753,6 +753,7 @@ def update_json(
     dumps: Callable = json.dumps,
     lock=None,
     warn_unlocked: bool = True,
+    write: Callable = atomic_write,
 ):
     """Apply ``change`` to the JSON document at ``path`` under its lock; return what
     ``change`` returned.
@@ -782,6 +783,11 @@ def update_json(
         section that already holds it, pass ``lock=contextlib.nullcontext()``.
     :param warn_unlocked: Warn when the lock is not held (read-only folder,
         filesystem without locks), so the loss of the guarantee is not silent.
+    :param write: How the new document's bytes reach ``path``: ``write(path, data)``,
+        called under the lock. Default :func:`atomic_write` as is; e.g.
+        ``functools.partial(atomic_write, fsync=True, perms=0o600)`` for a durable,
+        owner-only record. It must replace ``path`` atomically, or a reader can see a
+        torn document.
 
     >>> import tempfile
     >>> path = os.path.join(tempfile.mkdtemp(), "manifest.json")
@@ -818,7 +824,7 @@ def update_json(
             result = change(obj)
             after = dumps(obj)
             if after != before:
-                atomic_write(
+                write(
                     path, after.encode("utf-8") if isinstance(after, str) else after
                 )
             return result
