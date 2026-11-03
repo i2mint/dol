@@ -193,10 +193,13 @@ def test_a_symlink_takes_the_same_lock_as_file_lock(tmp_path):
     assert json.loads(real.read_text()) == {"a": 1}
 
 
-def test_write_is_how_the_bytes_land_and_only_on_a_change(tmp_path):
+def test_write_is_how_the_bytes_land_under_the_lock_and_only_on_a_change(tmp_path):
     calls = []
 
     def write(path, data):
+        with pytest.raises(RuntimeError):  # this thread holds path's lock right now
+            with FileLock(path):
+                pass
         calls.append((path, data))
         atomic_write(path, data, perms=0o600)
 
