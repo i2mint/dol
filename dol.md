@@ -1,4 +1,4 @@
-> built 2026-11-09 07:06 UTC from 693c8ca (master) · dol 0.3.114. Details: build_info.json
+> built 2026-11-09 07:13 UTC from 9d19cc6 (master) · dol 0.3.115. Details: build_info.json
 
 # index.html.md
 
@@ -802,7 +802,10 @@ be read would destroy what it held.
 
 * **Parameters:**
   * **path** – The JSON file; its folder must exist.
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – Factory for the document when `path` does not exist.
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Factory for the document when `path` does not exist. `None`
+    means the record must already exist: a missing file raises
+    `FileNotFoundError` naming `path` (and, as it is raised before the lock is
+    taken when it can be, creates nothing).
   * **dumps** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The codec. `loads` gets bytes; `dumps` may return str or
     bytes (e.g. `functools.partial(json.dumps, indent=2)`, or orjson’s). Change
     is detected by comparing `dumps` before and after, so it must be
@@ -835,6 +838,15 @@ be read would destroy what it held.
 {'clips': ['a.mp4'], 'lost': True}
 >>> open(path).read()
 '{"clips": ["a.mp4"]}'
+```
+
+`default=None` for a record that must already exist:
+
+```pycon
+>>> update_json(path + ".gone", lambda m: None, default=None)
+Traceback (most recent call last):
+...
+FileNotFoundError: [Errno 2] update_json: the record must exist (default=None): '...manifest.json.gone'
 ```
 
 
@@ -18018,7 +18030,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-09 07:06 UTC** from commit <a href="https://github.com/i2mint/dol/commit/693c8ca3e80c5203403ef2ca2c8ed4b476eb046c"><code>693c8ca</code></a> on branch <code>master</code>, for **dol 0.3.114** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-09 07:13 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9d19cc6ddb9b9e876d265437e4320756aad42bfa"><code>9d19cc6</code></a> on branch <code>master</code>, for **dol 0.3.115** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -18027,9 +18039,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/693c8ca3e80c5203403ef2ca2c8ed4b476eb046c"><code>693c8ca3e80c5203403ef2ca2c8ed4b476eb046c</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/9d19cc6ddb9b9e876d265437e4320756aad42bfa"><code>9d19cc6ddb9b9e876d265437e4320756aad42bfa</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.114</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.115</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18038,9 +18050,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42576904878">42576904878</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42577666145">42577666145</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>70474505142e5c7258a7ecbcd7f6c1e5e19782ef</code> (in the history of the built commit) |
+| Event commit | <code>bedc1792cda92b3757fe54454c9016c13be0d624</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18065,13 +18077,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.114/">0.3.114</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.115/">0.3.115</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 693c8ca3e80c5203403ef2ca2c8ed4b476eb046c
+git checkout 9d19cc6ddb9b9e876d265437e4320756aad42bfa
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

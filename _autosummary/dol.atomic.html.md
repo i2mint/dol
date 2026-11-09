@@ -350,7 +350,10 @@ be read would destroy what it held.
 
 * **Parameters:**
   * **path** – The JSON file; its folder must exist.
-  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – Factory for the document when `path` does not exist.
+  * **default** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Factory for the document when `path` does not exist. `None`
+    means the record must already exist: a missing file raises
+    `FileNotFoundError` naming `path` (and, as it is raised before the lock is
+    taken when it can be, creates nothing).
   * **dumps** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – The codec. `loads` gets bytes; `dumps` may return str or
     bytes (e.g. `functools.partial(json.dumps, indent=2)`, or orjson’s). Change
     is detected by comparing `dumps` before and after, so it must be
@@ -383,4 +386,13 @@ be read would destroy what it held.
 {'clips': ['a.mp4'], 'lost': True}
 >>> open(path).read()
 '{"clips": ["a.mp4"]}'
+```
+
+`default=None` for a record that must already exist:
+
+```pycon
+>>> update_json(path + ".gone", lambda m: None, default=None)
+Traceback (most recent call last):
+...
+FileNotFoundError: [Errno 2] update_json: the record must exist (default=None): '...manifest.json.gone'
 ```
