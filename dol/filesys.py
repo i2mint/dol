@@ -1114,12 +1114,13 @@ def _make_dirs_tracking(dirname, *, max_dirs_to_make=None, verbose=False):
     A directory another process makes meanwhile is not counted as made here, so a later
     cleanup never removes it. Exceeding ``max_dirs_to_make`` makes none, as there.
     """
+    dirname = os.fspath(dirname)
     if os.path.exists(dirname):
         return []
-    _announce_dir_to_make(dirname, verbose)
     to_make = _missing_ancestors(dirname)
     if max_dirs_to_make is not None and len(to_make) > max_dirs_to_make:
         return []
+    _announce_dir_to_make(dirname, verbose)
     made = []
     try:
         for dir_to_make in to_make:
@@ -1147,18 +1148,28 @@ def _remove_dirs_made(made):
 
 
 @contextmanager
-def dir_made(directory, *, max_dirs_to_make=None, verbose=False):
+def _dir_made(directory, *, max_dirs_to_make=None, verbose=False):
+    """:func:`dir_made` plus the ``max_dirs_to_make`` limit ``mk_dirs_if_missing`` has."""
+    made = _make_dirs_tracking(
+        directory, max_dirs_to_make=max_dirs_to_make, verbose=verbose
+    )
+    try:
+        yield tuple(made)
+    except BaseException:
+        # e.g. a layer below refused the write (``filt_iter``, i2mint/dol#122)
+        _remove_dirs_made(made)
+        raise
+
+
+def dir_made(directory, *, verbose=False):
     """Context manager: make ``directory`` (and its missing ancestors) for a write.
 
     If the ``with`` body (or the making) raises, the directories *this call* made are
     removed again, deepest first, provided they are still empty, so a failed write
     leaves no stray folder behind. A folder another writer made meanwhile is not this
     call's and stays. Use it for writes that do not go through a ``Files`` store
-    (temp-file spools, :func:`~dol.atomic.atomic_write`). Yields the made directories,
-    top-down.
-
-    :param max_dirs_to_make: Make nothing if more than this many would be needed
-        (same meaning as in :func:`mk_dirs_if_missing`).
+    (temp-file spools, :func:`~dol.atomic.atomic_write`). Yields the directories made,
+    top-down, as a tuple of ``str``.
 
     >>> import tempfile
     >>> with tempfile.TemporaryDirectory() as root:
@@ -1175,15 +1186,7 @@ def dir_made(directory, *, max_dirs_to_make=None, verbose=False):
     ...         len(made)
     2
     """
-    made = _make_dirs_tracking(
-        directory, max_dirs_to_make=max_dirs_to_make, verbose=verbose
-    )
-    try:
-        yield made
-    except BaseException:
-        # e.g. a layer below refused the write (``filt_iter``, i2mint/dol#122)
-        _remove_dirs_made(made)
-        raise
+    return _dir_made(directory, verbose=verbose)
 
 
 def _mk_dirs_if_missing_class_trans(
@@ -1193,7 +1196,7 @@ def _mk_dirs_if_missing_class_trans(
         dirname = _missing_dir_of_key(self, k)
         if dirname is None:
             return super(store_cls, self).__setitem__(k, v)
-        with dir_made(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose):
+        with _dir_made(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose):
             return super(store_cls, self).__setitem__(k, v)
 
     store_cls.__setitem__ = __setitem__

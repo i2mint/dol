@@ -242,4 +242,22 @@ def test_dir_made_accepts_pathlike_and_existing_dir(tmp_path):
     from dol import dir_made
 
     with dir_made(tmp_path) as made:
-        assert made == []
+        assert made == ()
+
+
+def test_dir_made_yields_str_tuple_for_path_input(tmp_path):
+    from dol import dir_made
+
+    with dir_made(tmp_path / "a" / "b") as made:
+        assert isinstance(made, tuple) and all(type(m) is str for m in made)
+        assert len(made) == 2
+
+
+def test_dir_made_cleans_up_when_making_itself_fails(tmp_path):
+    from dol import dir_made
+
+    (tmp_path / "f").write_text("a file")
+    with pytest.raises(OSError):
+        with dir_made(tmp_path / "f" / "x"):
+            pass
+    assert [p.name for p in tmp_path.iterdir()] == ["f"]
