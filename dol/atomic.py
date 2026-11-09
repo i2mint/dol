@@ -277,8 +277,8 @@ def atomic_write(
     dirname, name = os.path.split(path)
     tmp = os.path.join(dirname, temp_name(name))
     chunks = _as_chunks(data, "atomic_write")
+    _write_temp(tmp, chunks, mode=_mode_to_apply(path, perms), fsync=fsync)
     try:
-        _write_temp(tmp, chunks, mode=_mode_to_apply(path, perms), fsync=fsync)
         retry(os.replace, tmp, path)
     except BaseException:
         _unlink_quietly(tmp)
@@ -296,18 +296,24 @@ def _as_chunks(data, who: str) -> "Iterable[bytes]":
 def _write_temp(
     tmp: str, chunks: "Iterable[bytes]", *, mode: "int | None", fsync: bool
 ) -> None:
-    """Create ``tmp`` (``O_EXCL``, with ``mode`` if given) and write ``chunks`` to it."""
+    """Create ``tmp`` (``O_EXCL``, with ``mode`` if given) and write ``chunks`` to it;
+    if that fails after the file exists, remove it again. (A failed ``O_EXCL`` create
+    removes nothing: the file there is another writer's.)"""
     fd = os.open(
         tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else mode
     )
-    with os.fdopen(fd, "wb") as fh:
-        if mode is not None and hasattr(os, "fchmod"):
-            os.fchmod(fh.fileno(), mode)  # exact, not narrowed by the umask
-        for chunk in chunks:
-            fh.write(chunk)
-        if fsync:
-            fh.flush()
-            os.fsync(fh.fileno())
+    try:
+        with os.fdopen(fd, "wb") as fh:
+            if mode is not None and hasattr(os, "fchmod"):
+                os.fchmod(fh.fileno(), mode)  # exact, not narrowed by the umask
+            for chunk in chunks:
+                fh.write(chunk)
+            if fsync:
+                fh.flush()
+                os.fsync(fh.fileno())
+    except BaseException:
+        _unlink_quietly(tmp)
+        raise
 
 
 def _is_regular_file_of_size(path: str, size: int) -> bool:
@@ -329,6 +335,8 @@ def _plain_name(name: str) -> str:
         or name in (os.curdir, os.pardir)
         or os.path.basename(name) != name
         or (os.altsep and os.altsep in name)
+        or "\0" in name
+        or (os.name == "nt" and ":" in name)  # an alternate data stream
     ):
         raise ValueError(f"name_of must give a plain file name, got {name!r}")
     return name
@@ -383,6 +391,8 @@ def write_content_addressed(
     ('2cf24dba5fb0', b'hello', True)
     >>> write_content_addressed(d, b"hello") == name  # same content, same file
     True
+
+    See also :mod:`dol.content` (a content-addressed *store*, with a key per content).
     """
     folder = os.fsdecode(folder)  # as given: a same-folder rename needs no resolving
     tmp = os.path.join(folder, temp_name(_CONTENT_TEMP_NAME))
@@ -395,10 +405,10 @@ def write_content_addressed(
             size += len(chunk)
             yield chunk
 
+    _write_temp(
+        tmp, hashed(_as_chunks(data, "write_content_addressed")), mode=perms, fsync=fsync
+    )
     try:
-        _write_temp(
-            tmp, hashed(_as_chunks(data, "write_content_addressed")), mode=perms, fsync=fsync
-        )
         name = name_of(digest)
         path = os.path.join(folder, _plain_name(name))
         if _is_regular_file_of_size(path, size):
