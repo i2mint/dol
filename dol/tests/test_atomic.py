@@ -548,3 +548,114 @@ def test_filelock_keeps_its_handle_between_sections(tmp_path):
     with lock:
         assert lock._fh is fh  # not reopened needlessly (any platform)
     lock.close()
+
+
+# write_content_addressed (#183)
+def test_write_content_addressed_streams_hashes_and_names_by_content(tmp_path):
+    import hashlib
+
+    from dol import write_content_addressed
+
+    name = write_content_addressed(tmp_path, iter([b"he", b"llo"]))
+    assert name == hashlib.sha256(b"hello").hexdigest()
+    assert (tmp_path / name).read_bytes() == b"hello"
+    assert os.listdir(tmp_path) == [name]  # no temp left
+
+
+def test_write_content_addressed_seams(tmp_path):
+    import hashlib
+
+    from dol import write_content_addressed
+
+    name = write_content_addressed(
+        tmp_path,
+        b"x",
+        hasher=hashlib.blake2b,
+        name_of=lambda h: h.hexdigest()[:16] + ".bin",
+        perms=0o600,
+    )
+    assert name.endswith(".bin") and len(name) == 20
+    if os.name != "nt":
+        assert os.stat(tmp_path / name).st_mode & 0o777 == 0o600
+
+
+def test_write_content_addressed_existing_file_is_left_alone(tmp_path):
+    from dol import write_content_addressed
+
+    name = write_content_addressed(tmp_path, b"same")
+    before = os.stat(tmp_path / name).st_mtime_ns
+    assert write_content_addressed(tmp_path, b"same") == name
+    assert os.stat(tmp_path / name).st_mtime_ns == before and len(os.listdir(tmp_path)) == 1
+
+
+def test_write_content_addressed_does_not_trust_a_wrong_thing_under_the_name(tmp_path):
+    import hashlib
+
+    from dol import write_content_addressed
+
+    name = hashlib.sha256(b"payload").hexdigest()
+    (tmp_path / name).write_bytes(b"")  # truncated by an earlier non-atomic writer
+    write_content_addressed(tmp_path, b"payload")
+    assert (tmp_path / name).read_bytes() == b"payload"
+    (tmp_path / name).unlink()
+    (tmp_path / name).mkdir()  # a folder in the way is an error, not a success
+    with pytest.raises(OSError):
+        write_content_addressed(tmp_path, b"payload")
+    assert [p.name for p in tmp_path.iterdir()] == [name]  # and no temp left
+
+
+@posix_only
+def test_write_content_addressed_replaces_a_link_not_its_target(tmp_path):
+    import hashlib
+
+    from dol import write_content_addressed
+
+    other = tmp_path / "other"
+    other.write_bytes(b"payload")  # same size, different file
+    name = hashlib.sha256(b"payload").hexdigest()
+    (tmp_path / name).symlink_to(other)
+    write_content_addressed(tmp_path, b"payload")
+    assert not (tmp_path / name).is_symlink() and other.read_bytes() == b"payload"
+
+
+@posix_only
+def test_write_content_addressed_a_symlinked_folder_is_used_as_given(tmp_path):
+    from dol import write_content_addressed
+
+    real = tmp_path / "real"
+    real.mkdir()
+    (tmp_path / "link").symlink_to(real, target_is_directory=True)
+    name = write_content_addressed(tmp_path / "link", b"x")
+    assert (real / name).read_bytes() == b"x"
+
+
+def test_write_content_addressed_failure_leaves_nothing(tmp_path):
+    from dol import write_content_addressed
+
+    def boom():
+        yield b"partial"
+        raise RuntimeError("producer died")
+
+    with pytest.raises(RuntimeError):
+        write_content_addressed(tmp_path, boom())
+    assert os.listdir(tmp_path) == []
+    for bad in ("", "..", "a/b", ".x.0123abcd.tmp", 7):
+        with pytest.raises(ValueError):
+            write_content_addressed(tmp_path, b"x", name_of=lambda h, bad=bad: bad)
+    assert os.listdir(tmp_path) == []
+    with pytest.raises(TypeError):
+        write_content_addressed(tmp_path, "text")
+
+
+def test_a_killed_write_content_addressed_is_listed_as_interrupted(tmp_path):
+    from dol import write_content_addressed
+
+    seen = []
+
+    def killed():
+        yield b"x"
+        seen.extend(interrupted_writes(tmp_path))  # the temp is there mid-write
+        yield b"y"
+
+    write_content_addressed(tmp_path, killed())
+    assert len(seen) == 1 and os.path.dirname(seen[0]) == str(tmp_path)

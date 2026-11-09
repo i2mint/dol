@@ -2,7 +2,8 @@
 
 A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; ``atomic_write`` is the entry point, and
-``atomic_delete`` its counterpart for removal. A write killed mid-way leaves its temp
+``atomic_delete`` its counterpart for removal, ``write_content_addressed`` its variant
+for a name computed from the content. A write killed mid-way leaves its temp
 file behind; ``interrupted_writes`` lists them (``TEMP_NAME_PATTERN`` is their name).
 
 On Windows, a reader holding the destination open makes ``os.replace`` and ``os.unlink``
@@ -272,36 +273,144 @@ def atomic_write(
     >>> open(os.path.join(d, "a"), "rb").read(), os.listdir(d)  # old content, no litter
     (b'xy', ['a'])
     """
-    if isinstance(data, str):
-        raise TypeError(
-            "atomic_write takes bytes (or chunks of bytes); encode text first"
-        )
     path = _physical_path(path)  # str, so the temp name joins
-    chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
     tmp = os.path.join(dirname, temp_name(name))
-    mode = _mode_to_apply(path, perms)
+    chunks = _as_chunks(data, "atomic_write")
     try:
-        fd = os.open(
-            tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else mode
-        )
-        with os.fdopen(fd, "wb") as fh:
-            if mode is not None and hasattr(os, "fchmod"):
-                os.fchmod(fh.fileno(), mode)  # exact, not narrowed by the umask
-            for chunk in chunks:
-                fh.write(chunk)
-            if fsync:
-                fh.flush()
-                os.fsync(fh.fileno())
+        _write_temp(tmp, chunks, mode=_mode_to_apply(path, perms), fsync=fsync)
         retry(os.replace, tmp, path)
     except BaseException:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
+        _unlink_quietly(tmp)
         raise
     if fsync:
         _fsync_dir(dirname)
+
+
+def _as_chunks(data, who: str) -> "Iterable[bytes]":
+    if isinstance(data, str):
+        raise TypeError(f"{who} takes bytes (or chunks of bytes); encode text first")
+    return [data] if isinstance(data, _BYTES_LIKE) else data
+
+
+def _write_temp(
+    tmp: str, chunks: "Iterable[bytes]", *, mode: "int | None", fsync: bool
+) -> None:
+    """Create ``tmp`` (``O_EXCL``, with ``mode`` if given) and write ``chunks`` to it."""
+    fd = os.open(
+        tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666 if mode is None else mode
+    )
+    with os.fdopen(fd, "wb") as fh:
+        if mode is not None and hasattr(os, "fchmod"):
+            os.fchmod(fh.fileno(), mode)  # exact, not narrowed by the umask
+        for chunk in chunks:
+            fh.write(chunk)
+        if fsync:
+            fh.flush()
+            os.fsync(fh.fileno())
+
+
+def _is_regular_file_of_size(path: str, size: int) -> bool:
+    """Whether ``path`` is itself (not a link to) a regular file of ``size`` bytes."""
+    try:
+        st = os.lstat(path)
+    except OSError:
+        return False
+    return stat.S_ISREG(st.st_mode) and st.st_size == size
+
+
+def _plain_name(name: str) -> str:
+    """``name`` when it is a file name, not a path or a temp's name (``ValueError``
+    otherwise)."""
+    if (
+        not isinstance(name, str)
+        or TEMP_NAME_PATTERN.fullmatch(name)
+        or not name
+        or name in (os.curdir, os.pardir)
+        or os.path.basename(name) != name
+        or (os.altsep and os.altsep in name)
+    ):
+        raise ValueError(f"name_of must give a plain file name, got {name!r}")
+    return name
+
+
+def _unlink_quietly(path: str) -> None:
+    try:
+        os.unlink(path)
+    except OSError:
+        pass
+
+
+#: The name part of the temp :func:`write_content_addressed` stages to.
+_CONTENT_TEMP_NAME = "content"
+
+
+def write_content_addressed(
+    folder,
+    data: "bytes | Iterable[bytes]",
+    *,
+    hasher: Callable = hashlib.sha256,
+    name_of: Callable = lambda h: h.hexdigest(),
+    fsync: bool = False,
+    perms: "int | None" = None,
+    retry: Callable = DFLT_RETRY,
+) -> str:
+    """Write ``data`` into ``folder`` under a name computed from its content; return
+    that name (the file is ``os.path.join(folder, name)``).
+
+    The :func:`atomic_write` of a file whose name is not known until its last byte is:
+    ``data`` (bytes-like, or an iterable of chunks, so a large payload streams) is
+    written to a hidden temp in ``folder`` (named like :func:`atomic_write`'s, so
+    :func:`interrupted_writes` finds one a kill left) while being hashed, then the temp
+    is renamed to ``name_of(hasher)``. A reader that finds the name finds the whole
+    content, never a prefix. If that name already exists, identical content is already
+    there: the temp is dropped and the existing file left as it is (when it is a
+    regular file of the same size; anything else under that name, a truncated file, a
+    link, is replaced, a folder raises). On any failure the temp is removed.
+
+    :param folder: Where the file goes; it must exist.
+    :param hasher: Factory of a fresh hash object (``update``-able), e.g.
+        ``hashlib.blake2b`` or ``functools.partial(hashlib.sha256, usedforsecurity=False)``.
+    :param name_of: ``name_of(hash_object)`` -> the file name (a plain name, not a
+        path). Default: the hex digest.
+    :param fsync, perms, retry: As in :func:`atomic_write`. ``perms`` defaults to the
+        usual umask mode.
+
+    >>> import tempfile
+    >>> d = tempfile.mkdtemp()
+    >>> name = write_content_addressed(d, [b"he", b"llo"])
+    >>> name[:12], open(os.path.join(d, name), "rb").read(), os.listdir(d) == [name]
+    ('2cf24dba5fb0', b'hello', True)
+    >>> write_content_addressed(d, b"hello") == name  # same content, same file
+    True
+    """
+    folder = os.fsdecode(folder)  # as given: a same-folder rename needs no resolving
+    tmp = os.path.join(folder, temp_name(_CONTENT_TEMP_NAME))
+    digest, size = hasher(), 0
+
+    def hashed(chunks):
+        nonlocal size
+        for chunk in chunks:
+            digest.update(chunk)
+            size += len(chunk)
+            yield chunk
+
+    try:
+        _write_temp(
+            tmp, hashed(_as_chunks(data, "write_content_addressed")), mode=perms, fsync=fsync
+        )
+        name = name_of(digest)
+        path = os.path.join(folder, _plain_name(name))
+        if _is_regular_file_of_size(path, size):
+            _unlink_quietly(tmp)  # identical content is already there
+        else:
+            retry(os.replace, tmp, path)
+    except BaseException:
+        _unlink_quietly(tmp)
+        raise
+    if fsync:
+        _fsync_dir(folder)
+    return name
 
 
 def atomic_delete(path, *, retry: Callable = DFLT_RETRY) -> None:
