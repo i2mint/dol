@@ -438,6 +438,16 @@ if hasattr(os, "register_at_fork"):
     os.register_at_fork(after_in_child=_renew_in_child)
 
 
+def _is_same_file(fd: int, path: str) -> bool:
+    """Whether the open descriptor ``fd`` is still the file at ``path``."""
+    try:
+        st = os.stat(path)
+    except FileNotFoundError:
+        return False
+    fst = os.fstat(fd)
+    return (st.st_ino, st.st_dev) == (fst.st_ino, fst.st_dev)
+
+
 class FileLock:
     """A reusable, exclusive, advisory lock on a sidecar file ``<path><sidecar>``
     (a shortened hidden name instead, for names near the 255-byte limit).
@@ -512,17 +522,18 @@ class FileLock:
         follows a retargeted link or a changed working directory (#188)."""
         return _lock_path(_physical_path(self._target), self._sidecar)
 
+    def _drop_handle(self) -> None:
+        closer, self._closer, self._fh = self._closer, None, None
+        if closer is not None:
+            closer()
+
     def _ensure_handle(self) -> None:
         if self._pid != os.getpid():
             self._fh = self._closer = None  # inherited over a fork: leave it be
             self._pid = os.getpid()
         lock_path = self._resolve_lock_path()
-        if self._fh is not None and (
-            lock_path != self.path  # the link was retargeted, or the cwd changed
-            or not _is_same_file(self._fh.fileno(), lock_path)  # deleted, recreated
-        ):
-            self._closer()
-            self._fh = self._closer = None
+        if self._fh is not None and lock_path != self.path:
+            self._drop_handle()  # the link was retargeted, or the cwd changed
         self.path = lock_path
         if self._fh is None:
             self._fh = _open_lock_file(self.path)
@@ -558,14 +569,25 @@ class FileLock:
             raise RuntimeError(f"FileLock({self.path!r}) is not reentrant")
         self._thread_lock.acquire()
         try:
-            self._ensure_handle()
-            self._key = self._file_key()
-            if self._key is not None and _holding_thread(self._key) == me:
-                raise RuntimeError(
-                    f"{self.path!r} is already locked by this thread (another "
-                    "FileLock or file_lock of the same file): waiting would deadlock"
-                )
-            self.held = self._try_lock()
+            while True:
+                self._ensure_handle()
+                self._key = self._file_key()
+                if self._key is not None and _holding_thread(self._key) == me:
+                    raise RuntimeError(
+                        f"{self.path!r} is already locked by this thread (another "
+                        "FileLock or file_lock of the same file): waiting would "
+                        "deadlock"
+                    )
+                self.held = self._try_lock()
+                if self.held and not _is_same_file(self._fh.fileno(), self.path):
+                    # The lock file was deleted and recreated (while we idled or
+                    # waited): we hold an unlinked file. Lock the one on disk instead
+                    # (#192). Deleted while held is not covered: best effort.
+                    _unlock(self._fh)
+                    self.held = False
+                    self._drop_handle()
+                    continue
+                break
             if self.held:
                 _holder_of_file[self._key] = (me, weakref.ref(self))
             self._owner = me
@@ -640,16 +662,6 @@ def file_lock(
 DFLT_KEEP_HANDLE = os.name != "nt"
 
 _APPEND_FLAGS = os.O_APPEND | os.O_CREAT | getattr(os, "O_BINARY", 0)
-
-
-def _is_same_file(fd: int, path: str) -> bool:
-    """Whether the open descriptor ``fd`` is still the file at ``path``."""
-    try:
-        st = os.stat(path)
-    except FileNotFoundError:
-        return False
-    fst = os.fstat(fd)
-    return (st.st_ino, st.st_dev) == (fst.st_ino, fst.st_dev)
 
 
 def _missing_end(fd: int, line_end: bytes) -> bytes:

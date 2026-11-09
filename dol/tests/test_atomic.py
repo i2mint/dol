@@ -520,32 +520,31 @@ def test_filelock_rejects_a_path_without_a_file_name(tmp_path):
 
 @posix_only
 def test_filelock_reopens_when_its_lock_file_was_deleted_and_recreated(tmp_path):
-    import multiprocessing as mp
+    import fcntl
 
     from dol import FileLock
 
-    target = tmp_path / "data.json"
-    lock = FileLock(target)
+    lock = FileLock(tmp_path / "data.json")
     with lock:
         pass
     os.unlink(lock.path)  # a cleanup sweep removes it; the kept handle is now stale
     with lock:
-        # a second process must be refused: the lock held is the file on disk
-        ctx = mp.get_context("fork")
-        q = ctx.Queue()
-
-        def attempt():
-            import fcntl
-
-            fd = os.open(lock.path, os.O_RDWR | os.O_CREAT)
-            try:
+        # flock locks belong to the open file: a fresh open of the path is refused
+        fd = os.open(lock.path, os.O_RDWR)
+        try:
+            with pytest.raises(OSError):
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                q.put("got")
-            except OSError:
-                q.put("refused")
+        finally:
+            os.close(fd)
+    lock.close()
 
-        p = ctx.Process(target=attempt)
-        p.start()
-        p.join(10)
-        assert q.get(timeout=5) == "refused"
+
+def test_filelock_keeps_its_handle_between_sections(tmp_path):
+    from dol import FileLock
+
+    lock = FileLock(tmp_path / "data.json")
+    with lock:
+        fh = lock._fh
+    with lock:
+        assert lock._fh is fh  # not reopened needlessly (any platform)
     lock.close()
