@@ -29,6 +29,7 @@ import errno
 import hashlib
 import json
 import os
+import pathlib
 import re
 import stat
 import threading
@@ -160,7 +161,7 @@ def interrupted_writes(
     recursive: bool = False,
 ) -> "list[str]":
     r"""The temp files writes killed mid-way left in ``folder``: sorted absolute paths
-    (``str``) of the regular files (never a symlink or folder) whose name fully
+    (``str``, ``..`` and symlinks kept as given, so each names the file found) of the regular files (never a symlink or folder) whose name fully
     matches ``pattern`` (default: :func:`atomic_write`'s temps; pass another writer's,
     e.g. ``r"\.blob-.+\.part"``).
 
@@ -197,11 +198,14 @@ def interrupted_writes(
             for e in entries:
                 if e.is_file(follow_symlinks=False):
                     if pattern.fullmatch(e.name):
-                        yield os.path.abspath(e.path)
+                        yield e.path  # already absolute: ``scan`` starts from an absolute folder
                 elif recursive and e.is_dir(follow_symlinks=False):
                     yield from scan(e.path, top=False)
 
-    return sorted(scan(os.fsdecode(folder), top=True))
+    # Absolute but NOT normalised: ``abspath`` would collapse ``..`` textually, which
+    # names a different file when a component before it is a symlink.
+    root = str(pathlib.Path(os.fsdecode(folder)).absolute())
+    return sorted(scan(root, top=True))
 
 
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
