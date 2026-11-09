@@ -1,4 +1,4 @@
-> built 2026-11-09 07:13 UTC from 9d19cc6 (master) · dol 0.3.115. Details: build_info.json
+> built 2026-11-09 07:28 UTC from 55a8f16 (master) · dol 0.3.116. Details: build_info.json
 
 # index.html.md
 
@@ -4395,6 +4395,70 @@ issues with system-wide temporary directories.
 Method decorator: validate the key first, and re-raise any exception of the method as a `KeyError`.
 
 
+# _autosummary/dol.gitignore.html.md
+
+# dol.gitignore
+
+Read `.gitignore` lines by git’s rules, as a key filter over a store’s keys.
+
+A store that copies a project folder (a sync, an export, a push to S3) has to keep
+local the same files git keeps out of version control. [`gitignore_matcher()`](_autosummary/dol.gitignore.html.md#dol.gitignore.gitignore_matcher) turns
+`.gitignore` lines into a `key -> bool` predicate that composes with
+[`filt_iter()`](_autosummary/dol.trans.html.md#dol.trans.filt_iter). It reads a deliberate subset of the format and *refuses*
+the rest (`ValueError`) rather than misread it: a misread line could copy what
+should stay local.
+
+```pycon
+>>> from dol import gitignore_matcher
+>>> ignored = gitignore_matcher(["*.lock", "cache/"])
+>>> ignored("deep/x.lock"), ignored("cache/blob"), ignored("scene.md")
+(True, True, False)
+```
+
+### Functions
+
+| [`gitignore_matcher`](_autosummary/dol.gitignore.html.md#dol.gitignore.gitignore_matcher)(lines, \*[, dirs])   | `key -> bool`: whether any of `lines` (`.gitignore` lines) covers the relative POSIX path `key`, by git's rules.   |
+|-----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
+
+### dol.gitignore.gitignore_matcher(lines, , dirs=None)
+
+`key -> bool`: whether any of `lines` (`.gitignore` lines) covers the
+relative POSIX path `key`, by git’s rules.
+
+A line with a `/` before its end is anchored at the root; one without matches a
+name at any depth; a trailing `/` matches folders only; wildcards never cross a
+`/`; a matched folder covers everything under it; case counts (as git’s does
+with `core.ignorecase=false`). What is not read as git does raises `ValueError`
+instead of being misread: `!`, `#`, `**`, `\`, `[^`, `[:`, surrounding
+spaces, empty lines, and a `key` that is not a plain relative POSIX path
+(a backslash, `./`, `..`: on Windows, give a `Files` store’s keys as POSIX
+paths first). `?` and `[...]` take a *byte*, as in git (`?` does not match
+the one character `é`), and never `/`; an unterminated, empty, `/`-holding
+or reversed `[...]`, and `//`, are refused too.
+
+* **Parameters:**
+  * **lines** ([`Iterable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]) – The `.gitignore` lines (not one `str`).
+  * **dirs** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)] | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – `dirs(key)` says whether `key` itself is a folder. A key matcher
+    cannot know that, and a trailing-`/` line matches only folders: so without
+    `dirs` a key is taken as a file (`cache/` does not match the key
+    `cache`, only what is under it). Asked at most once per call, and only when
+    a folders-only line needs it.
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
+```pycon
+>>> local = gitignore_matcher(["artifacts/shot_cache/", "notes.txt", "artifacts/v/*.lock"])
+>>> local("artifacts/shot_cache/blobs/x"), local("deep/notes.txt"), local("artifacts/audio/a.wav")
+(True, True, False)
+>>> local("artifacts/v/a.json.lock"), local("artifacts/v/sub/a.lock")
+(True, False)
+>>> gitignore_matcher(["cache/"])("cache"), gitignore_matcher(["a/*/c"])("a/b/c/d")
+(False, True)
+>>> gitignore_matcher(["cache/"], dirs={"cache"}.__contains__)("cache")
+True
+```
+
+
 # _autosummary/dol.html.md
 
 # dol
@@ -4443,6 +4507,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`errors`](_autosummary/dol.errors.html.md#module-dol.errors)                                   | Error objects and utils.                                                                                        |
 | [`explicit`](_autosummary/dol.explicit.html.md#module-dol.explicit)                               | Stores whose keys are given explicitly, with values fetched lazily from a source.                               |
 | [`filesys`](_autosummary/dol.filesys.html.md#module-dol.filesys)                                 | File system access: dict-like stores over folders and files.                                                    |
+| [`gitignore`](_autosummary/dol.gitignore.html.md#module-dol.gitignore)                             | Read `.gitignore` lines by git's rules, as a key filter over a store's keys.                                    |
 | [`kv_codecs`](_autosummary/dol.kv_codecs.html.md#module-dol.kv_codecs)                             | Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.                             |
 | [`misc`](_autosummary/dol.misc.html.md#module-dol.misc)                                       | Functions to read from and write to misc sources, choosing the codec from the key.                              |
 | [`mixins`](_autosummary/dol.mixins.html.md#module-dol.mixins)                                   | Mixins that add or restrict store behaviours.                                                                   |
@@ -18030,7 +18095,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-09 07:13 UTC** from commit <a href="https://github.com/i2mint/dol/commit/9d19cc6ddb9b9e876d265437e4320756aad42bfa"><code>9d19cc6</code></a> on branch <code>master</code>, for **dol 0.3.115** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-09 07:28 UTC** from commit <a href="https://github.com/i2mint/dol/commit/55a8f16948e4da2eb9b5ee2fee32070145448a9e"><code>55a8f16</code></a> on branch <code>master</code>, for **dol 0.3.116** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -18039,9 +18104,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/9d19cc6ddb9b9e876d265437e4320756aad42bfa"><code>9d19cc6ddb9b9e876d265437e4320756aad42bfa</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/55a8f16948e4da2eb9b5ee2fee32070145448a9e"><code>55a8f16948e4da2eb9b5ee2fee32070145448a9e</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.115</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.116</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18050,9 +18115,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42577666145">42577666145</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42579314761">42579314761</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>bedc1792cda92b3757fe54454c9016c13be0d624</code> (in the history of the built commit) |
+| Event commit | <code>bf17b4d7f2d4b45398e3a21d595c9154ac8e3245</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18077,13 +18142,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.115/">0.3.115</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.116/">0.3.116</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 9d19cc6ddb9b9e876d265437e4320756aad42bfa
+git checkout 55a8f16948e4da2eb9b5ee2fee32070145448a9e
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

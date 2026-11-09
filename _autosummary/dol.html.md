@@ -44,6 +44,7 @@ Get the first item of a kv store, or a list of the first n items
 | [`errors`](dol.errors.html.md#module-dol.errors)                                   | Error objects and utils.                                                                                        |
 | [`explicit`](dol.explicit.html.md#module-dol.explicit)                               | Stores whose keys are given explicitly, with values fetched lazily from a source.                               |
 | [`filesys`](dol.filesys.html.md#module-dol.filesys)                                 | File system access: dict-like stores over folders and files.                                                    |
+| [`gitignore`](dol.gitignore.html.md#module-dol.gitignore)                             | Read `.gitignore` lines by git's rules, as a key filter over a store's keys.                                    |
 | [`kv_codecs`](dol.kv_codecs.html.md#module-dol.kv_codecs)                             | Tools to make Key-Value Codecs (encoder-decoder pairs) from standard library tools.                             |
 | [`misc`](dol.misc.html.md#module-dol.misc)                                       | Functions to read from and write to misc sources, choosing the codec from the key.                              |
 | [`mixins`](dol.mixins.html.md#module-dol.mixins)                                   | Mixins that add or restrict store behaviours.                                                                   |
