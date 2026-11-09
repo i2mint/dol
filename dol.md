@@ -1,4 +1,4 @@
-> built 2026-11-03 11:02 UTC from c8637a0 (master) · dol 0.3.110. Details: build_info.json
+> built 2026-11-09 06:37 UTC from c34eb1a (master) · dol 0.3.111. Details: build_info.json
 
 # index.html.md
 
@@ -489,13 +489,13 @@ appends under that lock and follows the file when an atomic replace swaps it.
 
 ### Functions
 
-| [`atomic_delete`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_delete)(path, \*[, retry])                  | Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart of [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write).                                                                                                                                                                   |
-|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`atomic_write`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)(path, data, \*[, fsync, perms, ...]) | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).                                                                                                                                                                                                                           |
-| [`file_lock`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `path`'s sidecar (see [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)); yields whether it is held.                                                                                                                                                                |
-| [`interrupted_writes`](_autosummary/dol.atomic.html.md#dol.atomic.interrupted_writes)(folder, \*[, pattern, ...])    | The temp files writes killed mid-way left in `folder`: sorted absolute paths (`str`) of the regular files (never a symlink or folder) whose name fully matches `pattern` (default: [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)'s temps; pass another writer's, e.g. `r"\.blob-.+\.part"`). |
-| [`temp_name`](_autosummary/dol.atomic.html.md#dol.atomic.temp_name)(name)                                   | The name [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) stages a write to `name` under: a hidden sibling `.<name, clipped to 100 bytes>.<8 random hex>.tmp`, always matched by [`TEMP_NAME_PATTERN`](_autosummary/dol.atomic.html.md#dol.atomic.TEMP_NAME_PATTERN).                                            |
-| [`update_json`](_autosummary/dol.atomic.html.md#dol.atomic.update_json)(path, change, \*[, default, ...])     | Apply `change` to the JSON document at `path` under its lock; return what `change` returned.                                                                                                                                                                                                                   |
+| [`atomic_delete`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_delete)(path, \*[, retry])                  | Remove the file `path`: `retry(os.unlink, path)`, the delete counterpart of [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write).                                                                                                                                                                                                                        |
+|----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`atomic_write`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)(path, data, \*[, fsync, perms, ...]) | Write `data` to `path` atomically (temp file in the same folder, then `os.replace`).                                                                                                                                                                                                                                                                                |
+| [`file_lock`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock)(path, \*[, sidecar, poll_interval])     | Hold an exclusive advisory lock on `path`'s sidecar (see [`FileLock`](_autosummary/dol.atomic.html.md#dol.atomic.FileLock)); yields whether it is held.                                                                                                                                                                                                                     |
+| [`interrupted_writes`](_autosummary/dol.atomic.html.md#dol.atomic.interrupted_writes)(folder, \*[, pattern, ...])    | The temp files writes killed mid-way left in `folder`: sorted absolute paths (`str`; `..` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully matches `pattern` (default: [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)'s temps; pass another writer's, e.g. `r"\.blob-.+\.part"`). |
+| [`temp_name`](_autosummary/dol.atomic.html.md#dol.atomic.temp_name)(name)                                   | The name [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) stages a write to `name` under: a hidden sibling `.<name, clipped to 100 bytes>.<8 random hex>.tmp`, always matched by [`TEMP_NAME_PATTERN`](_autosummary/dol.atomic.html.md#dol.atomic.TEMP_NAME_PATTERN).                                                                                                 |
+| [`update_json`](_autosummary/dol.atomic.html.md#dol.atomic.update_json)(path, change, \*[, default, ...])     | Apply `change` to the JSON document at `path` under its lock; return what `change` returned.                                                                                                                                                                                                                                                                        |
 
 ### Classes
 
@@ -739,7 +739,7 @@ deadlock); use one section.
 ### dol.atomic.interrupted_writes(folder, , pattern=re.compile('\\\\..+\\\\.[0-9a-f]{8}\\\\.tmp', re.DOTALL), recursive=False)
 
 The temp files writes killed mid-way left in `folder`: sorted absolute paths
-(`str`) of the regular files (never a symlink or folder) whose name fully
+(`str`; `..` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully
 matches `pattern` (default: [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)’s temps; pass another writer’s,
 e.g. `r"\.blob-.+\.part"`).
 
@@ -4579,7 +4579,7 @@ For example, to make a json codec that indents the json, you can do:
 }
 ```
 
-#### b64 *= <module 'base64' from '/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/base64.py'>*
+#### b64 *= <module 'base64' from '/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/base64.py'>*
 
 #### *class* default
 
@@ -17984,20 +17984,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-03 11:02 UTC** from commit <a href="https://github.com/i2mint/dol/commit/c8637a09f76ddd667948749a92e008a99cb404fa"><code>c8637a0</code></a> on branch <code>master</code>, for **dol 0.3.110** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-09 06:37 UTC** from commit <a href="https://github.com/i2mint/dol/commit/c34eb1abf068b1e69663ba36a37eb3a592d267f3"><code>c34eb1a</code></a> on branch <code>master</code>, for **dol 0.3.111** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.110) is ahead of the latest release on PyPI (0.3.109): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/c8637a09f76ddd667948749a92e008a99cb404fa"><code>c8637a09f76ddd667948749a92e008a99cb404fa</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/c34eb1abf068b1e69663ba36a37eb3a592d267f3"><code>c34eb1abf068b1e69663ba36a37eb3a592d267f3</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.110</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.111</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18006,9 +18004,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/41623920597">41623920597</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42573978918">42573978918</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>f5a9a092b59db8d20c691a63bf1966127562337f</code> (in the history of the built commit) |
+| Event commit | <code>a08503802eaa7b62454053a02e4a5022bcd76c78</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18017,7 +18015,7 @@ The documentation and the package may be misaligned:
 | epythet  | 0.2.22  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
-| Python   | 3.12.15 |
+| Python   | 3.12.16 |
 
 ## Configuration as resolved
 
@@ -18033,13 +18031,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.109/">0.3.109</a>, older than the documented version (0.3.110).
+Latest release: <a href="https://pypi.org/project/dol/0.3.111/">0.3.111</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout c8637a09f76ddd667948749a92e008a99cb404fa
+git checkout c34eb1abf068b1e69663ba36a37eb3a592d267f3
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
