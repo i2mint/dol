@@ -207,3 +207,57 @@ def test_a_directory_made_meanwhile_by_someone_else_is_not_removed(tmp_path, mon
     with pytest.raises(KeyError):
         s["rival/mine/b.bin"] = b"x"
     assert os.path.isdir(root + "rival") and not os.path.exists(root + "rival/mine")
+
+
+# dir_made: the public context manager behind mk_dirs_if_missing (#199)
+def test_dir_made_removes_only_what_it_made_on_failure(tmp_path):
+    from dol import dir_made
+
+    (tmp_path / "keep").mkdir()
+    try:
+        with dir_made(tmp_path / "keep" / "a" / "b"):
+            raise RuntimeError("boom")
+    except RuntimeError:
+        pass
+    assert [p.name for p in tmp_path.iterdir()] == ["keep"]
+    assert list((tmp_path / "keep").iterdir()) == []
+
+
+def test_dir_made_keeps_dirs_on_success_and_nonempty_ones_on_failure(tmp_path):
+    from dol import dir_made
+
+    with dir_made(tmp_path / "x" / "y") as made:
+        assert len(made) == 2
+    assert (tmp_path / "x" / "y").is_dir()
+    try:
+        with dir_made(tmp_path / "p" / "q"):
+            (tmp_path / "p" / "other.txt").write_text("another writer's")
+            raise RuntimeError("boom")
+    except RuntimeError:
+        pass
+    assert (tmp_path / "p" / "other.txt").exists() and not (tmp_path / "p" / "q").exists()
+
+
+def test_dir_made_accepts_pathlike_and_existing_dir(tmp_path):
+    from dol import dir_made
+
+    with dir_made(tmp_path) as made:
+        assert made == ()
+
+
+def test_dir_made_yields_str_tuple_for_path_input(tmp_path):
+    from dol import dir_made
+
+    with dir_made(tmp_path / "a" / "b") as made:
+        assert isinstance(made, tuple) and all(type(m) is str for m in made)
+        assert len(made) == 2
+
+
+def test_dir_made_cleans_up_when_making_itself_fails(tmp_path):
+    from dol import dir_made
+
+    (tmp_path / "f").write_text("a file")
+    with pytest.raises(OSError):
+        with dir_made(tmp_path / "f" / "x"):
+            pass
+    assert [p.name for p in tmp_path.iterdir()] == ["f"]
