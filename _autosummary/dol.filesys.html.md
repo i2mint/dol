@@ -57,16 +57,16 @@ Main entry points:
 |--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | [`DirReader`](#dol.filesys.DirReader)(rootdir[, subpath, ...])              | Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.                                                                 |
 | [`FileBytesPersister`](#dol.filesys.FileBytesPersister)(\*args[, delete_func, ...])  | File persistence with configurable deletion.                                                                                           |
-| [`FileBytesReader`](#dol.filesys.FileBytesReader)(rootdir[, subpath, ...])        | Reader mapping file paths under `rootdir` to the files' bytes.                                                                         |
+| [`FileBytesReader`](#dol.filesys.FileBytesReader)(\*args[, read_retry, ...])      | Reader mapping file paths under `rootdir` to the files' bytes.                                                                         |
 | [`FileCollection`](#dol.filesys.FileCollection)(rootdir[, subpath, ...])         | Collection of the file paths under `rootdir`.                                                                                          |
 | [`FileInfoReader`](#dol.filesys.FileInfoReader)(rootdir[, subpath, ...])         | Reader mapping file paths to their `os.stat` result.                                                                                   |
 | [`FileStringPersister`](#dol.filesys.FileStringPersister)(\*args[, delete_func, ...]) | Persister mapping file paths to the files' text (files opened in text mode).                                                           |
-| [`FileStringReader`](#dol.filesys.FileStringReader)(rootdir[, subpath, ...])       | Reader mapping file paths to the files' text (files opened in text mode).                                                              |
+| [`FileStringReader`](#dol.filesys.FileStringReader)(\*args[, read_retry, ...])     | Reader mapping file paths to the files' text (files opened in text mode).                                                              |
 | [`FileSysCollection`](#dol.filesys.FileSysCollection)(rootdir[, subpath, ...])      | Base collection of file-system paths under `rootdir`, optionally restricted by `subpath`, `max_levels` and hidden-file inclusion.      |
-| [`Files`](#dol.filesys.Files)(\*args[, delete_func, write_open_kwargs]) | FileBytesPersister with relative paths                                                                                                 |
-| [`FilesReader`](#dol.filesys.FilesReader)(rootdir[, subpath, ...])            | FileBytesReader with relative paths                                                                                                    |
+| [`Files`](#dol.filesys.Files)(\*args[, delete_func, ...])               | FileBytesPersister with relative paths                                                                                                 |
+| [`FilesReader`](#dol.filesys.FilesReader)(\*args[, read_retry, ...])          | FileBytesReader with relative paths                                                                                                    |
 | [`JsonFiles`](#dol.filesys.JsonFiles)(\*args[, delete_func, ...])           | A store of json files                                                                                                                  |
-| [`Jsons`](#dol.filesys.Jsons)(\*args[, delete_func, write_open_kwargs]) | Like JsonFiles, but with added .json extension handling Namely: filtering for `.json` extensions but not showing the extension in keys |
+| [`Jsons`](#dol.filesys.Jsons)(\*args[, delete_func, ...])               | Like JsonFiles, but with added .json extension handling Namely: filtering for `.json` extensions but not showing the extension in keys |
 | [`LocalFileDeleteMixin`](#dol.filesys.LocalFileDeleteMixin)()                          | Mixin providing configurable file deletion.                                                                                            |
 | [`MakeMissingDirsStoreMixin`](#dol.filesys.MakeMissingDirsStoreMixin)()                     | Will make a local file store automatically create the directories needed to create a file.                                             |
 | [`PickleFiles`](#dol.filesys.PickleFiles)(\*args[, delete_func, ...])         | A store of pickles                                                                                                                     |
@@ -78,7 +78,7 @@ Main entry points:
 | [`RelPathFileStringReader`](#dol.filesys.RelPathFileStringReader)                         |                                                                                                                                        |
 | [`ReprMixin`](#dol.filesys.ReprMixin)()                                     | A `__repr__` showing the `_init_kwargs` the instance was created with.                                                                 |
 | [`TextFiles`](#dol.filesys.TextFiles)(\*args[, delete_func, ...])           | FileStringPersister with relative paths                                                                                                |
-| [`TextFilesReader`](#dol.filesys.TextFilesReader)(rootdir[, subpath, ...])        | FileStringReader with relative paths                                                                                                   |
+| [`TextFilesReader`](#dol.filesys.TextFilesReader)(\*args[, read_retry, ...])      | FileStringReader with relative paths                                                                                                   |
 
 ### Exceptions
 
@@ -97,7 +97,7 @@ Bases: [`DirCollection`](#dol.filesys.DirCollection), [`KvReader`](dol.base.html
 
 Reader mapping each sub-directory of `rootdir` to a `DirReader` of it.
 
-### *class* dol.filesys.FileBytesPersister(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.FileBytesPersister(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`LocalFileDeleteMixin`](#dol.filesys.LocalFileDeleteMixin), [`FileBytesReader`](#dol.filesys.FileBytesReader), [`KvPersister`](dol.base.html.md#dol.base.KvPersister)
 
@@ -108,7 +108,7 @@ Supports custom deletion functions via delete_func parameter in \_\_init_\_.
 By default, tries to move files to trash with fallback to os.remove.
 See dol.trash module for deletion strategies: permanent_delete, trash_only, etc.
 
-### *class* dol.filesys.FileBytesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
+### *class* dol.filesys.FileBytesReader(\*args, read_retry=None, strict_key_errors=False, \*\*kwargs)
 
 Bases: [`FileCollection`](#dol.filesys.FileCollection), [`KvReader`](dol.base.html.md#dol.base.KvReader)
 
@@ -126,7 +126,7 @@ Bases: [`FileCollection`](#dol.filesys.FileCollection), [`KvReader`](dol.base.ht
 
 Reader mapping file paths to their `os.stat` result.
 
-### *class* dol.filesys.FileStringPersister(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.FileStringPersister(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`FileBytesPersister`](#dol.filesys.FileBytesPersister)
 
@@ -139,7 +139,7 @@ variable isn’t really specified. Without this, a write can raise on a
 non-ASCII-locale machine, or a store synced between two machines with different
 locales can silently corrupt on round trip.
 
-### *class* dol.filesys.FileStringReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
+### *class* dol.filesys.FileStringReader(\*args, read_retry=None, strict_key_errors=False, \*\*kwargs)
 
 Bases: [`FileBytesReader`](#dol.filesys.FileBytesReader)
 
@@ -189,7 +189,7 @@ For methods that build a value from `k` without a full `validate_key`.
 
 Return a copy of self with relative paths
 
-### *class* dol.filesys.Files(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.Files(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -203,7 +203,7 @@ FileBytesPersister with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.FilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
+### *class* dol.filesys.FilesReader(\*args, read_retry=None, strict_key_errors=False, \*\*kwargs)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -217,7 +217,7 @@ FileBytesReader with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.JsonFiles(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.JsonFiles(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -231,7 +231,7 @@ A store of json files
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.Jsons(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.Jsons(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -278,7 +278,7 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 Will make a local file store automatically create the directories needed to create a file.
 Should be placed before the concrete perisister in the mro but in such a manner so that it receives full paths.
 
-### *class* dol.filesys.PickleFiles(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.PickleFiles(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -332,7 +332,7 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A `__repr__` showing the `_init_kwargs` the instance was created with.
 
-### *class* dol.filesys.TextFiles(\*args, delete_func=None, write_open_kwargs=None, \*\*kwargs)
+### *class* dol.filesys.TextFiles(\*args, delete_func=None, write_open_kwargs=None, write_func=None, \*\*kwargs)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -346,7 +346,7 @@ FileStringPersister with relative paths
 
 `validate_key` on the inner key – see `mk_relative_path_store`.
 
-### *class* dol.filesys.TextFilesReader(rootdir, subpath='', pattern_for_field=None, max_levels=None, , include_hidden=False, assert_rootdir_existence=False, allow_escape=False)
+### *class* dol.filesys.TextFilesReader(\*args, read_retry=None, strict_key_errors=False, \*\*kwargs)
 
 Bases: [`PrefixRelativizationMixin`](dol.paths.html.md#dol.paths.PrefixRelativizationMixin), [`Store`](dol.base.html.md#dol.base.Store)
 
@@ -699,3 +699,6 @@ issues with system-wide temporary directories.
 ### dol.filesys.validate_key_and_raise_key_error_on_exception(func)
 
 Method decorator: validate the key first, and re-raise any exception of the method as a `KeyError`.
+
+Which exceptions become a `KeyError` is the store’s `_reads_as_missing(error, k)`
+(default: every `Exception`; see `FileBytesReader(strict_key_errors=...)`).

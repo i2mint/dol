@@ -668,7 +668,11 @@
 <div class="viewcode-block" id="validate_key_and_raise_key_error_on_exception">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.validate_key_and_raise_key_error_on_exception">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">validate_key_and_raise_key_error_on_exception</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``."""</span>
+<span class="w">    </span><span class="sd">"""Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``.</span>
+
+<span class="sd">    Which exceptions become a ``KeyError`` is the store's ``_reads_as_missing(error, k)``</span>
+<span class="sd">    (default: every ``Exception``; see ``FileBytesReader(strict_key_errors=...)``).</span>
+<span class="sd">    """</span>
 
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">wrapped_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -676,6 +680,10 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_strict_key_errors"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">_is_missing_file</span><span class="p">(</span>
+                <span class="n">e</span><span class="p">,</span> <span class="n">k</span>
+            <span class="p">):</span>
+                <span class="k">raise</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">wrapped_method</span></div>
@@ -1002,6 +1010,18 @@
 
 
 
+<span class="c1">#: What ``FileBytesReader(strict_key_errors=True)`` reads as "no such key".</span>
+<span class="n">_MISSING_FILE_ERRORS</span> <span class="o">=</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">IsADirectoryError</span><span class="p">,</span> <span class="ne">NotADirectoryError</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_missing_file</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``error`` means there is no file ``k``: not found, a folder where a file</span>
+<span class="sd">    is expected (on Windows that is a ``PermissionError``), or a path through a file."""</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">_MISSING_FILE_ERRORS</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
 <div class="viewcode-block" id="FileBytesReader">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileBytesReader">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">FileBytesReader</span><span class="p">(</span><span class="n">FileCollection</span><span class="p">,</span> <span class="n">KvReader</span><span class="p">):</span>
@@ -1016,6 +1036,29 @@
         <span class="n">closefd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">opener</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
+
+    <span class="n">_strict_key_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">_read_retry</span><span class="p">:</span> <span class="s2">"Callable | None"</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">read_retry</span><span class="p">:</span> <span class="s2">"Callable | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">strict_key_errors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        :param read_retry: How a file is read, ``read_retry(op, *args)`` (e.g. a</span>
+<span class="sd">            :class:`dol.atomic.Retry`, which retries a Windows sharing violation while a</span>
+<span class="sd">            writer swaps the file). Default ``None``: read once.</span>
+<span class="sd">        :param strict_key_errors: Default ``False``: any exception of a read, write or</span>
+<span class="sd">            delete becomes a ``KeyError`` (so a full disk or a permission error reads as</span>
+<span class="sd">            "missing"). ``True``: only a missing file (or a folder where a file is</span>
+<span class="sd">            expected) does; every other failure propagates as itself.</span>
+<span class="sd">        """</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_read_retry</span> <span class="o">=</span> <span class="n">read_retry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_strict_key_errors</span> <span class="o">=</span> <span class="n">strict_key_errors</span>
 
     <span class="nd">@validate_key_and_raise_key_error_on_exception</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -1048,6 +1091,11 @@
 <span class="sd">        ...     print("KeyError (not FileNotFoundError) was raised.")</span>
 <span class="sd">        KeyError (not FileNotFoundError) was raised.</span>
 <span class="sd">        '''</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_retry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_file</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_retry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_file</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_read_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_open_kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
 
@@ -1108,8 +1156,11 @@
         <span class="n">opener</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="c1"># _make_dirs_if_missing = False</span>
+    <span class="n">_write</span><span class="p">:</span> <span class="s2">"Callable | None"</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">delete_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_open_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">delete_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_open_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">write_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Initialize FileBytesPersister.</span>
 
 <span class="sd">        Args:</span>
@@ -1120,6 +1171,15 @@
 <span class="sd">                create files with ``0o600``), ``encoding=``, ``errors=`` or</span>
 <span class="sd">                ``newline=``. If you override ``mode``, also override the keys that go with</span>
 <span class="sd">                it (a binary mode takes no ``encoding``/``errors``/``newline``).</span>
+<span class="sd">            write_func: Optional ``write_func(path, data)`` that stores each value, in</span>
+<span class="sd">                place of ``open(path, ...).write(data)``, e.g.</span>
+<span class="sd">                :func:`dol.atomic.atomic_write` (or ``functools.partial(atomic_write,</span>
+<span class="sd">                fsync=True, perms=0o600)``), so a concurrent reader never sees a</span>
+<span class="sd">                truncated file. It runs inside the key-validated ``__setitem__``, so a</span>
+<span class="sd">                key outside the root is still refused. It gets bytes (a text store</span>
+<span class="sd">                encodes first, as UTF-8 by default, ``\\n`` as the platform writes it);</span>
+<span class="sd">                give it ``perms=`` etc. instead of ``write_open_kwargs``, which cannot</span>
+<span class="sd">                be combined with it. Default ``None``: plain ``open``.</span>
 <span class="sd">            delete_func: Optional custom deletion function.</span>
 <span class="sd">                If None, uses class default (safe trash with fallback).</span>
 <span class="sd">                Common options from dol.trash:</span>
@@ -1143,6 +1203,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_delete_func</span> <span class="o">=</span> <span class="n">delete_func</span>
         <span class="k">if</span> <span class="n">write_open_kwargs</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">write_open_kwargs</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">write_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">write_open_kwargs</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"write_open_kwargs does not apply with write_func: configure "</span>
+                    <span class="s2">"write_func itself (e.g. functools.partial(atomic_write, perms=...))"</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="o">=</span> <span class="n">write_func</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_value_before_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Raise if ``v`` can't be written, *before* the file is opened (and so</span>
@@ -1164,8 +1231,15 @@
         <span class="c1">#     dirname = os.path.dirname(k)</span>
         <span class="c1">#     os.makedirs(dirname, exist_ok=True)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_value_before_open</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bytes_of</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+            <span class="k">return</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bytes_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""``v`` as the bytes handed to a ``write=`` function (a bytes-like value as is)."""</span>
+        <span class="k">return</span> <span class="n">v</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span> <span class="k">else</span> <span class="nb">bytes</span><span class="p">(</span><span class="nb">memoryview</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></div>
 
 
 
@@ -1241,6 +1315,17 @@
     <span class="n">_write_open_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
         <span class="n">FileBytesPersister</span><span class="o">.</span><span class="n">_write_open_kwargs</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wt"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span>
     <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bytes_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">kw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_open_kwargs</span>
+        <span class="k">if</span> <span class="s2">"b"</span> <span class="ow">in</span> <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mode"</span><span class="p">,</span> <span class="s2">"wt"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_bytes_of</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="n">newline</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">linesep</span> <span class="k">if</span> <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"newline"</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">kw</span><span class="p">[</span><span class="s2">"newline"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">newline</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">):</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">newline</span><span class="p">)</span>  <span class="c1"># as open(..., "wt") translates it</span>
+        <span class="k">return</span> <span class="n">v</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+            <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"encoding"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_locale_encoding</span><span class="p">(),</span> <span class="n">kw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"errors"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"strict"</span>
+        <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_value_before_open</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Encode ``v`` (and discard the result) before the file is opened.</span>
@@ -1758,7 +1843,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=eebc2d19"></script>
+</div><script src="../../_static/documentation_options.js?v=47fc597f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
