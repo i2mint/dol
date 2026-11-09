@@ -376,7 +376,9 @@ def validate_key_and_raise_key_error_on_exception(func):
         try:
             return func(self, k, *args, **kwargs)
         except Exception as e:
-            if getattr(self, "_strict_key_errors", False) and not _is_missing_file(e, k):
+            if getattr(self, "_strict_key_errors", False) and not _is_missing_file(
+                e, k
+            ):
                 raise
             raise KeyError(str(e))
 
