@@ -397,7 +397,10 @@ def write_content_addressed(
 
     try:
         _write_temp(
-            tmp, hashed(_as_chunks(data, "write_content_addressed")), mode=perms, fsync=fsync
+            tmp,
+            hashed(_as_chunks(data, "write_content_addressed")),
+            mode=perms,
+            fsync=fsync,
         )
         name = name_of(digest)
         path = os.path.join(folder, _plain_name(name))

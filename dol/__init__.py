@@ -124,7 +124,9 @@ from dol.atomic import atomic_write  # crash-safe file write (temp file + os.rep
 from dol.atomic import (
     atomic_delete,
 )  # unlink, retried like atomic_write (dol.atomic.Retry)
-from dol.atomic import write_content_addressed  # atomic write named by the content's hash
+from dol.atomic import (
+    write_content_addressed,
+)  # atomic write named by the content's hash
 from dol.atomic import file_lock, FileLock  # cross-process advisory lock (sidecar file)
 from dol.atomic import LockedAppender  # lock-held appends that follow a replaced file
 from dol.atomic import interrupted_writes  # temps left by killed atomic writes
