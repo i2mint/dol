@@ -4,7 +4,8 @@ Atomic file writes: write to a sibling temp file, then `os.replace` it into plac
 
 A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; `atomic_write` is the entry point, and
-`atomic_delete` its counterpart for removal. A write killed mid-way leaves its temp
+`atomic_delete` its counterpart for removal, `write_content_addressed` its variant
+for a name computed from the content. A write killed mid-way leaves its temp
 file behind; `interrupted_writes` lists them (`TEMP_NAME_PATTERN` is their name).
 
 On Windows, a reader holding the destination open makes `os.replace` and `os.unlink`
@@ -44,6 +45,7 @@ appends under that lock and follows the file when an atomic replace swaps it.
 | [`interrupted_writes`](#dol.atomic.interrupted_writes)(folder, \*[, pattern, ...])    | The temp files writes killed mid-way left in `folder`: sorted absolute paths (`str`; `..` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully matches `pattern` (default: [`atomic_write()`](#dol.atomic.atomic_write)'s temps; pass another writer's, e.g. `r"\.blob-.+\.part"`). |
 | [`temp_name`](#dol.atomic.temp_name)(name)                                   | The name [`atomic_write()`](#dol.atomic.atomic_write) stages a write to `name` under: a hidden sibling `.<name, clipped to 100 bytes>.<8 random hex>.tmp`, always matched by [`TEMP_NAME_PATTERN`](#dol.atomic.TEMP_NAME_PATTERN).                                                                                                 |
 | [`update_json`](#dol.atomic.update_json)(path, change, \*[, default, ...])     | Apply `change` to the JSON document at `path` under its lock; return what `change` returned.                                                                                                                                                                                                                                                                        |
+| [`write_content_addressed`](#dol.atomic.write_content_addressed)(folder, data, \*[, ...])  | Write `data` into `folder` under a name computed from its content; return that name (the file is `os.path.join(folder, name)`).                                                                                                                                                                                                                                     |
 
 ### Classes
 
@@ -395,4 +397,40 @@ be read would destroy what it held.
 Traceback (most recent call last):
 ...
 FileNotFoundError: [Errno 2] update_json: the record must exist (default=None): '...manifest.json.gone'
+```
+
+### dol.atomic.write_content_addressed(folder, data, \*, hasher=<built-in function openssl_sha256>, name_of=<function <lambda>>, fsync=False, perms=None, retry=Retry(on=(), attempts=7, backoff_s=0.01))
+
+Write `data` into `folder` under a name computed from its content; return
+that name (the file is `os.path.join(folder, name)`).
+
+The [`atomic_write()`](#dol.atomic.atomic_write) of a file whose name is not known until its last byte is:
+`data` (bytes-like, or an iterable of chunks, so a large payload streams) is
+written to a hidden temp in `folder` (named like [`atomic_write()`](#dol.atomic.atomic_write)’s, so
+[`interrupted_writes()`](#dol.atomic.interrupted_writes) finds one a kill left) while being hashed, then the temp
+is renamed to `name_of(hasher)`. A reader that finds the name finds the whole
+content, never a prefix. If that name already exists, identical content is already
+there: the temp is dropped and the existing file left as it is (when it is a
+regular file of the same size; anything else under that name, a truncated file, a
+link, is replaced, a folder raises). On any failure the temp is removed.
+
+* **Parameters:**
+  * **folder** – Where the file goes; it must exist.
+  * **hasher** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – Factory of a fresh hash object (`update`-able), e.g.
+    `hashlib.blake2b` or `functools.partial(hashlib.sha256, usedforsecurity=False)`.
+  * **name_of** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – `name_of(hash_object)` -> the file name (a plain name, not a
+    path). Default: the hex digest.
+  * **retry** ([`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)) – As in [`atomic_write()`](#dol.atomic.atomic_write). `perms` defaults to the
+    usual umask mode.
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+```pycon
+>>> import tempfile
+>>> d = tempfile.mkdtemp()
+>>> name = write_content_addressed(d, [b"he", b"llo"])
+>>> name[:12], open(os.path.join(d, name), "rb").read(), os.listdir(d) == [name]
+('2cf24dba5fb0', b'hello', True)
+>>> write_content_addressed(d, b"hello") == name  # same content, same file
+True
 ```

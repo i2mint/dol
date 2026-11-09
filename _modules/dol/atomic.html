@@ -274,7 +274,8 @@
 
 <span class="sd">A crash (or an exception while producing the data) leaves the old content or the new,</span>
 <span class="sd">never a torn or empty file. Dependency-free; ``atomic_write`` is the entry point, and</span>
-<span class="sd">``atomic_delete`` its counterpart for removal. A write killed mid-way leaves its temp</span>
+<span class="sd">``atomic_delete`` its counterpart for removal, ``write_content_addressed`` its variant</span>
+<span class="sd">for a name computed from the content. A write killed mid-way leaves its temp</span>
 <span class="sd">file behind; ``interrupted_writes`` lists them (``TEMP_NAME_PATTERN`` is their name).</span>
 
 <span class="sd">On Windows, a reader holding the destination open makes ``os.replace`` and ``os.unlink``</span>
@@ -555,36 +556,150 @@
 <span class="sd">    &gt;&gt;&gt; open(os.path.join(d, "a"), "rb").read(), os.listdir(d)  # old content, no litter</span>
 <span class="sd">    (b'xy', ['a'])</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-            <span class="s2">"atomic_write takes bytes (or chunks of bytes); encode text first"</span>
-        <span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">_physical_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># str, so the temp name joins</span>
-    <span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_BYTES_LIKE</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span>
     <span class="n">dirname</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">temp_name</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-    <span class="n">mode</span> <span class="o">=</span> <span class="n">_mode_to_apply</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">perms</span><span class="p">)</span>
+    <span class="n">chunks</span> <span class="o">=</span> <span class="n">_as_chunks</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"atomic_write"</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
-            <span class="n">tmp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_EXCL</span><span class="p">,</span> <span class="mo">0o666</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mode</span>
-        <span class="p">)</span>
-        <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">fdopen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="s2">"fchmod"</span><span class="p">):</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">fchmod</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">mode</span><span class="p">)</span>  <span class="c1"># exact, not narrowed by the umask</span>
-            <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
-                <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
-                <span class="n">fh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">fsync</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+        <span class="n">_write_temp</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">_mode_to_apply</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">perms</span><span class="p">),</span> <span class="n">fsync</span><span class="o">=</span><span class="n">fsync</span><span class="p">)</span>
         <span class="n">retry</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-            <span class="k">pass</span>
+        <span class="n">_unlink_quietly</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
         <span class="k">raise</span>
     <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
         <span class="n">_fsync_dir</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_as_chunks</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">who</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Iterable[bytes]"</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">who</span><span class="si">}</span><span class="s2"> takes bytes (or chunks of bytes); encode text first"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_BYTES_LIKE</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_write_temp</span><span class="p">(</span>
+    <span class="n">tmp</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chunks</span><span class="p">:</span> <span class="s2">"Iterable[bytes]"</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="s2">"int | None"</span><span class="p">,</span> <span class="n">fsync</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Create ``tmp`` (``O_EXCL``, with ``mode`` if given) and write ``chunks`` to it."""</span>
+    <span class="n">fd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
+        <span class="n">tmp</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">O_WRONLY</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_CREAT</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">O_EXCL</span><span class="p">,</span> <span class="mo">0o666</span> <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mode</span>
+    <span class="p">)</span>
+    <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">fdopen</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="s2">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">os</span><span class="p">,</span> <span class="s2">"fchmod"</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">fchmod</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">(),</span> <span class="n">mode</span><span class="p">)</span>  <span class="c1"># exact, not narrowed by the umask</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
+            <span class="n">fh</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">fsync</span><span class="p">(</span><span class="n">fh</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_regular_file_of_size</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether ``path`` is itself (not a link to) a regular file of ``size`` bytes."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">lstat</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_ISREG</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">st_mode</span><span class="p">)</span> <span class="ow">and</span> <span class="n">st</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="n">size</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plain_name</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``name`` when it is a file name, not a path or a temp's name (``ValueError``</span>
+<span class="sd">    otherwise)."""</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">TEMP_NAME_PATTERN</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span>
+        <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">curdir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">pardir</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">!=</span> <span class="n">name</span>
+        <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">altsep</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">altsep</span> <span class="ow">in</span> <span class="n">name</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"name_of must give a plain file name, got </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_unlink_quietly</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+
+<span class="c1">#: The name part of the temp :func:`write_content_addressed` stages to.</span>
+<span class="n">_CONTENT_TEMP_NAME</span> <span class="o">=</span> <span class="s2">"content"</span>
+
+
+<div class="viewcode-block" id="write_content_addressed">
+<a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.write_content_addressed">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_content_addressed</span><span class="p">(</span>
+    <span class="n">folder</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">:</span> <span class="s2">"bytes | Iterable[bytes]"</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">hasher</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">,</span>
+    <span class="n">name_of</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">h</span><span class="p">:</span> <span class="n">h</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span>
+    <span class="n">fsync</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">perms</span><span class="p">:</span> <span class="s2">"int | None"</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">retry</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">DFLT_RETRY</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Write ``data`` into ``folder`` under a name computed from its content; return</span>
+<span class="sd">    that name (the file is ``os.path.join(folder, name)``).</span>
+
+<span class="sd">    The :func:`atomic_write` of a file whose name is not known until its last byte is:</span>
+<span class="sd">    ``data`` (bytes-like, or an iterable of chunks, so a large payload streams) is</span>
+<span class="sd">    written to a hidden temp in ``folder`` (named like :func:`atomic_write`'s, so</span>
+<span class="sd">    :func:`interrupted_writes` finds one a kill left) while being hashed, then the temp</span>
+<span class="sd">    is renamed to ``name_of(hasher)``. A reader that finds the name finds the whole</span>
+<span class="sd">    content, never a prefix. If that name already exists, identical content is already</span>
+<span class="sd">    there: the temp is dropped and the existing file left as it is (when it is a</span>
+<span class="sd">    regular file of the same size; anything else under that name, a truncated file, a</span>
+<span class="sd">    link, is replaced, a folder raises). On any failure the temp is removed.</span>
+
+<span class="sd">    :param folder: Where the file goes; it must exist.</span>
+<span class="sd">    :param hasher: Factory of a fresh hash object (``update``-able), e.g.</span>
+<span class="sd">        ``hashlib.blake2b`` or ``functools.partial(hashlib.sha256, usedforsecurity=False)``.</span>
+<span class="sd">    :param name_of: ``name_of(hash_object)`` -&gt; the file name (a plain name, not a</span>
+<span class="sd">        path). Default: the hex digest.</span>
+<span class="sd">    :param fsync, perms, retry: As in :func:`atomic_write`. ``perms`` defaults to the</span>
+<span class="sd">        usual umask mode.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; d = tempfile.mkdtemp()</span>
+<span class="sd">    &gt;&gt;&gt; name = write_content_addressed(d, [b"he", b"llo"])</span>
+<span class="sd">    &gt;&gt;&gt; name[:12], open(os.path.join(d, name), "rb").read(), os.listdir(d) == [name]</span>
+<span class="sd">    ('2cf24dba5fb0', b'hello', True)</span>
+<span class="sd">    &gt;&gt;&gt; write_content_addressed(d, b"hello") == name  # same content, same file</span>
+<span class="sd">    True</span>
+<span class="sd">    """</span>
+    <span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>  <span class="c1"># as given: a same-folder rename needs no resolving</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">temp_name</span><span class="p">(</span><span class="n">_CONTENT_TEMP_NAME</span><span class="p">))</span>
+    <span class="n">digest</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">hasher</span><span class="p">(),</span> <span class="mi">0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">hashed</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">size</span>
+        <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
+            <span class="n">digest</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="n">size</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">chunk</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_write_temp</span><span class="p">(</span>
+            <span class="n">tmp</span><span class="p">,</span>
+            <span class="n">hashed</span><span class="p">(</span><span class="n">_as_chunks</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">"write_content_addressed"</span><span class="p">)),</span>
+            <span class="n">mode</span><span class="o">=</span><span class="n">perms</span><span class="p">,</span>
+            <span class="n">fsync</span><span class="o">=</span><span class="n">fsync</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name_of</span><span class="p">(</span><span class="n">digest</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">_plain_name</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">_is_regular_file_of_size</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+            <span class="n">_unlink_quietly</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>  <span class="c1"># identical content is already there</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">retry</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+        <span class="n">_unlink_quietly</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="k">raise</span>
+    <span class="k">if</span> <span class="n">fsync</span><span class="p">:</span>
+        <span class="n">_fsync_dir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">name</span></div>
 
 
 
@@ -1260,7 +1375,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=e58ba838"></script>
+</div><script src="../../_static/documentation_options.js?v=4ccbdc5e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

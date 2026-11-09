@@ -283,7 +283,8 @@
 <p>Atomic file writes: write to a sibling temp file, then <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> it into place.</p>
 <p>A crash (or an exception while producing the data) leaves the old content or the new,
 never a torn or empty file. Dependency-free; <code class="docutils literal notranslate"><span class="pre">atomic_write</span></code> is the entry point, and
-<code class="docutils literal notranslate"><span class="pre">atomic_delete</span></code> its counterpart for removal. A write killed mid-way leaves its temp
+<code class="docutils literal notranslate"><span class="pre">atomic_delete</span></code> its counterpart for removal, <code class="docutils literal notranslate"><span class="pre">write_content_addressed</span></code> its variant
+for a name computed from the content. A write killed mid-way leaves its temp
 file behind; <code class="docutils literal notranslate"><span class="pre">interrupted_writes</span></code> lists them (<code class="docutils literal notranslate"><span class="pre">TEMP_NAME_PATTERN</span></code> is their name).</p>
 <p>On Windows, a reader holding the destination open makes <code class="docutils literal notranslate"><span class="pre">os.replace</span></code> and <code class="docutils literal notranslate"><span class="pre">os.unlink</span></code>
 fail with <code class="docutils literal notranslate"><span class="pre">PermissionError</span></code> until it closes (Python’s <code class="docutils literal notranslate"><span class="pre">open</span></code> does not share delete).
@@ -340,6 +341,9 @@ appends under that lock and follows the file when an atomic replace swaps it.</p
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#dol.atomic.update_json" title="dol.atomic.update_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_json</span></code></a>(path, change, *[, default, ...])</p></td>
 <td><p>Apply <code class="docutils literal notranslate"><span class="pre">change</span></code> to the JSON document at <code class="docutils literal notranslate"><span class="pre">path</span></code> under its lock; return what <code class="docutils literal notranslate"><span class="pre">change</span></code> returned.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.atomic.write_content_addressed" title="dol.atomic.write_content_addressed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_content_addressed</span></code></a>(folder, data, *[, ...])</p></td>
+<td><p>Write <code class="docutils literal notranslate"><span class="pre">data</span></code> into <code class="docutils literal notranslate"><span class="pre">folder</span></code> under a name computed from its content; return that name (the file is <code class="docutils literal notranslate"><span class="pre">os.path.join(folder,</span> <span class="pre">name)</span></code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -747,6 +751,47 @@ torn document.</p></li>
 </div>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="dol.atomic.write_content_addressed">
+<span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">write_content_addressed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hasher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;built-in</span> <span class="pre">function</span> <span class="pre">openssl_sha256&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;function</span> <span class="pre">&lt;lambda&gt;&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsync</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">perms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Retry(on=()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attempts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backoff_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#write_content_addressed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.write_content_addressed" title="Link to this definition">¶</a></dt>
+<dd><p>Write <code class="docutils literal notranslate"><span class="pre">data</span></code> into <code class="docutils literal notranslate"><span class="pre">folder</span></code> under a name computed from its content; return
+that name (the file is <code class="docutils literal notranslate"><span class="pre">os.path.join(folder,</span> <span class="pre">name)</span></code>).</p>
+<p>The <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> of a file whose name is not known until its last byte is:
+<code class="docutils literal notranslate"><span class="pre">data</span></code> (bytes-like, or an iterable of chunks, so a large payload streams) is
+written to a hidden temp in <code class="docutils literal notranslate"><span class="pre">folder</span></code> (named like <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>’s, so
+<a class="reference internal" href="#dol.atomic.interrupted_writes" title="dol.atomic.interrupted_writes"><code class="xref py py-func docutils literal notranslate"><span class="pre">interrupted_writes()</span></code></a> finds one a kill left) while being hashed, then the temp
+is renamed to <code class="docutils literal notranslate"><span class="pre">name_of(hasher)</span></code>. A reader that finds the name finds the whole
+content, never a prefix. If that name already exists, identical content is already
+there: the temp is dropped and the existing file left as it is (when it is a
+regular file of the same size; anything else under that name, a truncated file, a
+link, is replaced, a folder raises). On any failure the temp is removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> – Where the file goes; it must exist.</p></li>
+<li><p><strong>hasher</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – Factory of a fresh hash object (<code class="docutils literal notranslate"><span class="pre">update</span></code>-able), e.g.
+<code class="docutils literal notranslate"><span class="pre">hashlib.blake2b</span></code> or <code class="docutils literal notranslate"><span class="pre">functools.partial(hashlib.sha256,</span> <span class="pre">usedforsecurity=False)</span></code>.</p></li>
+<li><p><strong>name_of</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – <code class="docutils literal notranslate"><span class="pre">name_of(hash_object)</span></code> -&gt; the file name (a plain name, not a
+path). Default: the hex digest.</p></li>
+<li><p><strong>retry</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code></a></span>) – As in <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">perms</span></code> defaults to the
+usual umask mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name</span> <span class="o">=</span> <span class="n">write_content_addressed</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="p">[</span><span class="sa">b</span><span class="s2">"he"</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"llo"</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">name</span><span class="p">[:</span><span class="mi">12</span><span class="p">],</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="s2">"rb"</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">==</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+<span class="go">('2cf24dba5fb0', b'hello', True)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">write_content_addressed</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="sa">b</span><span class="s2">"hello"</span><span class="p">)</span> <span class="o">==</span> <span class="n">name</span>  <span class="c1"># same content, same file</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
         </article>
@@ -821,6 +866,7 @@ torn document.</p></li>
 <li><a class="reference internal" href="#dol.atomic.interrupted_writes"><code class="docutils literal notranslate"><span class="pre">interrupted_writes()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.temp_name"><code class="docutils literal notranslate"><span class="pre">temp_name()</span></code></a></li>
 <li><a class="reference internal" href="#dol.atomic.update_json"><code class="docutils literal notranslate"><span class="pre">update_json()</span></code></a></li>
+<li><a class="reference internal" href="#dol.atomic.write_content_addressed"><code class="docutils literal notranslate"><span class="pre">write_content_addressed()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -832,7 +878,7 @@ torn document.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=e58ba838"></script>
+</div><script src="../_static/documentation_options.js?v=4ccbdc5e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
