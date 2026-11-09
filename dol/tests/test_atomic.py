@@ -659,3 +659,48 @@ def test_a_killed_write_content_addressed_is_listed_as_interrupted(tmp_path):
 
     write_content_addressed(tmp_path, killed())
     assert len(seen) == 1 and os.path.dirname(seen[0]) == str(tmp_path)
+
+
+def test_a_temp_name_collision_does_not_delete_the_other_writers_temp(
+    tmp_path, monkeypatch
+):
+    from dol import atomic as atomic_mod
+    from dol import write_content_addressed
+
+    other = tmp_path / ".content.deadbeef.tmp"
+    other.write_bytes(b"another writer's")
+    monkeypatch.setattr(atomic_mod, "temp_name", lambda name: other.name)
+    with pytest.raises(FileExistsError):
+        write_content_addressed(tmp_path, b"x")
+    with pytest.raises(FileExistsError):
+        atomic_write(tmp_path / "f", b"x")
+    assert other.read_bytes() == b"another writer's"
+
+
+@posix_only
+def test_write_content_addressed_perms_are_exact_and_default_follows_umask(tmp_path):
+    from dol import write_content_addressed
+
+    old = os.umask(0o077)
+    try:
+        exact = write_content_addressed(tmp_path, b"a", perms=0o640)
+        default = write_content_addressed(tmp_path, b"b")
+    finally:
+        os.umask(old)
+    assert os.stat(tmp_path / exact).st_mode & 0o777 == 0o640  # not narrowed
+    assert os.stat(tmp_path / default).st_mode & 0o777 == 0o600  # 0o666 & ~umask
+
+
+def test_write_content_addressed_cleans_up_after_a_keyboard_interrupt(tmp_path):
+    from dol import write_content_addressed
+
+    def interrupted():
+        yield b"x"
+        raise KeyboardInterrupt
+
+    with pytest.raises(KeyboardInterrupt):
+        write_content_addressed(tmp_path, interrupted())
+    assert os.listdir(tmp_path) == []
+    with pytest.raises(ValueError):
+        write_content_addressed(tmp_path, b"x", name_of=lambda h: "a\0b")
+    assert os.listdir(tmp_path) == []
