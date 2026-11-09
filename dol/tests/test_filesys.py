@@ -617,3 +617,94 @@ def test_path_of_allow_escape(tmp_path):
     root.mkdir()
     s = Files(str(root), allow_escape=True)
     assert path_of(s, os.path.join("..", "x")) == str(tmp_path / "x")
+
+
+# Files(write=..., read_retry=...) seams (#201)
+def test_files_write_seam_is_atomic_and_keeps_key_validation(tmp_path):
+    import functools
+
+    from dol import Files, TextFiles, atomic_write
+
+    root = tmp_path / "root"
+    root.mkdir()
+    s = Files(str(root), write_func=functools.partial(atomic_write, perms=0o600))
+    s["a"] = b"x"
+    s["a"] = memoryview(b"yz")
+    assert s["a"] == b"yz" and sorted(os.listdir(root)) == ["a"]  # no temp left
+    t = TextFiles(str(root), write_func=atomic_write)
+    t["t"] = "héllo"
+    assert t["t"] == "héllo"
+    with pytest.raises(KeyError):  # as ever, a failed write reads as a KeyError
+        t["u"] = b"bytes"
+    assert "u" not in os.listdir(root)
+    with pytest.raises(KeyError):  # the guard the issue's trap dropped
+        s["../escape"] = b"x"
+    assert not (tmp_path / "escape").exists()
+
+
+def test_files_read_retry_seam_maps_only_a_missing_file_to_keyerror(tmp_path):
+    from dol import Files
+    from dol.atomic import Retry
+
+    s = Files(str(tmp_path), read_retry=Retry(on=(PermissionError,), backoff_s=0), strict_key_errors=True)
+    with pytest.raises(KeyError):
+        s["nope"]
+    (tmp_path / "d").mkdir()
+    with pytest.raises(KeyError):
+        s["d"]  # a folder where a file is expected
+
+    calls = []
+
+    def flaky(op, *args):  # a retry policy: one failed attempt, then the read
+        calls.append(1)
+        try:
+            raise PermissionError("sharing violation")
+        except PermissionError:
+            calls.append(2)
+        return op(*args)
+
+    (tmp_path / "f").write_bytes(b"ok")
+    assert Files(str(tmp_path), read_retry=flaky, strict_key_errors=True)["f"] == b"ok" and calls == [1, 2]
+
+    def denied(op, *args):
+        raise PermissionError("denied")
+
+    with pytest.raises(PermissionError):  # not "missing"
+        Files(str(tmp_path), read_retry=denied, strict_key_errors=True)["f"]
+
+
+def test_files_default_still_maps_every_read_error_to_keyerror(tmp_path):
+    from dol import Files
+
+    (tmp_path / "d").mkdir()
+    with pytest.raises(KeyError):
+        Files(str(tmp_path))["d"]
+
+
+def test_strict_key_errors_applies_to_write_and_delete_and_is_independent_of_retry(
+    tmp_path,
+):
+    from dol import Files, TextFiles
+
+    s = Files(str(tmp_path), strict_key_errors=True)  # no read_retry needed
+    with pytest.raises(KeyError):
+        s["nope"]
+    with pytest.raises(KeyError):
+        del s["nope"]  # a missing file
+    t = TextFiles(str(tmp_path), strict_key_errors=True)
+    with pytest.raises(TypeError):  # not a missing file: not hidden as KeyError
+        t["u"] = b"bytes"
+    # a read_retry alone does not change which errors are KeyErrors
+    (tmp_path / "d").mkdir()
+    with pytest.raises(KeyError):
+        Files(str(tmp_path), read_retry=lambda op, *a: op(*a))["d"]
+
+
+def test_write_func_text_semantics_and_conflicts(tmp_path):
+    from dol import Files, TextFiles, atomic_write
+
+    t = TextFiles(str(tmp_path), write_func=atomic_write)
+    t["a"] = "x\ny"
+    assert (tmp_path / "a").read_bytes() == ("x" + os.linesep + "y").encode()
+    with pytest.raises(ValueError, match="write_open_kwargs"):
+        Files(str(tmp_path), write_func=atomic_write, write_open_kwargs={"opener": None})
