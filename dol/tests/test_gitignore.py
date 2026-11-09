@@ -14,11 +14,13 @@ _PATHS = (
     "artifacts/voice_options/jerry.json", "artifacts/voice_options/sub/x.lock",
     "artifacts/probes/deep/p.png", "artifacts/audio/a.wav", "deep/x.lock",
     "deep/probes/x.png", "a/b/c/d", "artifacts/voice_options/a.json", "x/foo/y",
-    "a", "a/z", ".env", "sub/.env", "q/r", "foo", "cache",
+    "a", "a/z", ".env", "sub/.env", "q/r", "foo", "cache", "café.txt", "cafe.txt",
+    "dx", "]x", "ax", "-x", "bx", "axb", "a-b",
 )  # fmt: skip
 _SHAPES = (
     "*.lock", "probes", "a/*/c", "artifacts/v?ice_options/[ab].json", "/scene.md",
-    "[!b].json", "q?r", "foo/", "a/*", ".env", "cache//",
+    "[!b].json", "q?r", "foo/", "a/*", ".env", "[!a-c]x", "[]a]", "[a-]", "[-a]",
+    "caf?.txt", "caf??.txt", "[é]", "a[!x]b",
 )  # fmt: skip
 _DIRS = {"foo", "cache", "a", "a/b", "x/foo"}  # the keys above that are folders
 
@@ -74,7 +76,8 @@ def test_dirs_is_asked_once_and_only_when_a_folders_only_line_needs_it():
 
 def test_lines_it_cannot_read_as_git_does_are_refused():
     for line in ("!keep.me", "artifacts/**/x", "# note", "\\*.md", "[^a].txt", "foo ",
-                 "[[:alpha:]]x", "", "/"):  # fmt: skip
+                 "[[:alpha:]]x", "", "/", "cache//", "//a", "a[/]b", "a[x/]b", "a[", "a[b", "[]", "[!]",
+                 "[c-a]"):  # fmt: skip
         with pytest.raises(ValueError, match="cannot use"):
             gitignore_matcher([line])
     with pytest.raises(TypeError, match="not one str"):
