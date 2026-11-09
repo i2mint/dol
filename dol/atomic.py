@@ -794,7 +794,7 @@ def update_json(
     path,
     change: Callable,
     *,
-    default: Callable = dict,
+    default: "Callable | None" = dict,
     loads: Callable = json.loads,
     dumps: Callable = json.dumps,
     lock=None,
@@ -816,7 +816,9 @@ def update_json(
     be read would destroy what it held.
 
     :param path: The JSON file; its folder must exist.
-    :param default: Factory for the document when ``path`` does not exist.
+    :param default: Factory for the document when ``path`` does not exist. ``None``
+        means the record must already exist: a missing file raises
+        ``FileNotFoundError`` naming ``path``, and nothing is created.
     :param loads, dumps: The codec. ``loads`` gets bytes; ``dumps`` may return str or
         bytes (e.g. ``functools.partial(json.dumps, indent=2)``, or orjson's). Change
         is detected by comparing ``dumps`` before and after, so it must be
@@ -846,6 +848,13 @@ def update_json(
     {'clips': ['a.mp4'], 'lost': True}
     >>> open(path).read()
     '{"clips": ["a.mp4"]}'
+
+    ``default=None`` for a record that must already exist:
+
+    >>> update_json(path + ".gone", lambda m: None, default=None)
+    Traceback (most recent call last):
+    ...
+    FileNotFoundError: [Errno 2] update_json: the record must exist (default=None): '...manifest.json.gone'
     """
     path = os.fsdecode(path)
     if not os.path.basename(path):
@@ -879,11 +888,15 @@ def update_json(
             lock.close()
 
 
-def _read_json_strictly(path: str, default: Callable, loads: Callable):
+def _read_json_strictly(path: str, default: "Callable | None", loads: Callable):
     try:
         with open(path, "rb") as fh:
             data = fh.read()
     except FileNotFoundError:
+        if default is None:
+            raise FileNotFoundError(
+                errno.ENOENT, "update_json: the record must exist (default=None)", path
+            ) from None
         obj = default()
     else:
         try:
