@@ -95,7 +95,9 @@ from dol.zipfiledol import (
     tar_decompress,
 )
 
-from dol.gitignore import gitignore_matcher  # key filter: .gitignore lines by git's rules
+from dol.gitignore import (
+    gitignore_matcher,
+)  # key filter: .gitignore lines by git's rules
 
 from dol.filesys import (
     Files,  # read-write-delete access to files; relative paths, bytes values

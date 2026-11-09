@@ -168,7 +168,9 @@ def gitignore_matcher(
     True
     """
     if isinstance(lines, str):  # one line given bare: its characters are not lines
-        raise TypeError(f"lines is an iterable of .gitignore lines, not one str: {lines!r}")
+        raise TypeError(
+            f"lines is an iterable of .gitignore lines, not one str: {lines!r}"
+        )
     compiled = tuple(_Line.parse(line) for line in lines)
 
     def covered(key: str) -> bool:
