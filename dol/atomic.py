@@ -154,6 +154,12 @@ def temp_name(name: str) -> str:
 TEMP_NAME_PATTERN = re.compile(r"\..+\.[0-9a-f]{8}\.tmp", re.DOTALL)
 
 
+def _physical_path(path) -> str:
+    """``path`` as a ``str`` with symlinks resolved: the file :func:`atomic_write` really
+    replaces, and so the file whose lock is :class:`FileLock`'s."""
+    return os.path.realpath(os.fsdecode(path))
+
+
 def interrupted_writes(
     folder,
     *,
@@ -270,7 +276,7 @@ def atomic_write(
         raise TypeError(
             "atomic_write takes bytes (or chunks of bytes); encode text first"
         )
-    path = os.path.realpath(os.fsdecode(path))  # str, so the temp name joins
+    path = _physical_path(path)  # str, so the temp name joins
     chunks = [data] if isinstance(data, _BYTES_LIKE) else data
     dirname, name = os.path.split(path)
     tmp = os.path.join(dirname, temp_name(name))
@@ -455,7 +461,8 @@ class FileLock:
     The lock file is a separate sidecar, not ``path`` itself, so that
     :func:`atomic_write` replacing ``path`` does not swap the file being locked. It sits
     next to the real file (symlinks resolved, as :func:`atomic_write` resolves them), so
-    every link to one file shares one lock.
+    every link to one file shares one lock. The path is resolved each time the lock is
+    entered (a link retargeted *while* it is held is not followed).
 
     >>> import tempfile
     >>> lock = FileLock(os.path.join(tempfile.mkdtemp(), "data.json"))
@@ -473,9 +480,9 @@ class FileLock:
         poll_interval: float = DFLT_POLL_INTERVAL,
     ) -> None:
         """
-        :param path: The file being protected; the lock lives next to it, as
-            ``<path><sidecar>`` (as a shortened hidden name when that would exceed
-            255 bytes).
+        :param path: The file being protected (symlinks resolved); the lock lives next
+            to it, as ``<path><sidecar>`` (as a shortened hidden name when that would
+            exceed 255 bytes).
         :param sidecar: Non-empty suffix of the lock file.
         :param poll_interval: Seconds between attempts on a contended lock (Windows
             only; POSIX blocks in the kernel).
@@ -484,11 +491,11 @@ class FileLock:
             raise ValueError(
                 "sidecar must be non-empty: the lock file cannot be `path`"
             )
-        # The real path, as atomic_write writes it: every symlink to one file shares
-        # the lock of the file (i2mint/dol#188).
-        self.path = _lock_path(
-            os.path.realpath(os.fsdecode(path)), os.fsdecode(sidecar)
-        )
+        self._target = os.fsdecode(path)
+        if not os.path.basename(self._target):
+            raise ValueError(f"FileLock takes a file path, not {self._target!r}")
+        self._sidecar = os.fsdecode(sidecar)
+        self.path = self._resolve_lock_path()
         self._key = None  # the lock file's identity, once opened
         self.poll_interval = poll_interval
         self.held = False
@@ -499,7 +506,19 @@ class FileLock:
         self._thread_lock = threading.Lock()
         _live_locks.add(self)
 
+    def _resolve_lock_path(self) -> str:
+        """The lock file of the real file ``_target`` names *now*: resolved on every
+        entry, as :func:`atomic_write` resolves on every write, so a long-lived lock
+        follows a retargeted link or a changed working directory (#188)."""
+        return _lock_path(_physical_path(self._target), self._sidecar)
+
     def _ensure_handle(self) -> None:
+        lock_path = self._resolve_lock_path()
+        if lock_path != self.path:  # the link was retargeted, or the cwd changed
+            if self._closer is not None:
+                self._closer()
+            self._fh = self._closer = None
+            self.path = lock_path
         if self._pid != os.getpid():
             self._fh = self._closer = None  # inherited over a fork: leave it be
             self._pid = os.getpid()

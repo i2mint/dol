@@ -481,3 +481,38 @@ def test_filelock_symlinks_to_one_file_share_its_lock(tmp_path):
         with pytest.raises(RuntimeError):  # same thread: would deadlock, so refused
             with FileLock(link):
                 pass
+
+
+@posix_only
+def test_filelock_follows_a_retargeted_link_and_a_changed_cwd(tmp_path, monkeypatch):
+    from dol import FileLock
+
+    (tmp_path / "day1").write_bytes(b"")
+    (tmp_path / "day2").write_bytes(b"")
+    link = tmp_path / "current"
+    link.symlink_to("day1")
+    lock = FileLock(link)
+    with lock:
+        assert lock.path.endswith("day1.lock")
+    link.unlink()
+    link.symlink_to("day2")
+    with lock:
+        assert lock.path.endswith("day2.lock")
+    lock.close()
+
+    (tmp_path / "p").mkdir()
+    (tmp_path / "q").mkdir()
+    monkeypatch.chdir(tmp_path / "p")
+    rel = FileLock("log.jsonl")
+    monkeypatch.chdir(tmp_path / "q")
+    with rel:
+        assert os.path.samefile(os.path.dirname(rel.path), tmp_path / "q")
+    rel.close()
+
+
+def test_filelock_rejects_a_path_without_a_file_name(tmp_path):
+    from dol import FileLock
+
+    for bad in ("", str(tmp_path) + os.sep):
+        with pytest.raises(ValueError):
+            FileLock(bad)
