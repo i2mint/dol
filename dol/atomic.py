@@ -810,7 +810,9 @@ def update_json(
     path = os.fsdecode(path)
     if not os.path.basename(path):
         raise ValueError(f"update_json takes a file path, not {path!r}")
-    folder = os.path.dirname(path) or os.curdir  # no abspath: it collapses '..' textually
+    folder = (
+        os.path.dirname(path) or os.curdir
+    )  # no abspath: it collapses '..' textually
     if not os.path.isdir(folder):
         raise FileNotFoundError(f"update_json: the folder of {path!r} does not exist")
     own_lock = lock is None
