@@ -12,6 +12,7 @@ Main entry points:
 - ``JsonFiles``: same, with JSON-decoded values
 - ``PickleFiles``: same, with pickled values
 - ``mk_dirs_if_missing``: make a file store create missing directories on write
+- ``dir_made``: make the directories for a write, unmake them if it fails
 
     >>> import tempfile
     >>> s = Files(tempfile.mkdtemp())
@@ -25,6 +26,7 @@ Main entry points:
 import locale
 import os
 from os import stat as os_stat
+from contextlib import contextmanager
 from functools import wraps, partial
 from typing import Union, Optional
 from collections.abc import Callable, Iterable
@@ -1144,25 +1146,55 @@ def _remove_dirs_made(made):
             pass
 
 
+@contextmanager
+def dir_made(directory, *, max_dirs_to_make=None, verbose=False):
+    """Context manager: make ``directory`` (and its missing ancestors) for a write.
+
+    If the ``with`` body (or the making) raises, the directories *this call* made are
+    removed again, deepest first, provided they are still empty, so a failed write
+    leaves no stray folder behind. A folder another writer made meanwhile is not this
+    call's and stays. Use it for writes that do not go through a ``Files`` store
+    (temp-file spools, :func:`~dol.atomic.atomic_write`). Yields the made directories,
+    top-down.
+
+    :param max_dirs_to_make: Make nothing if more than this many would be needed
+        (same meaning as in :func:`mk_dirs_if_missing`).
+
+    >>> import tempfile
+    >>> with tempfile.TemporaryDirectory() as root:
+    ...     target = os.path.join(root, "a", "b")
+    ...     try:
+    ...         with dir_made(target):
+    ...             raise RuntimeError("the write failed")
+    ...     except RuntimeError:
+    ...         pass
+    ...     os.listdir(root)
+    []
+    >>> with tempfile.TemporaryDirectory() as root:
+    ...     with dir_made(os.path.join(root, "a", "b")) as made:
+    ...         len(made)
+    2
+    """
+    made = _make_dirs_tracking(
+        directory, max_dirs_to_make=max_dirs_to_make, verbose=verbose
+    )
+    try:
+        yield made
+    except BaseException:
+        # e.g. a layer below refused the write (``filt_iter``, i2mint/dol#122)
+        _remove_dirs_made(made)
+        raise
+
+
 def _mk_dirs_if_missing_class_trans(
     store_cls, *, max_dirs_to_make=None, verbose=False, __module__=None
 ):
     def __setitem__(self, k, v):
         dirname = _missing_dir_of_key(self, k)
-        made = (
-            _make_dirs_tracking(
-                dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose
-            )
-            if dirname is not None
-            else []
-        )
-        try:
+        if dirname is None:
             return super(store_cls, self).__setitem__(k, v)
-        except BaseException:
-            # A layer below refused the write (e.g. a ``filt_iter`` that rejects ``k``,
-            # i2mint/dol#122): do not leave the directories made for it behind.
-            _remove_dirs_made(made)
-            raise
+        with dir_made(dirname, max_dirs_to_make=max_dirs_to_make, verbose=verbose):
+            return super(store_cls, self).__setitem__(k, v)
 
     store_cls.__setitem__ = __setitem__
     if __module__ is not None:

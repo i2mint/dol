@@ -100,6 +100,7 @@ from dol.filesys import (
     FilesReader,  # read-only version of LocalFiles,
     TextFiles,  # read-write-delete access to text files; relative paths, str values
     ensure_dir,  # function to create a directory, if missing
+    dir_made,  # context manager: make dirs for a write, unmake them if it fails
     mk_dirs_if_missing,  # store deco to create directories on write, when missing
     MakeMissingDirsStoreMixin,  # Mixin to enable auto-dir-making on write
     resolve_path,  # to get a full path (resolve ~ and .),
