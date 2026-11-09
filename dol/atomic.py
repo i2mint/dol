@@ -513,15 +513,17 @@ class FileLock:
         return _lock_path(_physical_path(self._target), self._sidecar)
 
     def _ensure_handle(self) -> None:
-        lock_path = self._resolve_lock_path()
-        if lock_path != self.path:  # the link was retargeted, or the cwd changed
-            if self._closer is not None:
-                self._closer()
-            self._fh = self._closer = None
-            self.path = lock_path
         if self._pid != os.getpid():
             self._fh = self._closer = None  # inherited over a fork: leave it be
             self._pid = os.getpid()
+        lock_path = self._resolve_lock_path()
+        if self._fh is not None and (
+            lock_path != self.path  # the link was retargeted, or the cwd changed
+            or not _is_same_file(self._fh.fileno(), lock_path)  # deleted, recreated
+        ):
+            self._closer()
+            self._fh = self._closer = None
+        self.path = lock_path
         if self._fh is None:
             self._fh = _open_lock_file(self.path)
             if self._fh is not None:

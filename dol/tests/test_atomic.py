@@ -516,3 +516,36 @@ def test_filelock_rejects_a_path_without_a_file_name(tmp_path):
     for bad in ("", str(tmp_path) + os.sep):
         with pytest.raises(ValueError):
             FileLock(bad)
+
+
+@posix_only
+def test_filelock_reopens_when_its_lock_file_was_deleted_and_recreated(tmp_path):
+    import multiprocessing as mp
+
+    from dol import FileLock
+
+    target = tmp_path / "data.json"
+    lock = FileLock(target)
+    with lock:
+        pass
+    os.unlink(lock.path)  # a cleanup sweep removes it; the kept handle is now stale
+    with lock:
+        # a second process must be refused: the lock held is the file on disk
+        ctx = mp.get_context("fork")
+        q = ctx.Queue()
+
+        def attempt():
+            import fcntl
+
+            fd = os.open(lock.path, os.O_RDWR | os.O_CREAT)
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                q.put("got")
+            except OSError:
+                q.put("refused")
+
+        p = ctx.Process(target=attempt)
+        p.start()
+        p.join(10)
+        assert q.get(timeout=5) == "refused"
+    lock.close()
