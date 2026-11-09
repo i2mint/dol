@@ -406,7 +406,10 @@ def write_content_addressed(
             yield chunk
 
     _write_temp(
-        tmp, hashed(_as_chunks(data, "write_content_addressed")), mode=perms, fsync=fsync
+        tmp,
+        hashed(_as_chunks(data, "write_content_addressed")),
+        mode=perms,
+        fsync=fsync,
     )
     try:
         name = name_of(digest)
