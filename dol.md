@@ -1,4 +1,4 @@
-> built 2026-11-09 06:48 UTC from f36050e (master) · dol 0.3.112. Details: build_info.json
+> built 2026-11-09 06:58 UTC from deddd65 (master) · dol 0.3.113. Details: build_info.json
 
 # index.html.md
 
@@ -538,7 +538,10 @@ a one-off section, use
 [`file_lock()`](_autosummary/dol.atomic.html.md#dol.atomic.file_lock).
 
 The lock file is a separate sidecar, not `path` itself, so that
-[`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) replacing `path` does not swap the file being locked.
+[`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) replacing `path` does not swap the file being locked. It sits
+next to the real file (symlinks resolved, as [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write) resolves them), so
+every link to one file shares one lock. The path is resolved each time the lock is
+entered (a link retargeted *while* it is held is not followed).
 
 ```pycon
 >>> import tempfile
@@ -739,7 +742,8 @@ deadlock); use one section.
 ### dol.atomic.interrupted_writes(folder, , pattern=re.compile('\\\\..+\\\\.[0-9a-f]{8}\\\\.tmp', re.DOTALL), recursive=False)
 
 The temp files writes killed mid-way left in `folder`: sorted absolute paths
-(`str`; `..` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully
+(`str`; `..` is not collapsed, so each names the file found) of the regular
+files (never a symlink or folder) whose name fully
 matches `pattern` (default: [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)’s temps; pass another writer’s,
 e.g. `r"\.blob-.+\.part"`).
 
@@ -18014,7 +18018,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-09 06:48 UTC** from commit <a href="https://github.com/i2mint/dol/commit/f36050e4ab5bf835c8f24c593973bb0fd57f3757"><code>f36050e</code></a> on branch <code>master</code>, for **dol 0.3.112** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-09 06:58 UTC** from commit <a href="https://github.com/i2mint/dol/commit/deddd650d5733607ab12a3169ddd45171aa45828"><code>deddd65</code></a> on branch <code>master</code>, for **dol 0.3.113** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -18023,9 +18027,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/f36050e4ab5bf835c8f24c593973bb0fd57f3757"><code>f36050e4ab5bf835c8f24c593973bb0fd57f3757</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/deddd650d5733607ab12a3169ddd45171aa45828"><code>deddd650d5733607ab12a3169ddd45171aa45828</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.112</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.113</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18034,9 +18038,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42575074992">42575074992</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42576123494">42576123494</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>aeaa5dcb103da8031eeed7f838fcb31629104ef7</code> (in the history of the built commit) |
+| Event commit | <code>533b1ac2298f8ef6243b8c1150ba13bf27f12034</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18061,13 +18065,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.112/">0.3.112</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.113/">0.3.113</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout f36050e4ab5bf835c8f24c593973bb0fd57f3757
+git checkout deddd650d5733607ab12a3169ddd45171aa45828
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

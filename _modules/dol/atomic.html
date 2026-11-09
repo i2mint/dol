@@ -431,6 +431,12 @@
 <span class="n">TEMP_NAME_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\..+\.[0-9a-f]</span><span class="si">{8}</span><span class="s2">\.tmp"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_physical_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``path`` as a ``str`` with symlinks resolved: the file :func:`atomic_write` really</span>
+<span class="sd">    replaces, and so the file whose lock is :class:`FileLock`'s."""</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+
+
 <div class="viewcode-block" id="interrupted_writes">
 <a class="viewcode-back" href="../../_autosummary/dol.atomic.html#dol.atomic.interrupted_writes">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">interrupted_writes</span><span class="p">(</span>
@@ -440,7 +446,8 @@
     <span class="n">recursive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"list[str]"</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">"""The temp files writes killed mid-way left in ``folder``: sorted absolute paths</span>
-<span class="sd">    (``str``; ``..`` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully</span>
+<span class="sd">    (``str``; ``..`` is not collapsed, so each names the file found) of the regular</span>
+<span class="sd">    files (never a symlink or folder) whose name fully</span>
 <span class="sd">    matches ``pattern`` (default: :func:`atomic_write`'s temps; pass another writer's,</span>
 <span class="sd">    e.g. ``r"\.blob-.+\.part"``).</span>
 
@@ -551,7 +558,7 @@
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
             <span class="s2">"atomic_write takes bytes (or chunks of bytes); encode text first"</span>
         <span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>  <span class="c1"># str, so the temp name joins</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">_physical_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>  <span class="c1"># str, so the temp name joins</span>
     <span class="n">chunks</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_BYTES_LIKE</span><span class="p">)</span> <span class="k">else</span> <span class="n">data</span>
     <span class="n">dirname</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">temp_name</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
@@ -740,7 +747,10 @@
 <span class="sd">    :func:`file_lock`.</span>
 
 <span class="sd">    The lock file is a separate sidecar, not ``path`` itself, so that</span>
-<span class="sd">    :func:`atomic_write` replacing ``path`` does not swap the file being locked.</span>
+<span class="sd">    :func:`atomic_write` replacing ``path`` does not swap the file being locked. It sits</span>
+<span class="sd">    next to the real file (symlinks resolved, as :func:`atomic_write` resolves them), so</span>
+<span class="sd">    every link to one file shares one lock. The path is resolved each time the lock is</span>
+<span class="sd">    entered (a link retargeted *while* it is held is not followed).</span>
 
 <span class="sd">    &gt;&gt;&gt; import tempfile</span>
 <span class="sd">    &gt;&gt;&gt; lock = FileLock(os.path.join(tempfile.mkdtemp(), "data.json"))</span>
@@ -758,9 +768,9 @@
         <span class="n">poll_interval</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_POLL_INTERVAL</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""</span>
-<span class="sd">        :param path: The file being protected; the lock lives next to it, as</span>
-<span class="sd">            ``&lt;path&gt;&lt;sidecar&gt;`` (as a shortened hidden name when that would exceed</span>
-<span class="sd">            255 bytes).</span>
+<span class="sd">        :param path: The file being protected (symlinks resolved); the lock lives next</span>
+<span class="sd">            to it, as ``&lt;path&gt;&lt;sidecar&gt;`` (as a shortened hidden name when that would</span>
+<span class="sd">            exceed 255 bytes).</span>
 <span class="sd">        :param sidecar: Non-empty suffix of the lock file.</span>
 <span class="sd">        :param poll_interval: Seconds between attempts on a contended lock (Windows</span>
 <span class="sd">            only; POSIX blocks in the kernel).</span>
@@ -769,7 +779,11 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">"sidecar must be non-empty: the lock file cannot be `path`"</span>
             <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">_lock_path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FileLock takes a file path, not </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sidecar</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fsdecode</span><span class="p">(</span><span class="n">sidecar</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_lock_path</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_key</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># the lock file's identity, once opened</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span> <span class="o">=</span> <span class="n">poll_interval</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">held</span> <span class="o">=</span> <span class="kc">False</span>
@@ -780,7 +794,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="n">_live_locks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_lock_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The lock file of the real file ``_target`` names *now*: resolved on every</span>
+<span class="sd">        entry, as :func:`atomic_write` resolves on every write, so a long-lived lock</span>
+<span class="sd">        follows a retargeted link or a changed working directory (#188)."""</span>
+        <span class="k">return</span> <span class="n">_lock_path</span><span class="p">(</span><span class="n">_physical_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_target</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sidecar</span><span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lock_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_lock_path</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">lock_path</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>  <span class="c1"># the link was retargeted, or the cwd changed</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">lock_path</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span> <span class="o">!=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closer</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># inherited over a fork: leave it be</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_pid</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
@@ -1196,7 +1222,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=2d197363"></script>
+</div><script src="../../_static/documentation_options.js?v=84590705"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

@@ -86,7 +86,10 @@ a one-off section, use
 [`file_lock()`](#dol.atomic.file_lock).
 
 The lock file is a separate sidecar, not `path` itself, so that
-[`atomic_write()`](#dol.atomic.atomic_write) replacing `path` does not swap the file being locked.
+[`atomic_write()`](#dol.atomic.atomic_write) replacing `path` does not swap the file being locked. It sits
+next to the real file (symlinks resolved, as [`atomic_write()`](#dol.atomic.atomic_write) resolves them), so
+every link to one file shares one lock. The path is resolved each time the lock is
+entered (a link retargeted *while* it is held is not followed).
 
 ```pycon
 >>> import tempfile
@@ -287,7 +290,8 @@ deadlock); use one section.
 ### dol.atomic.interrupted_writes(folder, , pattern=re.compile('\\\\..+\\\\.[0-9a-f]{8}\\\\.tmp', re.DOTALL), recursive=False)
 
 The temp files writes killed mid-way left in `folder`: sorted absolute paths
-(`str`; `..` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully
+(`str`; `..` is not collapsed, so each names the file found) of the regular
+files (never a symlink or folder) whose name fully
 matches `pattern` (default: [`atomic_write()`](#dol.atomic.atomic_write)’s temps; pass another writer’s,
 e.g. `r"\.blob-.+\.part"`).
 

@@ -397,7 +397,10 @@ thread that already holds it, which would otherwise wait on itself forever. For
 a one-off section, use
 <a class="reference internal" href="#dol.atomic.file_lock" title="dol.atomic.file_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">file_lock()</span></code></a>.</p>
 <p>The lock file is a separate sidecar, not <code class="docutils literal notranslate"><span class="pre">path</span></code> itself, so that
-<a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> replacing <code class="docutils literal notranslate"><span class="pre">path</span></code> does not swap the file being locked.</p>
+<a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> replacing <code class="docutils literal notranslate"><span class="pre">path</span></code> does not swap the file being locked. It sits
+next to the real file (symlinks resolved, as <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a> resolves them), so
+every link to one file shares one lock. The path is resolved each time the lock is
+entered (a link retargeted <em>while</em> it is held is not followed).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lock</span> <span class="o">=</span> <span class="n">FileLock</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(),</span> <span class="s2">"data.json"</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
@@ -630,7 +633,8 @@ deadlock); use one section.</p>
 <dt class="sig sig-object py" id="dol.atomic.interrupted_writes">
 <span class="sig-prename descclassname"><span class="pre">dol.atomic.</span></span><span class="sig-name descname"><span class="pre">interrupted_writes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">re.compile('\\..+\\.[0-9a-f]{8}\\.tmp',</span> <span class="pre">re.DOTALL)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/atomic.html#interrupted_writes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.atomic.interrupted_writes" title="Link to this definition">¶</a></dt>
 <dd><p>The temp files writes killed mid-way left in <code class="docutils literal notranslate"><span class="pre">folder</span></code>: sorted absolute paths
-(<code class="docutils literal notranslate"><span class="pre">str</span></code>; <code class="docutils literal notranslate"><span class="pre">..</span></code> is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully
+(<code class="docutils literal notranslate"><span class="pre">str</span></code>; <code class="docutils literal notranslate"><span class="pre">..</span></code> is not collapsed, so each names the file found) of the regular
+files (never a symlink or folder) whose name fully
 matches <code class="docutils literal notranslate"><span class="pre">pattern</span></code> (default: <a class="reference internal" href="#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>’s temps; pass another writer’s,
 e.g. <code class="docutils literal notranslate"><span class="pre">r&quot;\.blob-.+\.part&quot;</span></code>).</p>
 <p>Matching is by name only: call it on folders your own stores write, where nothing
@@ -817,7 +821,7 @@ torn document.</p></li>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=2d197363"></script>
+</div><script src="../_static/documentation_options.js?v=84590705"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
