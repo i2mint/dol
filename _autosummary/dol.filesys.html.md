@@ -14,6 +14,7 @@ Main entry points:
 - `JsonFiles`: same, with JSON-decoded values
 - `PickleFiles`: same, with pickled values
 - `mk_dirs_if_missing`: make a file store create missing directories on write
+- `dir_made`: make the directories for a write, unmake them if it fails
   ```pycon
   >>> import tempfile
   >>> s = Files(tempfile.mkdtemp())
@@ -28,6 +29,7 @@ Main entry points:
 
 | [`create_directories`](#dol.filesys.create_directories)(dirpath[, max_dirs_to_make])     | Create directories up to a specified limit.                                                                                                                                 |
 |------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`dir_made`](#dol.filesys.dir_made)(directory, \*[, verbose])                  | Context manager: make `directory` (and its missing ancestors) for a write.                                                                                                  |
 | [`dotdot_resolves_lexically`](#dol.filesys.dotdot_resolves_lexically)(path, \*[, base])         | Whether every `..` in `path` undoes the segment before it, as `os.path.normpath` assumes.                                                                                   |
 | [`ensure_dir`](#dol.filesys.ensure_dir)(dirpath, \*[, max_dirs_to_make, ...])    | Ensure that a directory exists, creating it if necessary.                                                                                                                   |
 | [`ensure_slash_suffix`](#dol.filesys.ensure_slash_suffix)(path)                           | Add a file separation (/ or ) at the end of path str, if not already present.                                                                                               |
@@ -395,6 +397,34 @@ True
 >>> os.path.isdir(target_dir)
 True
 >>> shutil.rmtree(temp_dir)  # Cleanup
+```
+
+### dol.filesys.dir_made(directory, , verbose=False)
+
+Context manager: make `directory` (and its missing ancestors) for a write.
+
+If the `with` body (or the making) raises, the directories *this call* made are
+removed again, deepest first, provided they are still empty, so a failed write
+leaves no stray folder behind. A folder another writer made meanwhile is not this
+call’s and stays. Use it for writes that do not go through a `Files` store
+(temp-file spools, [`atomic_write()`](dol.atomic.html.md#dol.atomic.atomic_write)). Yields the directories made,
+top-down, as a tuple of `str`.
+
+```pycon
+>>> import tempfile
+>>> with tempfile.TemporaryDirectory() as root:
+...     target = os.path.join(root, "a", "b")
+...     try:
+...         with dir_made(target):
+...             raise RuntimeError("the write failed")
+...     except RuntimeError:
+...         pass
+...     os.listdir(root)
+[]
+>>> with tempfile.TemporaryDirectory() as root:
+...     with dir_made(os.path.join(root, "a", "b")) as made:
+...         len(made)
+2
 ```
 
 ### dol.filesys.dotdot_resolves_lexically(path, , base='')

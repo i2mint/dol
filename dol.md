@@ -1,4 +1,4 @@
-> built 2026-11-09 06:37 UTC from c34eb1a (master) · dol 0.3.111. Details: build_info.json
+> built 2026-11-09 06:48 UTC from f36050e (master) · dol 0.3.112. Details: build_info.json
 
 # index.html.md
 
@@ -3692,6 +3692,7 @@ Main entry points:
 - `JsonFiles`: same, with JSON-decoded values
 - `PickleFiles`: same, with pickled values
 - `mk_dirs_if_missing`: make a file store create missing directories on write
+- `dir_made`: make the directories for a write, unmake them if it fails
   ```pycon
   >>> import tempfile
   >>> s = Files(tempfile.mkdtemp())
@@ -3706,6 +3707,7 @@ Main entry points:
 
 | [`create_directories`](_autosummary/dol.filesys.html.md#dol.filesys.create_directories)(dirpath[, max_dirs_to_make])     | Create directories up to a specified limit.                                                                                                                                 |
 |------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`dir_made`](_autosummary/dol.filesys.html.md#dol.filesys.dir_made)(directory, \*[, verbose])                  | Context manager: make `directory` (and its missing ancestors) for a write.                                                                                                  |
 | [`dotdot_resolves_lexically`](_autosummary/dol.filesys.html.md#dol.filesys.dotdot_resolves_lexically)(path, \*[, base])         | Whether every `..` in `path` undoes the segment before it, as `os.path.normpath` assumes.                                                                                   |
 | [`ensure_dir`](_autosummary/dol.filesys.html.md#dol.filesys.ensure_dir)(dirpath, \*[, max_dirs_to_make, ...])    | Ensure that a directory exists, creating it if necessary.                                                                                                                   |
 | [`ensure_slash_suffix`](_autosummary/dol.filesys.html.md#dol.filesys.ensure_slash_suffix)(path)                           | Add a file separation (/ or ) at the end of path str, if not already present.                                                                                               |
@@ -4073,6 +4075,34 @@ True
 >>> os.path.isdir(target_dir)
 True
 >>> shutil.rmtree(temp_dir)  # Cleanup
+```
+
+### dol.filesys.dir_made(directory, , verbose=False)
+
+Context manager: make `directory` (and its missing ancestors) for a write.
+
+If the `with` body (or the making) raises, the directories *this call* made are
+removed again, deepest first, provided they are still empty, so a failed write
+leaves no stray folder behind. A folder another writer made meanwhile is not this
+call’s and stays. Use it for writes that do not go through a `Files` store
+(temp-file spools, [`atomic_write()`](_autosummary/dol.atomic.html.md#dol.atomic.atomic_write)). Yields the directories made,
+top-down, as a tuple of `str`.
+
+```pycon
+>>> import tempfile
+>>> with tempfile.TemporaryDirectory() as root:
+...     target = os.path.join(root, "a", "b")
+...     try:
+...         with dir_made(target):
+...             raise RuntimeError("the write failed")
+...     except RuntimeError:
+...         pass
+...     os.listdir(root)
+[]
+>>> with tempfile.TemporaryDirectory() as root:
+...     with dir_made(os.path.join(root, "a", "b")) as made:
+...         len(made)
+2
 ```
 
 ### dol.filesys.dotdot_resolves_lexically(path, , base='')
@@ -17984,7 +18014,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-09 06:37 UTC** from commit <a href="https://github.com/i2mint/dol/commit/c34eb1abf068b1e69663ba36a37eb3a592d267f3"><code>c34eb1a</code></a> on branch <code>master</code>, for **dol 0.3.111** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-09 06:48 UTC** from commit <a href="https://github.com/i2mint/dol/commit/f36050e4ab5bf835c8f24c593973bb0fd57f3757"><code>f36050e</code></a> on branch <code>master</code>, for **dol 0.3.112** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -17993,9 +18023,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/c34eb1abf068b1e69663ba36a37eb3a592d267f3"><code>c34eb1abf068b1e69663ba36a37eb3a592d267f3</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/f36050e4ab5bf835c8f24c593973bb0fd57f3757"><code>f36050e4ab5bf835c8f24c593973bb0fd57f3757</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.111</code>                                                                                                                              |
+| Tags at this commit | <code>0.3.112</code>                                                                                                                              |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18004,9 +18034,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42573978918">42573978918</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42575074992">42575074992</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>a08503802eaa7b62454053a02e4a5022bcd76c78</code> (in the history of the built commit) |
+| Event commit | <code>aeaa5dcb103da8031eeed7f838fcb31629104ef7</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18031,13 +18061,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.111/">0.3.111</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.3.112/">0.3.112</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout c34eb1abf068b1e69663ba36a37eb3a592d267f3
+git checkout f36050e4ab5bf835c8f24c593973bb0fd57f3757
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -283,6 +283,7 @@
 <span class="sd">- ``JsonFiles``: same, with JSON-decoded values</span>
 <span class="sd">- ``PickleFiles``: same, with pickled values</span>
 <span class="sd">- ``mk_dirs_if_missing``: make a file store create missing directories on write</span>
+<span class="sd">- ``dir_made``: make the directories for a write, unmake them if it fails</span>
 
 <span class="sd">    &gt;&gt;&gt; import tempfile</span>
 <span class="sd">    &gt;&gt;&gt; s = Files(tempfile.mkdtemp())</span>
@@ -296,6 +297,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">stat</span> <span class="k">as</span> <span class="n">os_stat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span>
@@ -1509,12 +1511,13 @@
 <span class="sd">    A directory another process makes meanwhile is not counted as made here, so a later</span>
 <span class="sd">    cleanup never removes it. Exceeding ``max_dirs_to_make`` makes none, as there.</span>
 <span class="sd">    """</span>
+    <span class="n">dirname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dirname</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[]</span>
-    <span class="n">_announce_dir_to_make</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">to_make</span> <span class="o">=</span> <span class="n">_missing_ancestors</span><span class="p">(</span><span class="n">dirname</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">max_dirs_to_make</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_make</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_dirs_to_make</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">_announce_dir_to_make</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
     <span class="n">made</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">dir_to_make</span> <span class="ow">in</span> <span class="n">to_make</span><span class="p">:</span>
@@ -1541,25 +1544,60 @@
             <span class="k">pass</span>
 
 
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_dir_made</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">""":func:`dir_made` plus the ``max_dirs_to_make`` limit ``mk_dirs_if_missing`` has."""</span>
+    <span class="n">made</span> <span class="o">=</span> <span class="n">_make_dirs_tracking</span><span class="p">(</span>
+        <span class="n">directory</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">made</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+        <span class="c1"># e.g. a layer below refused the write (``filt_iter``, i2mint/dol#122)</span>
+        <span class="n">_remove_dirs_made</span><span class="p">(</span><span class="n">made</span><span class="p">)</span>
+        <span class="k">raise</span>
+
+
+<div class="viewcode-block" id="dir_made">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.dir_made">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dir_made</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Context manager: make ``directory`` (and its missing ancestors) for a write.</span>
+
+<span class="sd">    If the ``with`` body (or the making) raises, the directories *this call* made are</span>
+<span class="sd">    removed again, deepest first, provided they are still empty, so a failed write</span>
+<span class="sd">    leaves no stray folder behind. A folder another writer made meanwhile is not this</span>
+<span class="sd">    call's and stays. Use it for writes that do not go through a ``Files`` store</span>
+<span class="sd">    (temp-file spools, :func:`~dol.atomic.atomic_write`). Yields the directories made,</span>
+<span class="sd">    top-down, as a tuple of ``str``.</span>
+
+<span class="sd">    &gt;&gt;&gt; import tempfile</span>
+<span class="sd">    &gt;&gt;&gt; with tempfile.TemporaryDirectory() as root:</span>
+<span class="sd">    ...     target = os.path.join(root, "a", "b")</span>
+<span class="sd">    ...     try:</span>
+<span class="sd">    ...         with dir_made(target):</span>
+<span class="sd">    ...             raise RuntimeError("the write failed")</span>
+<span class="sd">    ...     except RuntimeError:</span>
+<span class="sd">    ...         pass</span>
+<span class="sd">    ...     os.listdir(root)</span>
+<span class="sd">    []</span>
+<span class="sd">    &gt;&gt;&gt; with tempfile.TemporaryDirectory() as root:</span>
+<span class="sd">    ...     with dir_made(os.path.join(root, "a", "b")) as made:</span>
+<span class="sd">    ...         len(made)</span>
+<span class="sd">    2</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_dir_made</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span></div>
+
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_mk_dirs_if_missing_class_trans</span><span class="p">(</span>
     <span class="n">store_cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="vm">__module__</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="n">dirname</span> <span class="o">=</span> <span class="n">_missing_dir_of_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-        <span class="n">made</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">_make_dirs_tracking</span><span class="p">(</span>
-                <span class="n">dirname</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">dirname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="k">else</span> <span class="p">[]</span>
-        <span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dirname</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
-            <span class="c1"># A layer below refused the write (e.g. a ``filt_iter`` that rejects ``k``,</span>
-            <span class="c1"># i2mint/dol#122): do not leave the directories made for it behind.</span>
-            <span class="n">_remove_dirs_made</span><span class="p">(</span><span class="n">made</span><span class="p">)</span>
-            <span class="k">raise</span>
+        <span class="k">with</span> <span class="n">_dir_made</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">max_dirs_to_make</span><span class="o">=</span><span class="n">max_dirs_to_make</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
     <span class="n">store_cls</span><span class="o">.</span><span class="fm">__setitem__</span> <span class="o">=</span> <span class="fm">__setitem__</span>
     <span class="k">if</span> <span class="vm">__module__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1719,7 +1757,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=0da8e988"></script>
+</div><script src="../../_static/documentation_options.js?v=2d197363"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

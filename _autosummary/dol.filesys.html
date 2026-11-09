@@ -290,7 +290,8 @@ add the corresponding value codecs. Writing under a sub-folder that does not exi
 <li><p><code class="docutils literal notranslate"><span class="pre">TextFiles</span></code>: same, with text values</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">JsonFiles</span></code>: same, with JSON-decoded values</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">PickleFiles</span></code>: same, with pickled values</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code>: make a file store create missing directories on write</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code>: make a file store create missing directories on write</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dir_made</span></code>: make the directories for a write, unmake them if it fails</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">Files</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'hello.txt'</span><span class="p">]</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">'world'</span>
@@ -309,64 +310,67 @@ add the corresponding value codecs. Writing under a sub-folder that does not exi
 <tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.create_directories" title="dol.filesys.create_directories"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_directories</span></code></a>(dirpath[, max_dirs_to_make])</p></td>
 <td><p>Create directories up to a specified limit.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.dotdot_resolves_lexically" title="dol.filesys.dotdot_resolves_lexically"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dotdot_resolves_lexically</span></code></a>(path, *[, base])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.dir_made" title="dol.filesys.dir_made"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dir_made</span></code></a>(directory, *[, verbose])</p></td>
+<td><p>Context manager: make <code class="docutils literal notranslate"><span class="pre">directory</span></code> (and its missing ancestors) for a write.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.dotdot_resolves_lexically" title="dol.filesys.dotdot_resolves_lexically"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dotdot_resolves_lexically</span></code></a>(path, *[, base])</p></td>
 <td><p>Whether every <code class="docutils literal notranslate"><span class="pre">..</span></code> in <code class="docutils literal notranslate"><span class="pre">path</span></code> undoes the segment before it, as <code class="docutils literal notranslate"><span class="pre">os.path.normpath</span></code> assumes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.ensure_dir" title="dol.filesys.ensure_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_dir</span></code></a>(dirpath, *[, max_dirs_to_make, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.ensure_dir" title="dol.filesys.ensure_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_dir</span></code></a>(dirpath, *[, max_dirs_to_make, ...])</p></td>
 <td><p>Ensure that a directory exists, creating it if necessary.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.ensure_slash_suffix" title="dol.filesys.ensure_slash_suffix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_slash_suffix</span></code></a>(path)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.ensure_slash_suffix" title="dol.filesys.ensure_slash_suffix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_slash_suffix</span></code></a>(path)</p></td>
 <td><p>Add a file separation (/ or ) at the end of path str, if not already present.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.iter_dirpaths_in_folder_recursively" title="dol.filesys.iter_dirpaths_in_folder_recursively"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_dirpaths_in_folder_recursively</span></code></a>(root_folder)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.iter_dirpaths_in_folder_recursively" title="dol.filesys.iter_dirpaths_in_folder_recursively"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_dirpaths_in_folder_recursively</span></code></a>(root_folder)</p></td>
 <td><p>Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.iter_filepaths_in_folder_recursively" title="dol.filesys.iter_filepaths_in_folder_recursively"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_filepaths_in_folder_recursively</span></code></a>(root_folder)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.iter_filepaths_in_folder_recursively" title="dol.filesys.iter_filepaths_in_folder_recursively"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iter_filepaths_in_folder_recursively</span></code></a>(root_folder)</p></td>
 <td><p>Recursively generates filepaths of folder (and subfolders, etc.) up to a given level</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_absolute_path" title="dol.filesys.mk_absolute_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_absolute_path</span></code></a>(path_format)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_absolute_path" title="dol.filesys.mk_absolute_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_absolute_path</span></code></a>(path_format)</p></td>
 <td><p>Expand a leading <code class="docutils literal notranslate"><span class="pre">~</span></code>, or make a leading <code class="docutils literal notranslate"><span class="pre">.</span></code> path absolute; other paths are returned as is.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing" title="dol.filesys.mk_dirs_if_missing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code></a>([store_cls, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing" title="dol.filesys.mk_dirs_if_missing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_dirs_if_missing</span></code></a>([store_cls, ...])</p></td>
 <td><p>Store decorator that will make the store create directories on write as needed.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing_preset" title="dol.filesys.mk_dirs_if_missing_preset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_dirs_if_missing_preset</span></code></a>(self, k, v, *[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_dirs_if_missing_preset" title="dol.filesys.mk_dirs_if_missing_preset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_dirs_if_missing_preset</span></code></a>(self, k, v, *[, ...])</p></td>
 <td><p>Preset function that will make the store create directories on write as needed.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_json_bytes_wrap" title="dol.filesys.mk_json_bytes_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_json_bytes_wrap</span></code></a>(*[, loads_kwargs, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_json_bytes_wrap" title="dol.filesys.mk_json_bytes_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_json_bytes_wrap</span></code></a>(*[, loads_kwargs, ...])</p></td>
 <td><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> value-codec wrapper for JSON, with kwargs for <code class="docutils literal notranslate"><span class="pre">json.loads</span></code>/<code class="docutils literal notranslate"><span class="pre">json.dumps</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_pickle_bytes_wrap" title="dol.filesys.mk_pickle_bytes_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_pickle_bytes_wrap</span></code></a>(*[, loads_kwargs, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_pickle_bytes_wrap" title="dol.filesys.mk_pickle_bytes_wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_pickle_bytes_wrap</span></code></a>(*[, loads_kwargs, ...])</p></td>
 <td><p>Make a <code class="docutils literal notranslate"><span class="pre">wrap_kvs</span></code> value-codec wrapper for pickle, with kwargs for <code class="docutils literal notranslate"><span class="pre">pickle.loads</span></code>/<code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.mk_tmp_dol_dir" title="dol.filesys.mk_tmp_dol_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tmp_dol_dir</span></code></a>([dirname, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.mk_tmp_dol_dir" title="dol.filesys.mk_tmp_dol_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mk_tmp_dol_dir</span></code></a>([dirname, ...])</p></td>
 <td><p>Create and return a path to a temporary directory that's guaranteed to be accessible to the user.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.path_is_under" title="dol.filesys.path_is_under"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_is_under</span></code></a>(path, rootdir)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.path_is_under" title="dol.filesys.path_is_under"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_is_under</span></code></a>(path, rootdir)</p></td>
 <td><p>Whether <code class="docutils literal notranslate"><span class="pre">path</span></code>, <em>lexically</em> normalized, is <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> or lies under it.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.path_of" title="dol.filesys.path_of"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_of</span></code></a>(store, key)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.path_of" title="dol.filesys.path_of"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path_of</span></code></a>(store, key)</p></td>
 <td><p>The file-system path of <code class="docutils literal notranslate"><span class="pre">key</span></code> in a file-backed <code class="docutils literal notranslate"><span class="pre">store</span></code>, however it is wrapped.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.paths_in_dir" title="dol.filesys.paths_in_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">paths_in_dir</span></code></a>(rootdir[, include_hidden])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.paths_in_dir" title="dol.filesys.paths_in_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">paths_in_dir</span></code></a>(rootdir[, include_hidden])</p></td>
 <td><p>Yield the paths of the entries of <code class="docutils literal notranslate"><span class="pre">rootdir</span></code> (directories with a trailing separator), skipping hidden ones unless <code class="docutils literal notranslate"><span class="pre">include_hidden</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.process_path" title="dol.filesys.process_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_path</span></code></a>(*path[, ensure_dir_exists, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.process_path" title="dol.filesys.process_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_path</span></code></a>(*path[, ensure_dir_exists, ...])</p></td>
 <td><p>Process a path string, ensuring it exists, and optionally expanding user.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.resolve_dir" title="dol.filesys.resolve_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_dir</span></code></a>(dirpath[, assert_existence, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.resolve_dir" title="dol.filesys.resolve_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_dir</span></code></a>(dirpath[, assert_existence, ...])</p></td>
 <td><p>Resolve a path to a full, real, path to a directory</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.resolve_path" title="dol.filesys.resolve_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_path</span></code></a>(path[, assert_existence])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.resolve_path" title="dol.filesys.resolve_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_path</span></code></a>(path[, assert_existence])</p></td>
 <td><p>Resolve a path to a full, real, (file or folder) path (opt assert existence).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.subfolder_stores" title="dol.filesys.subfolder_stores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subfolder_stores</span></code></a>(root_folder, *[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.subfolder_stores" title="dol.filesys.subfolder_stores"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subfolder_stores</span></code></a>(root_folder, *[, ...])</p></td>
 <td><p>Create a store of subfolders of a given folder, where the keys are the subfolder paths (by default, relative and slash-less) and the values are stores of these subfolders.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.temp_dir" title="dol.filesys.temp_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temp_dir</span></code></a>([dirname, make_it_if_necessary, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.temp_dir" title="dol.filesys.temp_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">temp_dir</span></code></a>([dirname, make_it_if_necessary, ...])</p></td>
 <td><p>Create and return a path to a temporary directory that's guaranteed to be accessible to the user.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.filesys.validate_key_and_raise_key_error_on_exception" title="dol.filesys.validate_key_and_raise_key_error_on_exception"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_key_and_raise_key_error_on_exception</span></code></a>(func)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#dol.filesys.validate_key_and_raise_key_error_on_exception" title="dol.filesys.validate_key_and_raise_key_error_on_exception"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_key_and_raise_key_error_on_exception</span></code></a>(func)</p></td>
 <td><p>Method decorator: validate the key first, and re-raise any exception of the method as a <code class="docutils literal notranslate"><span class="pre">KeyError</span></code>.</p></td>
 </tr>
 </tbody>
@@ -846,6 +850,34 @@ it would need more than <code class="docutils literal notranslate"><span class="
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="dol.filesys.dir_made">
+<span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">dir_made</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#dir_made"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.dir_made" title="Link to this definition">¶</a></dt>
+<dd><p>Context manager: make <code class="docutils literal notranslate"><span class="pre">directory</span></code> (and its missing ancestors) for a write.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">with</span></code> body (or the making) raises, the directories <em>this call</em> made are
+removed again, deepest first, provided they are still empty, so a failed write
+leaves no stray folder behind. A folder another writer made meanwhile is not this
+call’s and stays. Use it for writes that do not go through a <code class="docutils literal notranslate"><span class="pre">Files</span></code> store
+(temp-file spools, <a class="reference internal" href="dol.atomic.html#dol.atomic.atomic_write" title="dol.atomic.atomic_write"><code class="xref py py-func docutils literal notranslate"><span class="pre">atomic_write()</span></code></a>). Yields the directories made,
+top-down, as a tuple of <code class="docutils literal notranslate"><span class="pre">str</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">target</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">with</span> <span class="n">dir_made</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
+<span class="gp">... </span>            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"the write failed"</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">pass</span>
+<span class="gp">... </span>    <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+<span class="go">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span> <span class="k">as</span> <span class="n">root</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">with</span> <span class="n">dir_made</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s2">"a"</span><span class="p">,</span> <span class="s2">"b"</span><span class="p">))</span> <span class="k">as</span> <span class="n">made</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="nb">len</span><span class="p">(</span><span class="n">made</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="dol.filesys.dotdot_resolves_lexically">
 <span class="sig-prename descclassname"><span class="pre">dol.filesys.</span></span><span class="sig-name descname"><span class="pre">dotdot_resolves_lexically</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol/filesys.html#dotdot_resolves_lexically"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.filesys.dotdot_resolves_lexically" title="Link to this definition">¶</a></dt>
 <dd><p>Whether every <code class="docutils literal notranslate"><span class="pre">..</span></code> in <code class="docutils literal notranslate"><span class="pre">path</span></code> undoes the segment before it, as
@@ -1305,6 +1337,7 @@ issues with system-wide temporary directories.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#dol.filesys.create_directories"><code class="docutils literal notranslate"><span class="pre">create_directories()</span></code></a></li>
+<li><a class="reference internal" href="#dol.filesys.dir_made"><code class="docutils literal notranslate"><span class="pre">dir_made()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.dotdot_resolves_lexically"><code class="docutils literal notranslate"><span class="pre">dotdot_resolves_lexically()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.ensure_dir"><code class="docutils literal notranslate"><span class="pre">ensure_dir()</span></code></a></li>
 <li><a class="reference internal" href="#dol.filesys.ensure_slash_suffix"><code class="docutils literal notranslate"><span class="pre">ensure_slash_suffix()</span></code></a></li>
@@ -1336,7 +1369,7 @@ issues with system-wide temporary directories.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=0da8e988"></script>
+</div><script src="../_static/documentation_options.js?v=2d197363"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
