@@ -364,14 +364,18 @@ class KeyValidationError(KeyError):
 
 # TODO: The validate and try/except is a frequent pattern. Make it a decorator.
 def validate_key_and_raise_key_error_on_exception(func):
-    """Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``."""
+    """Method decorator: validate the key first, and re-raise any exception of the method as a ``KeyError``.
+
+    Which exceptions become a ``KeyError`` is the store's ``_key_error_types``
+    (default: every ``Exception``; see ``FileBytesReader(read_retry=...)``).
+    """
 
     @wraps(func)
     def wrapped_method(self, k, *args, **kwargs):
         self.validate_key(k)
         try:
             return func(self, k, *args, **kwargs)
-        except Exception as e:
+        except getattr(self, "_key_error_types", Exception) as e:
             raise KeyError(str(e))
 
     return wrapped_method
@@ -661,6 +665,10 @@ class FileInfoReader(FileCollection, KvReader):
         return os_stat(k)
 
 
+#: What ``FileBytesReader(read_retry=...)`` reads as "no such key".
+_MISSING_FILE_ERRORS = (FileNotFoundError, IsADirectoryError, NotADirectoryError)
+
+
 class FileBytesReader(FileCollection, KvReader):
     """Reader mapping file paths under ``rootdir`` to the files' bytes."""
 
@@ -673,6 +681,25 @@ class FileBytesReader(FileCollection, KvReader):
         closefd=True,
         opener=None,
     )
+
+    #: Which exceptions of a read become a ``KeyError`` (see ``read_retry``).
+    _key_error_types: "tuple[type[BaseException], ...] | type[BaseException]" = Exception
+    _read_retry: "Callable | None" = None
+
+    def __init__(self, *args, read_retry: "Callable | None" = None, **kwargs):
+        """
+        :param read_retry: How a file is read, ``read_retry(op, *args)`` (e.g. a
+            :class:`dol.atomic.Retry`, which retries a Windows sharing violation while a
+            writer swaps the file). Default ``None``: read once. When given, only a
+            missing file (or a folder where a file is expected) is a ``KeyError``; any
+            other failure (a permission error, an exhausted retry) propagates as itself
+            instead of reading as "missing". The default keeps mapping every exception
+            to ``KeyError``.
+        """
+        super().__init__(*args, **kwargs)
+        if read_retry is not None:
+            self._read_retry = read_retry
+            self._key_error_types = _MISSING_FILE_ERRORS
 
     @validate_key_and_raise_key_error_on_exception
     def __getitem__(self, k):
@@ -705,6 +732,11 @@ class FileBytesReader(FileCollection, KvReader):
         ...     print("KeyError (not FileNotFoundError) was raised.")
         KeyError (not FileNotFoundError) was raised.
         '''
+        if self._read_retry is None:
+            return self._read_file(k)
+        return self._read_retry(self._read_file, k)
+
+    def _read_file(self, k):
         with open(k, **self._read_open_kwargs) as fp:
             return fp.read()
 
@@ -759,8 +791,11 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
         opener=None,
     )
     # _make_dirs_if_missing = False
+    _write: "Callable | None" = None
 
-    def __init__(self, *args, delete_func=None, write_open_kwargs=None, **kwargs):
+    def __init__(
+        self, *args, delete_func=None, write_open_kwargs=None, write=None, **kwargs
+    ):
         """Initialize FileBytesPersister.
 
         Args:
@@ -771,6 +806,13 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
                 create files with ``0o600``), ``encoding=``, ``errors=`` or
                 ``newline=``. If you override ``mode``, also override the keys that go with
                 it (a binary mode takes no ``encoding``/``errors``/``newline``).
+            write: Optional ``write(path, data)`` that stores each value, in place of
+                ``open(path, ...).write(data)``, e.g. :func:`dol.atomic.atomic_write`
+                (or ``functools.partial(atomic_write, fsync=True, perms=0o600)``), so a
+                concurrent reader never sees a truncated file. It runs inside the
+                key-validated ``__setitem__``, so a key outside the root is still
+                refused. It gets bytes (a text store encodes first); then
+                ``write_open_kwargs`` does not apply. Default ``None``: plain ``open``.
             delete_func: Optional custom deletion function.
                 If None, uses class default (safe trash with fallback).
                 Common options from dol.trash:
@@ -794,6 +836,8 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
             self._delete_func = delete_func
         if write_open_kwargs:
             self._write_open_kwargs = {**self._write_open_kwargs, **write_open_kwargs}
+        if write is not None:
+            self._write = write
 
     def _check_value_before_open(self, v):
         """Raise if ``v`` can't be written, *before* the file is opened (and so
@@ -815,8 +859,15 @@ class FileBytesPersister(LocalFileDeleteMixin, FileBytesReader, KvPersister):
         #     dirname = os.path.dirname(k)
         #     os.makedirs(dirname, exist_ok=True)
         self._check_value_before_open(v)
+        if self._write is not None:
+            self._write(k, self._bytes_of(v))
+            return
         with open(k, **self._write_open_kwargs) as fp:
             return fp.write(v)
+
+    def _bytes_of(self, v) -> bytes:
+        """``v`` as the bytes handed to a ``write=`` function (a bytes-like value as is)."""
+        return v if isinstance(v, bytes) else bytes(memoryview(v))
 
 
 # ---------------------------------------------------------------------------------------
@@ -880,6 +931,10 @@ class FileStringPersister(FileBytesPersister):
     _write_open_kwargs = dict(
         FileBytesPersister._write_open_kwargs, mode="wt", encoding="utf-8"
     )
+
+    def _bytes_of(self, v) -> bytes:
+        kw = self._write_open_kwargs
+        return v.encode(kw.get("encoding") or _locale_encoding(), kw.get("errors") or "strict")
 
     def _check_value_before_open(self, v):
         """Encode ``v`` (and discard the result) before the file is opened.
