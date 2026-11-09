@@ -516,3 +516,35 @@ def test_filelock_rejects_a_path_without_a_file_name(tmp_path):
     for bad in ("", str(tmp_path) + os.sep):
         with pytest.raises(ValueError):
             FileLock(bad)
+
+
+@posix_only
+def test_filelock_reopens_when_its_lock_file_was_deleted_and_recreated(tmp_path):
+    import fcntl
+
+    from dol import FileLock
+
+    lock = FileLock(tmp_path / "data.json")
+    with lock:
+        pass
+    os.unlink(lock.path)  # a cleanup sweep removes it; the kept handle is now stale
+    with lock:
+        # flock locks belong to the open file: a fresh open of the path is refused
+        fd = os.open(lock.path, os.O_RDWR)
+        try:
+            with pytest.raises(OSError):
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        finally:
+            os.close(fd)
+    lock.close()
+
+
+def test_filelock_keeps_its_handle_between_sections(tmp_path):
+    from dol import FileLock
+
+    lock = FileLock(tmp_path / "data.json")
+    with lock:
+        fh = lock._fh
+    with lock:
+        assert lock._fh is fh  # not reopened needlessly (any platform)
+    lock.close()
