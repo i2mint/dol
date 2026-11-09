@@ -29,6 +29,7 @@ import errno
 import hashlib
 import json
 import os
+import pathlib
 import re
 import stat
 import threading
@@ -160,7 +161,7 @@ def interrupted_writes(
     recursive: bool = False,
 ) -> "list[str]":
     r"""The temp files writes killed mid-way left in ``folder``: sorted absolute paths
-    (``str``) of the regular files (never a symlink or folder) whose name fully
+    (``str``; ``..`` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully
     matches ``pattern`` (default: :func:`atomic_write`'s temps; pass another writer's,
     e.g. ``r"\.blob-.+\.part"``).
 
@@ -197,11 +198,16 @@ def interrupted_writes(
             for e in entries:
                 if e.is_file(follow_symlinks=False):
                     if pattern.fullmatch(e.name):
-                        yield os.path.abspath(e.path)
+                        yield e.path
                 elif recursive and e.is_dir(follow_symlinks=False):
                     yield from scan(e.path, top=False)
 
-    return sorted(scan(os.fsdecode(folder), top=True))
+    # Absolute but NOT normalised: ``abspath`` would collapse ``..`` textually, which
+    # names a different file when a component before it is a symlink.
+    if not os.fsdecode(folder):
+        raise ValueError("interrupted_writes needs a folder, not an empty path")
+    root = str(pathlib.Path(os.fsdecode(folder)).absolute())
+    return sorted(scan(root, top=True))
 
 
 def _mode_to_apply(path: str, perms: "int | None") -> "int | None":
@@ -804,7 +810,7 @@ def update_json(
     path = os.fsdecode(path)
     if not os.path.basename(path):
         raise ValueError(f"update_json takes a file path, not {path!r}")
-    folder = os.path.dirname(os.path.abspath(path))
+    folder = os.path.dirname(path) or os.curdir  # no abspath: it collapses '..' textually
     if not os.path.isdir(folder):
         raise FileNotFoundError(f"update_json: the folder of {path!r} does not exist")
     own_lock = lock is None

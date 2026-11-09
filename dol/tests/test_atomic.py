@@ -447,3 +447,22 @@ def test_interrupted_writes_finds_what_a_killed_write_left(tmp_path):
     assert not target.exists()
     (left,) = interrupted_writes(tmp_path)
     assert os.path.basename(left).startswith(".big.")
+
+
+@posix_only
+def test_interrupted_writes_does_not_collapse_dotdot_through_symlink(tmp_path):
+    # link -> elsewhere/deep, so "link/../blobs" is elsewhere/blobs on disk (#197)
+    elsewhere = tmp_path / "elsewhere"
+    (elsewhere / "deep").mkdir(parents=True)
+    (elsewhere / "blobs").mkdir()
+    (tmp_path / "blobs").mkdir()
+    (tmp_path / "link").symlink_to(elsewhere / "deep", target_is_directory=True)
+    name = temp_name("f")
+    (elsewhere / "blobs" / name).write_bytes(b"")
+    (found,) = interrupted_writes(str(tmp_path / "link" / ".." / "blobs"))
+    assert os.path.samefile(found, elsewhere / "blobs" / name)
+
+
+def test_interrupted_writes_rejects_an_empty_folder():
+    with pytest.raises(ValueError):
+        interrupted_writes("")
