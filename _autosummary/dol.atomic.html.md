@@ -434,3 +434,5 @@ link, is replaced, a folder raises). On any failure the temp is removed.
 >>> write_content_addressed(d, b"hello") == name  # same content, same file
 True
 ```
+
+See also [`dol.content`](dol.content.html.md#module-dol.content) (a content-addressed *store*, with a key per content).
