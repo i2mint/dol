@@ -466,3 +466,18 @@ def test_interrupted_writes_does_not_collapse_dotdot_through_symlink(tmp_path):
 def test_interrupted_writes_rejects_an_empty_folder():
     with pytest.raises(ValueError):
         interrupted_writes("")
+
+
+@posix_only
+def test_filelock_symlinks_to_one_file_share_its_lock(tmp_path):
+    from dol import FileLock
+
+    target = tmp_path / "data.json"
+    target.write_bytes(b"{}")
+    link = tmp_path / "link.json"
+    link.symlink_to(target)
+    assert FileLock(link).path == FileLock(target).path
+    with FileLock(target):
+        with pytest.raises(RuntimeError):  # same thread: would deadlock, so refused
+            with FileLock(link):
+                pass

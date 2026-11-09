@@ -189,7 +189,9 @@ def test_a_symlink_takes_the_same_lock_as_file_lock(tmp_path):
     link = tmp_path / "link.json"
     link.symlink_to(real)
     update_json(link, lambda m: m.update(a=1))
-    assert (tmp_path / "link.json.lock").exists()  # as file_lock(link) would
+    # the lock sits beside the real file, as file_lock(link) puts it (#188)
+    assert (tmp_path / "real.json.lock").exists()
+    assert not (tmp_path / "link.json.lock").exists()
     assert json.loads(real.read_text()) == {"a": 1}
 
 

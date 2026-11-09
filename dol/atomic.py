@@ -161,7 +161,8 @@ def interrupted_writes(
     recursive: bool = False,
 ) -> "list[str]":
     r"""The temp files writes killed mid-way left in ``folder``: sorted absolute paths
-    (``str``; ``..`` is not collapsed, so each names the file found) of the regular files (never a symlink or folder) whose name fully
+    (``str``; ``..`` is not collapsed, so each names the file found) of the regular
+    files (never a symlink or folder) whose name fully
     matches ``pattern`` (default: :func:`atomic_write`'s temps; pass another writer's,
     e.g. ``r"\.blob-.+\.part"``).
 
@@ -452,7 +453,9 @@ class FileLock:
     :func:`file_lock`.
 
     The lock file is a separate sidecar, not ``path`` itself, so that
-    :func:`atomic_write` replacing ``path`` does not swap the file being locked.
+    :func:`atomic_write` replacing ``path`` does not swap the file being locked. It sits
+    next to the real file (symlinks resolved, as :func:`atomic_write` resolves them), so
+    every link to one file shares one lock.
 
     >>> import tempfile
     >>> lock = FileLock(os.path.join(tempfile.mkdtemp(), "data.json"))
@@ -481,7 +484,11 @@ class FileLock:
             raise ValueError(
                 "sidecar must be non-empty: the lock file cannot be `path`"
             )
-        self.path = _lock_path(os.fsdecode(path), os.fsdecode(sidecar))
+        # The real path, as atomic_write writes it: every symlink to one file shares
+        # the lock of the file (i2mint/dol#188).
+        self.path = _lock_path(
+            os.path.realpath(os.fsdecode(path)), os.fsdecode(sidecar)
+        )
         self._key = None  # the lock file's identity, once opened
         self.poll_interval = poll_interval
         self.held = False
