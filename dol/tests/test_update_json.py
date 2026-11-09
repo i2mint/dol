@@ -211,3 +211,35 @@ def test_write_is_how_the_bytes_land_under_the_lock_and_only_on_a_change(tmp_pat
     assert calls == [(str(p), b'{"a": 1}')]
     if os.name != "nt":
         assert stat.S_IMODE(os.stat(p).st_mode) == 0o600
+
+
+def test_default_none_means_the_record_must_exist(tmp_path):
+    import errno
+
+    p = tmp_path / "meta.json"
+    calls = []
+    with pytest.raises(FileNotFoundError) as info:
+        update_json(p, lambda m: calls.append(m), default=None)
+    assert info.value.filename == str(p) and info.value.errno == errno.ENOENT
+    assert calls == [] and list(tmp_path.iterdir()) == []  # no record, no sidecar
+    p.write_text("{}")
+    update_json(p, lambda m: m.update(a=1), default=None)
+    assert json.loads(p.read_text()) == {"a": 1}
+
+
+def test_default_none_raises_under_the_lock_when_the_record_vanished(tmp_path):
+    p = tmp_path / "meta.json"
+    p.write_text("{}")
+
+    def lock_then_vanish():
+        import contextlib
+
+        @contextlib.contextmanager
+        def lock():
+            os.unlink(p)  # deleted after the early check, before the read
+            yield True
+
+        return lock()
+
+    with pytest.raises(FileNotFoundError, match="must exist"):
+        update_json(p, lambda m: None, default=None, lock=lock_then_vanish())
