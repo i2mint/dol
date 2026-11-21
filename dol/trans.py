@@ -2174,6 +2174,12 @@ X_OF_Y_TO_CODEC_KWARG = {
 
 X_OF_Y_DEPRECATION = "wrap_kvs X_of_Y keywords are deprecated"
 
+# codec keyword -> the (decoder, encoder) X_of_Y slots it fills
+_CODEC_KWARG_SLOTS = {
+    "key_codec": ("key_of_id", "id_of_key"),
+    "value_codec": ("obj_of_data", "data_of_obj"),
+}
+
 
 def _warn_on_x_of_y_kwargs(kwargs: dict):
     """Warn (DeprecationWarning) if ``wrap_kvs`` was given an ``X_of_Y`` keyword.
@@ -2202,17 +2208,28 @@ def _warn_on_x_of_y_kwargs(kwargs: dict):
 
 
 def _stacklevel_outside_wrapping_machinery() -> int:
-    """The ``warn`` stacklevel of the first frame outside this module and functools.
+    """The ``warn`` stacklevel of the first frame outside dol and functools.
 
     Counted from the caller of ``warn`` (stacklevel=1 is the function calling ``warn``).
+    Every frame in the ``dol`` package (``trans``, ``util.Pipe``, ``base``, ...) counts as
+    machinery, except dol's own tests, which are callers like any user code.
     """
+    import os
     import sys
     import functools
 
-    machinery = {__file__, functools.__file__}
+    dol_dir = os.path.dirname(os.path.abspath(__file__)) + os.sep
+    tests_dir = dol_dir + "tests" + os.sep
+
+    def is_machinery(filename):
+        filename = os.path.abspath(filename)
+        if filename == os.path.abspath(functools.__file__):
+            return True
+        return filename.startswith(dol_dir) and not filename.startswith(tests_dir)
+
     frame = sys._getframe(2)  # the caller of the function that calls warn
     level = 2
-    while frame is not None and frame.f_code.co_filename in machinery:
+    while frame is not None and is_machinery(frame.f_code.co_filename):
         frame = frame.f_back
         level += 1
     return level
@@ -2235,46 +2252,22 @@ def _handle_codecs(kwargs: dict):
     >>> assert kwargs['key_of_id'] == int
     >>> assert kwargs['id_of_key'] == str
     """
-    if key_codec := kwargs.get("key_codec", None):
-        if kwargs.get("key_of_id", None):
-            raise ValueError("Cannot specify both key_codec and key_of_id")
-        kwargs["key_of_id"] = key_codec.decoder
-        if kwargs.get("id_of_key", None):
-            raise ValueError("Cannot specify both key_codec and id_of_key")
-        kwargs["id_of_key"] = key_codec.encoder
-        del kwargs["key_codec"]
-    if value_codec := kwargs.get("value_codec", None):
-        if kwargs.get("obj_of_data", None):
-            raise ValueError("Cannot specify both value_codec and obj_of_data")
-        kwargs["obj_of_data"] = value_codec.decoder
-        if kwargs.get("data_of_obj", None):
-            raise ValueError("Cannot specify both value_codec and data_of_obj")
-        kwargs["data_of_obj"] = value_codec.encoder
-        del kwargs["value_codec"]
+    # ``is not None`` (not truthiness) everywhere: a falsy callable is still a transform,
+    # and the X_of_Y path (``_wrap_kvs``) applies it, so the new names must too.
+    for codec_name, (decoder_slot, encoder_slot) in _CODEC_KWARG_SLOTS.items():
+        if (codec := kwargs.get(codec_name)) is not None:
+            for slot, func in ((decoder_slot, codec.decoder), (encoder_slot, codec.encoder)):
+                if kwargs.get(slot) is not None:
+                    raise ValueError(f"Cannot specify both {codec_name} and {slot}")
+                kwargs[slot] = func
+            del kwargs[codec_name]
 
-    if key_decoder := kwargs.get("key_decoder", None):
-        if kwargs.get("key_of_id", None):
-            raise ValueError("Cannot specify both key_decoder and key_of_id")
-        kwargs["key_of_id"] = key_decoder
-        del kwargs["key_decoder"]
-
-    if key_encoder := kwargs.get("key_encoder", None):
-        if kwargs.get("id_of_key", None):
-            raise ValueError("Cannot specify both key_encoder and id_of_key")
-        kwargs["id_of_key"] = key_encoder
-        del kwargs["key_encoder"]
-
-    if value_decoder := kwargs.get("value_decoder", None):
-        if kwargs.get("obj_of_data", None):
-            raise ValueError("Cannot specify both value_decoder and obj_of_data")
-        kwargs["obj_of_data"] = value_decoder
-        del kwargs["value_decoder"]
-
-    if value_encoder := kwargs.get("value_encoder", None):
-        if kwargs.get("data_of_obj", None):
-            raise ValueError("Cannot specify both value_encoder and data_of_obj")
-        kwargs["data_of_obj"] = value_encoder
-        del kwargs["value_encoder"]
+    for old_name, new_name in X_OF_Y_TO_CODEC_KWARG.items():
+        if (func := kwargs.get(new_name)) is not None:
+            if kwargs.get(old_name) is not None:
+                raise ValueError(f"Cannot specify both {new_name} and {old_name}")
+            kwargs[old_name] = func
+            del kwargs[new_name]
 
 
 # TODO: Below is more general and clean, but breaks tests. Fix tests and use this.

@@ -27,6 +27,8 @@ The transform hooks (`_key_of_id`, `_id_of_key`, `_obj_of_data`, `_data_of_obj`)
 overrides them (via `_wrap_outcoming`/`_wrap_ingoing`). Two consequences are the traps
 below (#18, #6).
 
+**Keyword names (0.4, #92).** Users pass `key_decoder`/`key_encoder`/`value_decoder`/`value_encoder`; `_handle_codecs` maps them (and `key_codec`/`value_codec`) onto the internal `key_of_id`/`id_of_key`/`obj_of_data`/`data_of_obj` slots, which `_wrap_kvs` and the `Store` hooks still use. The `X_of_Y` keywords still work but warn (`_warn_on_x_of_y_kwargs`, attributed to the first frame outside `dol/`). Check presence with `is not None`, never truthiness: a falsy callable is still a transform.
+
 ## The signature-conditioning rule (Issue #9/#12) — how a transform is called
 
 A transform can be written two ways and dol must decide which:
@@ -55,7 +57,7 @@ When the heuristic can't (or shouldn't) infer intent, callers opt in explicitly:
 ```python
 from dol import wrap_kvs, FirstArgIsMapping
 
-wrap_kvs(store, obj_of_data=FirstArgIsMapping(lambda self, data: self.root / data))
+wrap_kvs(store, value_decoder=FirstArgIsMapping(lambda self, data: self.root / data))
 ```
 `FirstArgIsMapping(LiteralVal)` (`trans.py`) marks a transform as wanting the store,
 *regardless* of names/arity. All four call sites resolve it through the single helper
@@ -72,7 +74,7 @@ for backward-compat. See `misc/docs/dol_issues_report.md` §Wave-1.
 Because methods are delegated (has-a), a method defined on the wrapped class runs bound to
 `self.store`, not the `Wrap` instance:
 ```python
-sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))
+sq = wrap_kvs(value_encoder=lambda x: x * x, value_decoder=lambda x: math.sqrt(x))
 
 
 @sq

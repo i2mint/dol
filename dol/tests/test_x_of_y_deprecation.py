@@ -63,3 +63,29 @@ def test_new_spelling_is_silent():
 def test_both_spellings_for_the_same_role_is_an_error():
     with pytest.warns(DeprecationWarning), pytest.raises(ValueError):
         wrap_kvs({}, obj_of_data=json.loads, value_decoder=json.loads)
+
+
+class _FalsyTransform:
+    """A callable whose truth value is False (it has a zero length)."""
+
+    def __len__(self):
+        return 0
+
+    def __call__(self, x):
+        return x * 10
+
+
+@pytest.mark.parametrize("name", ["value_decoder", "obj_of_data"])
+def test_a_falsy_callable_is_still_applied(name):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        s = wrap_kvs({"a": 1}, **{name: _FalsyTransform()})
+    assert s["a"] == 10
+
+
+def test_warning_through_pipe_points_at_the_caller():
+    from dol import Pipe
+
+    with pytest.warns(DeprecationWarning) as record:
+        Pipe(wrap_kvs(obj_of_data=int), wrap_kvs(value_encoder=str))(dict)
+    assert {w.filename for w in record} == {__file__}
