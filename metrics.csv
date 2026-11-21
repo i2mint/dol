@@ -1,8 +1,22 @@
 metric,value
 schema_version,1.0
-timestamp,2026-11-21T14:58:56.450762Z
-commit_sha,1f604ecbdf7d8ffb4e68be04c6883ac69741d637
-commit_message,"Review fixes: token-based codemod, falsy transforms, warning attribution
+timestamp,2026-11-21T17:13:05.226339Z
+commit_sha,6d1ef964b35201060933e162f8be78e0c69db938
+commit_message,"Deprecate the X_of_Y keywords of wrap_kvs in favour of encoder/decoder (#92) (#216) [bump minor]
+
+* Deprecate the X_of_Y keywords of wrap_kvs in favour of encoder/decoder (#92)
+
+key_of_id/id_of_key/obj_of_data/data_of_obj still work and behave exactly as
+before, but now emit a DeprecationWarning naming the replacement
+(key_decoder/key_encoder/value_decoder/value_encoder), attributed to the
+caller's line in all four wrap_kvs modes. dol's own calls, doctests and tests
+use the new spelling (the suite passes with the warning as an error), and the
+docs, CLAUDE.md, llms*.txt and the agent skills name it as preferred.
+
+misc/codemods/x_of_y_kwargs.py rewrites wrap_kvs call sites (code and
+doctests, dependency-free); it is what dependents will be migrated with.
+
+* Review fixes: token-based codemod, falsy transforms, warning attribution
 
 - misc/codemods/x_of_y_kwargs.py now works on tokens: comments and strings
   never count when finding a wrap_kvs call's end, only keywords at the call's
@@ -31,9 +45,9 @@ metrics.umpyre_stats.mean_lines_per_function,16.426396761133603
 metrics.umpyre_stats.files_analyzed,570
 metrics.umpyre_stats.pypi_version,0.3.120
 metrics.workflow_status.last_run_status,success
-metrics.workflow_status.last_success_timestamp,2026-11-21T14:55:50Z
+metrics.workflow_status.last_success_timestamp,2026-11-21T14:59:01Z
 metrics.workflow_status.recent_failure_count,0
-metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/44916358358
+metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/44916628914
 metrics.workflow_status.total_runs_analyzed,10
 metrics.wily.cyclomatic_avg,0.0
 metrics.wily.maintainability_index,0.0
@@ -46,4 +60,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,2.8818981647491455
+collection_duration_seconds,2.376840591430664
