@@ -254,16 +254,16 @@ def test_store_of_only_out_of_scope_ids_is_falsy():
 def test_len_of_unscoped_store_is_the_inner_len():
     from dol import wrap_kvs
 
-    s = wrap_kvs({"a": 1, "b": 2}, key_of_id=str.upper, id_of_key=str.lower)
+    s = wrap_kvs({"a": 1, "b": 2}, key_decoder=str.upper, key_encoder=str.lower)
     assert len(s) == 2 and bool(s)
-    assert len(wrap_kvs({}, key_of_id=str.upper)) == 0
+    assert len(wrap_kvs({}, key_decoder=str.upper)) == 0
 
 
 def test_head_falls_back_to_inner_ids_when_getitem_fails():
     from dol import wrap_kvs
 
     # an asymmetric key mapping: iterated keys can't be read back
-    s = wrap_kvs({"p/stray": 0, "p/a": 1}, key_of_id=lambda _id: _id.upper())
+    s = wrap_kvs({"p/stray": 0, "p/a": 1}, key_decoder=lambda _id: _id.upper())
     with pytest.warns(UserWarning, match="Couldn't get data for the key"):
         assert s.head() == ("P/STRAY", 0)
 
@@ -275,7 +275,7 @@ def test_composed_and_stacked_scoped_layers_count_in_scope_ids():
     composed = (KeyCodecs.prefixed("a/") + KeyCodecs.suffixed(".txt"))(dict(base))
     assert list(composed) == ["x"] and len(composed) == 1
     # an unscoped layer over a scoped one gets its len from the scoped inner layer
-    upper = wrap_kvs(KeyCodecs.prefixed("a/")(dict(base)), key_of_id=str.upper)
+    upper = wrap_kvs(KeyCodecs.prefixed("a/")(dict(base)), key_decoder=str.upper)
     assert sorted(upper) == ["X.TXT", "Y.JSON"] and len(upper) == 2
 
 
@@ -283,7 +283,7 @@ def test_subclass_of_scoped_class_stays_scoped():
     from dol import KeyCodecs, wrap_kvs
 
     Scoped = KeyCodecs.prefixed("p/")(dict)
-    Sub = wrap_kvs(Scoped, key_of_id=str.upper, id_of_key=str.lower)
+    Sub = wrap_kvs(Scoped, key_decoder=str.upper, key_encoder=str.lower)
     s = Sub({"stray": 0, "p/a": 1})
     assert list(s) == ["A"] and len(s) == 1 and s["A"] == 1
 
@@ -340,7 +340,7 @@ def test_first_arg_is_mapping_keeps_the_scope_mark():
             raise OutOfScopeKeyError(_id)
         return _id[2:]
 
-    s = wrap_kvs({"p/a": 1, "q/b": 2}, key_of_id=FirstArgIsMapping(key_of_id))
+    s = wrap_kvs({"p/a": 1, "q/b": 2}, key_decoder=FirstArgIsMapping(key_of_id))
     assert list(s) == ["a"] and len(s) == 1
 
 

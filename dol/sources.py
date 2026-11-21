@@ -779,7 +779,7 @@ class CachedSequenceKvReader(SequenceKvReader):
 
 
 # TODO: Basically same could be acheived with
-#  wrap_kvs(obj_of_data=methodcaller('__call__'))
+#  wrap_kvs(value_decoder=methodcaller('__call__'))
 class FuncReader(KvReader):
     """Reader that seeds itself from a data fetching function list
     Uses the function list names as the keys, and their returned value as the values.

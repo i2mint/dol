@@ -6,7 +6,7 @@
 
 - **All stores are `Mapping` or `MutableMapping`**. You interact with any backend the same way you use a Python dict: `store[k]`, `store[k] = v`, `del store[k]`, `for k in store`.
 - **`wrap_kvs` is the core function**. It wraps a store class or instance with key/value transforms. Stack multiple `wrap_kvs` calls to build transform pipelines ("Russian dolls").
-- **Transforms come in pairs**: `key_of_id`/`id_of_key` for keys; `obj_of_data`/`data_of_obj` for values. Use `postget`/`preset` when the transform depends on the key.
+- **Transforms come in pairs**: `key_decoder`/`key_encoder` for keys; `value_decoder`/`value_encoder` for values (the older `key_of_id`/`id_of_key`/`obj_of_data`/`data_of_obj` keywords still work but are deprecated since 0.4). Use `postget`/`preset` when the transform depends on the key.
 - **Test with `dict`, deploy with real storage**. All dol stores accept a `dict` as the backend; swap it for `Files`, `ZipFiles`, a DB store, etc. when ready.
 - **Pure Python, zero dependencies**. The core package (`dol`) has no external requirements.
 

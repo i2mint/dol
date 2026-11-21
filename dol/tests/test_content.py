@@ -210,7 +210,7 @@ def test_content_url_unchanged_for_unwrapped_and_keyless_wraps():
     assert content_url({}, "k") is None
     # wraps that do not change keys must not change the URL
     assert (
-        content_url(wrap_kvs(_Served({"k": b"v"}), obj_of_data=lambda v: v), "k")
+        content_url(wrap_kvs(_Served({"k": b"v"}), value_decoder=lambda v: v), "k")
         == "https://cdn/k"
     )
     assert (

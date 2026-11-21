@@ -579,7 +579,7 @@ def test_path_of_follows_wrappers_and_validates(tmp_path):
     )
     suffixed = KeyCodecs.suffixed(".json")(Files(root))
     assert path_of(suffixed, "a") == os.path.join(root, "a.json")
-    upper = wrap_kvs(Files(root), id_of_key=str.lower, key_of_id=str.upper)
+    upper = wrap_kvs(Files(root), key_encoder=str.lower, key_decoder=str.upper)
     assert path_of(upper, "ABC") == os.path.join(root, "abc")
     stacked = Pipe(KeyCodecs.suffixed(".x"), mk_dirs_if_missing)(Files(root))
     assert path_of(stacked, "k") == os.path.join(root, "k.x")

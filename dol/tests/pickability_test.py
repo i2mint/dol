@@ -33,7 +33,7 @@ def test_pickling_with_store_wrap():
 
 
 def test_pickling_with_wrap_kvs_class():
-    WrappedDict = wrap_kvs(key_of_id=add_tag, id_of_key=remove_tag)(dict)
+    WrappedDict = wrap_kvs(key_decoder=add_tag, key_encoder=remove_tag)(dict)
     s = WrappedDict({"a": 1, "b": 2})
     assert_dict_of_unpickled_is_the_same(s)
 
@@ -41,7 +41,7 @@ def test_pickling_with_wrap_kvs_class():
 # @pytest.mark.xfail
 def test_pickling_with_wrap_kvs_instance():
     d = {"a": 1, "b": 2}
-    s = wrap_kvs(d, key_of_id=add_tag, id_of_key=remove_tag)
+    s = wrap_kvs(d, key_decoder=add_tag, key_encoder=remove_tag)
     assert_dict_of_unpickled_is_the_same(s)
 
 

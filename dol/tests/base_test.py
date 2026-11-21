@@ -120,10 +120,10 @@ def test_mapping_views(
 
     wwd = wrap_kvs(
         WrappedDict(**source_dict),
-        id_of_key=key_input_mapper,
-        key_of_id=key_output_mapper,
-        data_of_obj=value_input_mapper,
-        obj_of_data=value_output_mapper,
+        key_encoder=key_input_mapper,
+        key_decoder=key_output_mapper,
+        value_encoder=value_input_mapper,
+        value_decoder=value_output_mapper,
         postget=postget,
     )
     assert_store_functionality(
@@ -214,7 +214,7 @@ def _sqrt(x):
     return math.sqrt(x)
 
 
-_square_wrap = wrap_kvs(data_of_obj=_square, obj_of_data=_sqrt)
+_square_wrap = wrap_kvs(value_encoder=_square, value_decoder=_sqrt)
 
 
 class _SquareStoreBase(dict):
@@ -243,7 +243,7 @@ def test_issue18_reproduced_and_wrapped_self_fixes_it():
 
 def test_wrapped_self_climbs_to_outermost_when_nested():
     """Under stacked/Pipe wrapping, wrapped_self returns the OUTERMOST wrapper."""
-    outer_wrap = wrap_kvs(obj_of_data=lambda x: x + 100, data_of_obj=lambda x: x - 100)
+    outer_wrap = wrap_kvs(value_decoder=lambda x: x + 100, value_encoder=lambda x: x - 100)
 
     @outer_wrap
     @_square_wrap
@@ -287,7 +287,7 @@ def test_wrapped_self_is_noop_on_plain_objects():
 def test_wrapped_self_covers_instance_wrap():
     """wrap_kvs(instance) also registers (via Store.__init__), so wrapped_self resolves."""
     inner = {"a": 1}
-    s = wrap_kvs(inner, obj_of_data=lambda x: x * 10)
+    s = wrap_kvs(inner, value_decoder=lambda x: x * 10)
     assert s["a"] == 10
     assert wrapped_self(s.store) is s  # inner store climbs back to the wrapper
 
@@ -306,7 +306,7 @@ def test_wrapped_self_survives_pickle_round_trip():
 
 def test_wrapped_self_registration_is_zero_behavior_change():
     """A store that never calls wrapped_self behaves exactly as before."""
-    s = wrap_kvs(dict(), key_of_id=str.upper, id_of_key=str.lower)
+    s = wrap_kvs(dict(), key_decoder=str.upper, key_encoder=str.lower)
     s["foo"] = 1
     s["bar"] = 2
     # key_of_id=str.upper => iterating yields upper-cased keys; id_of_key=str.lower on write
@@ -366,8 +366,8 @@ def test_wrapped_self_registry_does_not_leak():
 def test_wrapped_self_shared_inner_returns_a_valid_wrapper():
     """Two live wrappers over one shared inner: ambiguous, but never returns the raw inner."""
     base = {}
-    a = wrap_kvs(base, obj_of_data=lambda x: x * 2, data_of_obj=lambda x: x // 2)
-    b = wrap_kvs(base, obj_of_data=lambda x: x * 3, data_of_obj=lambda x: x // 3)
+    a = wrap_kvs(base, value_decoder=lambda x: x * 2, value_encoder=lambda x: x // 2)
+    b = wrap_kvs(base, value_decoder=lambda x: x * 3, value_encoder=lambda x: x // 3)
     resolved = wrapped_self(base)
     assert resolved is a or resolved is b  # a real wrapper...
     assert resolved is not base  # ...never the raw inner

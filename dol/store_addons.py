@@ -413,7 +413,7 @@ def add_path_access(
     42
 
     The reason why we don't do this automatically is that it may not always be desirable.
-    If one wanted to though, one could use ``wrap_kvs(obj_of_data=...)`` to wrap
+    If one wanted to though, one could use ``wrap_kvs(value_decoder=...)`` to wrap
     specific values with ``add_path_access``.
     For example, if you wanted to wrap all mappings recursively, you could:
 

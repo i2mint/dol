@@ -18,7 +18,7 @@ The codec types (``Codec``, ``ValueCodec``, ``KeyCodec``, ...) live in ``dol.kv_
 This module re-exports them, and the add-ons, so older imports keep working.
 
     >>> from dol.trans import wrap_kvs
-    >>> s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)
+    >>> s = wrap_kvs({}, key_decoder=str.upper, key_encoder=str.lower, value_decoder=int, value_encoder=str)
     >>> s['a'] = 1
     >>> s.store  # the backend holds the transformed key and value
     {'a': '1'}
@@ -602,7 +602,7 @@ class FirstArgIsMapping(LiteralVal):
     >>> from dol import wrap_kvs, FirstArgIsMapping
     >>> def prefix_with_name(self, data):
     ...     return f"{getattr(self, 'name', '?')}:{data}"
-    >>> S = wrap_kvs(dict, obj_of_data=FirstArgIsMapping(prefix_with_name))
+    >>> S = wrap_kvs(dict, value_decoder=FirstArgIsMapping(prefix_with_name))
     >>> s = S({'a': 'x'}); s.name = 'ns'
     >>> s['a']
     'ns:x'
@@ -1985,21 +1985,32 @@ def wrap_kvs(
             _id: inner key
             obj: outer value
             data: inner value
-        Grammar:
-            Y_of_X: means that you get a Y output when giving an X input. Also known as X_to_Y.
+        Direction:
+            decoder: outgoing, backend -> interface (``key_decoder``: _id -> key,
+                     ``value_decoder``: data -> obj)
+            encoder: ingoing, interface -> backend (``key_encoder``: key -> _id,
+                     ``value_encoder``: obj -> data)
 
+    The older ``Y_of_X`` keywords (``key_of_id``, ``id_of_key``, ``obj_of_data``,
+    ``data_of_obj``) still work but are deprecated since 0.4: they emit a
+    ``DeprecationWarning`` naming their replacement, and will be removed in 1.0
+    (https://github.com/i2mint/dol/issues/92).
 
     Args:
         store: Store class or instance
         name: Name to give the wrapper class
-        key_of_id: The outcoming key transformation function.
-            Forms are `k = key_of_id(_id)` or `k = key_of_id(self, _id)`
-        id_of_key: The ingoing key transformation function.
-            Forms are `_id = id_of_key(k)` or `_id = id_of_key(self, k)`
-        obj_of_data: The outcoming val transformation function.
-            Forms are `obj = obj_of_data(data)` or `obj = obj_of_data(self, data)`
-        data_of_obj: The ingoing val transformation function.
-            Forms are `data = data_of_obj(obj)` or `data = data_of_obj(self, obj)`
+        key_decoder: The outcoming key transformation function.
+            Forms are `k = key_decoder(_id)` or `k = key_decoder(self, _id)`
+        key_encoder: The ingoing key transformation function.
+            Forms are `_id = key_encoder(k)` or `_id = key_encoder(self, k)`
+        value_decoder: The outcoming val transformation function.
+            Forms are `obj = value_decoder(data)` or `obj = value_decoder(self, data)`
+        value_encoder: The ingoing val transformation function.
+            Forms are `data = value_encoder(obj)` or `data = value_encoder(self, obj)`
+        key_codec, value_codec: an object with ``encoder`` and ``decoder``
+            attributes (e.g. a ``Codec``), setting both directions at once.
+        key_of_id, id_of_key, obj_of_data, data_of_obj: deprecated old names of
+            key_decoder, key_encoder, value_decoder, value_encoder.
         preset: A function that is called before doing a `__setitem__`.
             The function is called with both `k` and `v` as inputs, and should output a transformed value.
             The intent use is to do ingoing value transformations conditioned on the key.
@@ -2010,7 +2021,7 @@ def wrap_kvs(
         postget: A function that is called after the value `v` for a key `k` is be `__getitem__`.
             The function is called with both `k` and `v` as inputs, and should output a transformed value.
             The intent use is to do outcoming value transformations conditioned on the key.
-            We already have `obj_of_data` for outcoming value trans, but cannot condition it's behavior on k.
+            We already have `value_decoder` for outcoming value trans, but cannot condition its behavior on k.
             For example, you may want to deserialize the bytes of a '.csv', or '.json', or '.pickle' in different ways.
             Forms are `obj = postget(k, data)` or `obj = postget(self, k, data)`
 
@@ -2027,7 +2038,7 @@ def wrap_kvs(
     ...     return obj + 100
     >>>
     >>> A = wrap_kvs(dict, name='A',
-    ...             key_of_id=key_of_id, id_of_key=id_of_key, obj_of_data=obj_of_data, data_of_obj=data_of_obj)
+    ...             key_decoder=key_of_id, key_encoder=id_of_key, value_decoder=obj_of_data, value_encoder=data_of_obj)
     >>> a = A()
     >>> a['KEY'] = 1
     >>> a  # repr is just the base class (dict) repr, so shows "inside" the store (lower case keys and +100)
@@ -2054,18 +2065,18 @@ def wrap_kvs(
     >>> # Order of the value transforms: on write, ``preset`` runs first and ``data_of_obj``
     >>> # gets its output; on read, ``obj_of_data`` runs first and ``postget`` gets *its* output.
     >>> raw = {}
-    >>> s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), data_of_obj=lambda o: ('data_of_obj', o))
+    >>> s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), value_encoder=lambda o: ('data_of_obj', o))
     >>> s['k'] = 1
     >>> raw
     {'k': ('data_of_obj', ('preset', 1))}
-    >>> s = wrap_kvs({'k': 1}, obj_of_data=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))
+    >>> s = wrap_kvs({'k': 1}, value_decoder=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))
     >>> s['k']
     ('postget', ('obj_of_data', 1))
     >>>
     >>> # ``wrap_kvs`` (and ``filt_iter``, ...) are decorators with keyword options, so
     >>> # ``functools.partial`` turns one into a reusable wrapper of your own:
     >>> from functools import partial
-    >>> upper_keys = partial(wrap_kvs, key_of_id=str.upper, id_of_key=str.lower)
+    >>> upper_keys = partial(wrap_kvs, key_decoder=str.upper, key_encoder=str.lower)
     >>> d = upper_keys({'a': 1})  # wrap an instance...
     >>> list(d)
     ['A']
@@ -2147,8 +2158,64 @@ def wrap_kvs(
         name = store.__qualname__
 
     kwargs = dict(locals(), wrapper=wrapper or Store)
+    _warn_on_x_of_y_kwargs(kwargs)
     _handle_codecs(kwargs)
     return _wrap_store(_wrap_kvs, kwargs)
+
+
+# The X_of_Y keywords of wrap_kvs and the encoder/decoder names that replace them.
+# "decoder" is the outgoing direction (backend -> interface), "encoder" the ingoing one.
+X_OF_Y_TO_CODEC_KWARG = {
+    "key_of_id": "key_decoder",
+    "id_of_key": "key_encoder",
+    "obj_of_data": "value_decoder",
+    "data_of_obj": "value_encoder",
+}
+
+X_OF_Y_DEPRECATION = "wrap_kvs X_of_Y keywords are deprecated"
+
+
+def _warn_on_x_of_y_kwargs(kwargs: dict):
+    """Warn (DeprecationWarning) if ``wrap_kvs`` was given an ``X_of_Y`` keyword.
+
+    The old names keep working; the warning names the replacement. It is attributed to
+    the first frame outside dol's wrapping machinery, i.e. the code that called
+    ``wrap_kvs`` (or applied the decorator it made).
+
+    >>> import warnings
+    >>> with warnings.catch_warnings(record=True) as w:
+    ...     warnings.simplefilter('always')
+    ...     _warn_on_x_of_y_kwargs({'obj_of_data': int, 'key_of_id': None})
+    >>> print(w[0].message)  # doctest: +ELLIPSIS
+    wrap_kvs X_of_Y keywords are deprecated: use value_decoder= instead of obj_of_data= ...
+    """
+    used = [k for k in X_OF_Y_TO_CODEC_KWARG if kwargs.get(k) is not None]
+    if not used:
+        return
+    renames = ", ".join(f"{X_OF_Y_TO_CODEC_KWARG[k]}= instead of {k}=" for k in used)
+    warn(
+        f"{X_OF_Y_DEPRECATION}: use {renames} (same semantics; the old names will be "
+        "removed in dol 1.0, see https://github.com/i2mint/dol/issues/92).",
+        DeprecationWarning,
+        stacklevel=_stacklevel_outside_wrapping_machinery(),
+    )
+
+
+def _stacklevel_outside_wrapping_machinery() -> int:
+    """The ``warn`` stacklevel of the first frame outside this module and functools.
+
+    Counted from the caller of ``warn`` (stacklevel=1 is the function calling ``warn``).
+    """
+    import sys
+    import functools
+
+    machinery = {__file__, functools.__file__}
+    frame = sys._getframe(2)  # the caller of the function that calls warn
+    level = 2
+    while frame is not None and frame.f_code.co_filename in machinery:
+        frame = frame.f_back
+        level += 1
+    return level
 
 
 def _handle_codecs(kwargs: dict):
@@ -2257,7 +2324,7 @@ def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
     """Add a decoder layer to a store.
 
     Note:
-        This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.
+        This is a convenience function for ``wrap_kvs(..., value_decoder=decoder)``.
 
     >>> s = {'a': "42"}
     >>> ss = add_decoder(s, decoder=int)
@@ -2281,7 +2348,7 @@ def add_decoder(store_cls=None, *, decoder: Callable = None, name=None):
                 "If the decoder keyword is not given, the first argument must be the "
                 "(callable) decoder"
             )
-    return wrap_kvs(store_cls, obj_of_data=decoder, name=name)
+    return wrap_kvs(store_cls, value_decoder=decoder, name=name)
 
 
 def _wrap_kvs(
@@ -2389,7 +2456,7 @@ def _kv_wrap_outcoming_keys(trans_func):
             name
             or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_kr"
         )
-        return wrap_kvs(o, name=name, key_of_id=trans_func)
+        return wrap_kvs(o, name=name, key_decoder=trans_func)
 
     return wrapper
 
@@ -2426,7 +2493,7 @@ def _kv_wrap_ingoing_keys(trans_func):
             name
             or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_kw"
         )
-        return wrap_kvs(o, name=name, id_of_key=trans_func)
+        return wrap_kvs(o, name=name, key_encoder=trans_func)
 
     return wrapper
 
@@ -2457,7 +2524,7 @@ def _kv_wrap_outcoming_vals(trans_func):
             name
             or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_vr"
         )
-        return wrap_kvs(o, name=name, obj_of_data=trans_func)
+        return wrap_kvs(o, name=name, value_decoder=trans_func)
 
     return wrapper
 
@@ -2488,7 +2555,7 @@ def _kv_wrap_ingoing_vals(trans_func):
             name
             or getattr(o, "__qualname__", getattr(o.__class__, "__qualname__")) + "_vw"
         )
-        return wrap_kvs(o, name=name, data_of_obj=trans_func)
+        return wrap_kvs(o, name=name, value_encoder=trans_func)
 
     return wrapper
 
@@ -2829,10 +2896,10 @@ def kv_wrap(trans_obj):
         return wrap_kvs(
             o,
             name=name,
-            key_of_id=key_of_id,
-            id_of_key=id_of_key,
-            obj_of_data=obj_of_data,
-            data_of_obj=data_of_obj,
+            key_decoder=key_of_id,
+            key_encoder=id_of_key,
+            value_decoder=obj_of_data,
+            value_encoder=data_of_obj,
             preset=preset,
             postget=postget,
         )
@@ -2941,7 +3008,7 @@ def conditional_data_trans(store=None, *, condition, data_trans):
     _data_trans = partial(
         _conditional_data_trans, condition=condition, data_trans=data_trans
     )
-    return Pipe(data_trans, wrap_kvs(store, obj_of_data=_data_trans))
+    return Pipe(data_trans, wrap_kvs(store, value_decoder=_data_trans))
 
 
 from typing import TypeVar, Any

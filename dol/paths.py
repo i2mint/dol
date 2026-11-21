@@ -1238,7 +1238,7 @@ def prefixless_view(store=None, *, prefix=None):
     """Wrap ``store`` so that keys are seen without ``prefix`` (added back on access)."""
     key_mapper = RelativePathKeyMapper(prefix)
     return wrap_kvs(
-        store, id_of_key=key_mapper._id_of_key, key_of_id=key_mapper._key_of_id
+        store, key_encoder=key_mapper._id_of_key, key_decoder=key_mapper._key_of_id
     )
 
 

@@ -8,16 +8,16 @@
 
 ## Naming Conventions
 
-- Transform functions use `X_of_Y` naming: `key_of_id` (given `_id`, return `key`), `id_of_key` (given `key`, return `_id`). Follow this in new code.
+- `wrap_kvs` keywords use encoder/decoder naming: `key_decoder` (given `_id`, return `key`), `key_encoder` (given `key`, return `_id`), `value_decoder`, `value_encoder`. The old `X_of_Y` keywords are deprecated (0.4, #92): never use them in new code. Internal `Store` hooks (`_key_of_id`, ...) keep their names.
 - Use `_id` for inner/backend keys, `k` or `key` for outer/interface keys.
 - Use `data` for serialized/raw backend values, `obj` or `v` or `value` for outer Python objects.
 
 ## `wrap_kvs` Usage
 
 - Prefer `wrap_kvs` over subclassing when adding key/value transforms.
-- Use `obj_of_data`/`data_of_obj` (no key context) when the transform is the same for all values.
+- Use `value_decoder`/`value_encoder` (no key context) when the transform is the same for all values.
 - Use `postget`/`preset` (with key context) only when the transform depends on the key (e.g., file extension).
-- **Do not use `bytes.decode` directly** as `obj_of_data` — use `lambda b: b.decode()` instead (signature-inference bug, Issue #9).
+- **Do not use `bytes.decode` directly** as `value_decoder` — use `lambda b: b.decode()` instead (signature-inference bug, Issue #9).
 
 ## Store Construction
 

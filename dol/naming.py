@@ -1218,7 +1218,7 @@ def mk_store_from_path_format_store_cls(
     if isinstance(store, type):
         name = name or "KeyWrapped" + store.__name__
         _WrappedStoreCls = wrap_kvs(
-            store, name=name, key_of_id=km.key_of_id, id_of_key=km.id_of_key
+            store, name=name, key_decoder=km.key_of_id, key_encoder=km.id_of_key
         )
 
         class WrappedStoreCls(_WrappedStoreCls):
@@ -1230,7 +1230,7 @@ def mk_store_from_path_format_store_cls(
     else:
         name = name or "KeyWrapped" + store.__class__.__name__
         return wrap_kvs(
-            store, name=name, key_of_id=km.key_of_id, id_of_key=km.id_of_key
+            store, name=name, key_decoder=km.key_of_id, key_encoder=km.id_of_key
         )
 
 

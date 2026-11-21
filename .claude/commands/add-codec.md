@@ -22,7 +22,7 @@ Add a codec (encoder/decoder pair) to an existing store or create a new codec fo
 2. Reads `dol/trans.py` for `Codec`, `ValueCodec`, `KeyCodec` definitions
 3. Implements the codec as:
    - A `ValueCodec(encoder=..., decoder=...)` or `KeyCodec(encoder=..., decoder=...)` if it's a reusable pair
-   - A `wrap_kvs(store, obj_of_data=..., data_of_obj=...)` if it's one-off
+   - A `wrap_kvs(store, value_decoder=..., value_encoder=...)` if it's one-off
 4. Shows how to apply it to a store and how to compose it with existing codecs
 
 ## Output pattern

@@ -74,7 +74,7 @@ class ValueCodec(*_CodecT):
     def __call__(self, obj):
         from dol.trans import wrap_kvs  # here, since dol.trans imports this module
 
-        return wrap_kvs(obj, data_of_obj=self.encoder, obj_of_data=self.decoder)
+        return wrap_kvs(obj, value_encoder=self.encoder, value_decoder=self.decoder)
 
 
 class KeyCodec(*_CodecT):
@@ -83,7 +83,7 @@ class KeyCodec(*_CodecT):
     def __call__(self, obj):
         from dol.trans import wrap_kvs  # here, since dol.trans imports this module
 
-        return wrap_kvs(obj, id_of_key=self.encoder, key_of_id=self.decoder)
+        return wrap_kvs(obj, key_encoder=self.encoder, key_decoder=self.decoder)
 
 
 class KeyValueCodec(*_CodecT):

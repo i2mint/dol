@@ -554,7 +554,7 @@ def test_nested_iterator_of_iterators():
 def test_wrapping_legacy_store_warns():
     from dol import wrap_kvs
 
-    legacy = wrap_kvs({'a.json': '1'}, obj_of_data=str)
+    legacy = wrap_kvs({'a.json': '1'}, value_decoder=str)
     with pytest.warns(UserWarning, match='legacy dol Store'):
         interface_wrap(
             legacy,

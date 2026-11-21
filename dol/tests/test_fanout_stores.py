@@ -40,8 +40,8 @@ def test_mk_custom_fanout_store(
             *persister_args,
             **persister_kwargs,
         ),
-        data_of_obj=value_encoder,
-        obj_of_data=value_decoder,
+        value_encoder=value_encoder,
+        value_decoder=value_decoder,
     )
     for k, v, error in data:
 
