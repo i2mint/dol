@@ -32,7 +32,7 @@ from dol import (
 def _json_store(initial=None):
     """A copy-semantics store: ``__getitem__`` returns fresh json.loads copies."""
     backend = dict(initial or {})
-    store = wrap_kvs(backend, obj_of_data=json.loads, data_of_obj=json.dumps)
+    store = wrap_kvs(backend, value_decoder=json.loads, value_encoder=json.dumps)
     return backend, store
 
 
@@ -142,13 +142,13 @@ def test_off_state_json_store_still_silently_loses():
 
 def test_files_store_deep_write_persists_to_disk():
     d = tempfile.mkdtemp()
-    F = wrap_kvs(TextFiles(d), obj_of_data=json.loads, data_of_obj=json.dumps)
+    F = wrap_kvs(TextFiles(d), value_decoder=json.loads, value_encoder=json.dumps)
     s = add_path_access(F, create_missing=True, on_create=None)
     s["a", "b", "c"] = 99
     s["a", "b", "new"] = 7
     s["fresh", "x"] = 5
     # Fresh instances re-reading from disk:
-    F2 = wrap_kvs(TextFiles(d), obj_of_data=json.loads)
+    F2 = wrap_kvs(TextFiles(d), value_decoder=json.loads)
     s2 = add_path_access(F2)
     assert s2["a", "b", "c"] == 99
     assert s2["a", "b", "new"] == 7

@@ -10,7 +10,7 @@ def test_wrap_kvs_exposes_wrapped_class():
     class D(dict):
         pass
 
-    W = wrap_kvs(D, key_of_id=str.lower, id_of_key=str.upper)
+    W = wrap_kvs(D, key_decoder=str.lower, key_encoder=str.upper)
     assert W._wrapped_class is D
     assert W._delegation_attr == "store"
     assert issubclass(W, W._wrapper_class)
@@ -26,11 +26,11 @@ def test_store_wrap_exposes_attrs():
 
 def test_nested_wraps_are_not_shadowed():
     """The inner wrapper's copies must not be delegated over the outer's."""
-    inner = wrap_kvs(dict, key_of_id=str.lower, id_of_key=str.upper)
+    inner = wrap_kvs(dict, key_decoder=str.lower, key_encoder=str.upper)
     outer = filt_iter(inner, filt=lambda k: True)
     assert outer._wrapped_class is inner
     assert outer._delegation_attr == "store"
-    deeper = wrap_kvs(inner, obj_of_data=int, data_of_obj=str)
+    deeper = wrap_kvs(inner, value_decoder=int, value_encoder=str)
     assert deeper._wrapped_class is inner
     assert deeper._wrapped_class is not dict
 
@@ -45,7 +45,7 @@ def test_class_decorators_keep_attrs():
 
 
 def test_pickle_roundtrip_unaffected():
-    W = wrap_kvs(dict, key_of_id=str.lower, id_of_key=str.upper)
+    W = wrap_kvs(dict, key_decoder=str.lower, key_encoder=str.upper)
     w = W()
     w["a"] = 1
     w2 = pickle.loads(pickle.dumps(w))

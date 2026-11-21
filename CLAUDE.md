@@ -36,15 +36,15 @@ from dol import wrap_kvs, Files
 import json
 
 # Add JSON serialization to a file store
-JsonFileStore = wrap_kvs(Files, obj_of_data=json.loads, data_of_obj=json.dumps)
+JsonFileStore = wrap_kvs(Files, value_decoder=json.loads, value_encoder=json.dumps)
 
 # Or wrap an instance
-s = wrap_kvs(dict(), id_of_key=lambda k: k.upper(), key_of_id=str.lower)
+s = wrap_kvs(dict(), key_encoder=lambda k: k.upper(), key_decoder=str.lower)
 ```
 
 `wrap_kvs` parameters:
-- `key_of_id` / `id_of_key` — outgoing/incoming key transforms
-- `obj_of_data` / `data_of_obj` — outgoing/incoming value transforms
+- `key_decoder` / `key_encoder` — outgoing/incoming key transforms (old names: `key_of_id` / `id_of_key`)
+- `value_decoder` / `value_encoder` — outgoing/incoming value transforms (old names: `obj_of_data` / `data_of_obj`)
 - `postget(key, data) → obj` — value transform that knows the key (for reads)
 - `preset(key, obj) → data` — value transform that knows the key (for writes)
 - `key_codec` / `value_codec` — `Codec` objects (encoder+decoder pair)
@@ -53,7 +53,7 @@ s = wrap_kvs(dict(), id_of_key=lambda k: k.upper(), key_of_id=str.lower)
 
 ## Core Conventions
 
-- **`X_of_Y` naming**: `key_of_id` = "give me a key, you give me an id" (outgoing). `id_of_key` = "give me an id, you give me a key" (incoming). Always pairs.
+- **encoder/decoder naming (preferred since 0.4)**: a *decoder* goes out of the backend (`key_decoder`: backend id → user key; `value_decoder`: stored data → object), an *encoder* goes into it. The old `X_of_Y` keywords of `wrap_kvs` (`key_of_id`, `id_of_key`, `obj_of_data`, `data_of_obj`) still work but emit a `DeprecationWarning` (removed in 1.0, #92); `misc/codemods/x_of_y_kwargs.py` rewrites call sites. The `Store` hook methods (`_key_of_id`, `_obj_of_data`, ...) keep their names for now. Always pairs.
 - **KvReader for read-only**: subclass `KvReader` (not `KvPersister`) when writes aren't needed.
 - **KvPersister for read-write**: `clear()` is disabled — override only if you're sure.
 - **Test with `dict`, deploy with real backend**: `wrap_kvs(dict, ...)` first, then swap `dict` for `Files`, a DB store, etc.
@@ -70,10 +70,10 @@ from dol import wrap_kvs
 
 MyStore = wrap_kvs(
     dict,
-    id_of_key=lambda k: k + ".json",
-    key_of_id=lambda _id: _id[:-5],
-    obj_of_data=json.loads,
-    data_of_obj=json.dumps,
+    key_encoder=lambda k: k + ".json",
+    key_decoder=lambda _id: _id[:-5],
+    value_decoder=json.loads,
+    value_encoder=json.dumps,
 )
 ```
 
@@ -186,14 +186,14 @@ Always prototype with `dict` as the backend:
 
 ```python
 # 1. Test logic with dict
-s = wrap_kvs(dict(), obj_of_data=json.loads, data_of_obj=json.dumps)
+s = wrap_kvs(dict(), value_decoder=json.loads, value_encoder=json.dumps)
 s["key"] = {"a": 1}
 assert s["key"] == {"a": 1}
 
 # 2. Swap to real backend
 from dol import Files
 
-s = wrap_kvs(Files("/data"), obj_of_data=json.loads, data_of_obj=json.dumps)
+s = wrap_kvs(Files("/data"), value_decoder=json.loads, value_encoder=json.dumps)
 ```
 
 Run tests: a bare `pytest` (from the repo root) runs exactly what CI runs — the
@@ -256,6 +256,6 @@ and the full doc index with status labels. The table below is the quick version.
 - **`wrap_kvs` + `self` inside methods**: When a `wrap_kvs`-decorated class uses `self[k]` in its own methods, `self` is the unwrapped inner store, so transforms are bypassed (Issue #18 — delegation architecture). Blessed fix: `from dol import wrapped_self` and write `wrapped_self(self)[k]` to reach the outer, transform-applying store (climbs to the outermost wrapper for stacked/`Pipe` wraps; a safe no-op on direct `Store` subclasses). The older `sq(self)[k]` re-wrap still works. A structural fix (is-a wrapping) is proposed in `misc/docs/dol_issue18_design.md`.
 - **`clear()` is disabled** on `KvPersister`. Call `ensure_clear_to_kv_store(store)` to re-enable.
 - **No async support** in core. Use synchronous wrappers for async backends (thread pool, etc.).
-- **Transforms wanting the store**: a transform is called `f(self, data)` only if its first param is named `self`/`store`/`mapping` **and** it has ≥2 required params; otherwise `f(data)`. Mark explicitly with `FirstArgIsMapping(f)`. (`bytes.decode` as `obj_of_data` now works — Issue #9 fixed.)
+- **Transforms wanting the store**: a transform is called `f(self, data)` only if its first param is named `self`/`store`/`mapping` **and** it has ≥2 required params; otherwise `f(data)`. Mark explicitly with `FirstArgIsMapping(f)`. (`bytes.decode` as `value_decoder` now works — Issue #9 fixed.)
 - **Windows paths**: cross-platform fixes landed (Issues #40/#52/#58 resolved, CI green). See the `dol-dev-portability` skill before touching path/key code.
-- **Key-path write-through / autovivification (Issue #16)**: by default, writing a deep path whose intermediates are missing raises `KeyError` (unchanged), and — a pre-existing gotcha — writing an *existing* deep path on a **copy-semantics/persistent store** (`Files`, any `wrap_kvs` with a non-identity `obj_of_data`) silently mutates a detached copy and is **lost**. Opt in with `create_missing=True` on `add_path_access`/`KeyPath` (or the `autoviv(store)` alias): missing intermediates are created via a contextual `mk_missing(ctx)` factory and every write is persisted through a single boundary write-back — which also closes the silent-loss. Creation is announced via `warnings.warn` (pass `on_create=None` to silence); unsafe cases raise `PathCreationError`/`PathWritebackError`. Engine lives in the dependency-free leaf `dol/_paths_core.py` (`path_set_writeback`); `path_set` there also fixes the old factory-not-propagated bug. Persistent store-of-stores (nested `Files`) is out of scope → deferred to #10. Full design: `misc/docs/dol_issue16_design.md`.
+- **Key-path write-through / autovivification (Issue #16)**: by default, writing a deep path whose intermediates are missing raises `KeyError` (unchanged), and — a pre-existing gotcha — writing an *existing* deep path on a **copy-semantics/persistent store** (`Files`, any `wrap_kvs` with a non-identity `value_decoder`) silently mutates a detached copy and is **lost**. Opt in with `create_missing=True` on `add_path_access`/`KeyPath` (or the `autoviv(store)` alias): missing intermediates are created via a contextual `mk_missing(ctx)` factory and every write is persisted through a single boundary write-back — which also closes the silent-loss. Creation is announced via `warnings.warn` (pass `on_create=None` to silence); unsafe cases raise `PathCreationError`/`PathWritebackError`. Engine lives in the dependency-free leaf `dol/_paths_core.py` (`path_set_writeback`); `path_set` there also fixes the old factory-not-propagated bug. Persistent store-of-stores (nested `Files`) is out of scope → deferred to #10. Full design: `misc/docs/dol_issue16_design.md`.

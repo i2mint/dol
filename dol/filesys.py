@@ -1063,7 +1063,7 @@ class Jsons(ReprMixin, JsonFiles):
     Namely: filtering for `.json` extensions but not showing the extension in keys"""
 
 
-# @wrap_kvs(key_of_id=lambda x: x[:-1], id_of_key=lambda x: x + path_sep)
+# @wrap_kvs(key_decoder=lambda x: x[:-1], key_encoder=lambda x: x + path_sep)
 @mk_relative_path_store(prefix_attr="rootdir")
 class PickleStores(DirCollection):
     """Reader mapping each sub-directory of ``rootdir`` to a ``PickleFiles`` store of it."""

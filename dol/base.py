@@ -400,7 +400,7 @@ def wrapped_self(obj: Any) -> Any:
 
     >>> import math
     >>> from dol import wrap_kvs, wrapped_self
-    >>> sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))
+    >>> sq = wrap_kvs(value_encoder=lambda x: x * x, value_decoder=lambda x: math.sqrt(x))
     >>> @sq
     ... class S(dict):
     ...     def via_self(self, k):

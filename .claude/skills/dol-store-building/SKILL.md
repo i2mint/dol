@@ -19,7 +19,7 @@ from dol import wrap_kvs
 import json
 
 # 1. logic first, dict backend
-S = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+S = wrap_kvs(dict, value_decoder=json.loads, value_encoder=json.dumps)
 s = S()
 s["x"] = {"a": 1}
 assert s["x"] == {"a": 1}
@@ -27,7 +27,7 @@ assert s["x"] == {"a": 1}
 # 2. same transforms, real backend
 from dol import Files
 
-s = wrap_kvs(Files("/data"), obj_of_data=json.loads, data_of_obj=json.dumps)
+s = wrap_kvs(Files("/data"), value_decoder=json.loads, value_encoder=json.dumps)
 ```
 
 ## `wrap_kvs` — the core, and its `X_of_Y` naming
@@ -37,14 +37,14 @@ transforms produce what the backend stores. They come in inverse pairs:
 
 | kwarg | direction | signature | use |
 |---|---|---|---|
-| `key_of_id` | read (key out) | `k = key_of_id(_id)` | backend id → user key |
-| `id_of_key` | write (key in) | `_id = id_of_key(k)` | user key → backend id |
-| `obj_of_data` | read (value out) | `obj = obj_of_data(data)` | deserialize |
-| `data_of_obj` | write (value in) | `data = data_of_obj(obj)` | serialize |
+| `key_decoder` (old: `key_of_id`) | read (key out) | `k = key_decoder(_id)` | backend id → user key |
+| `key_encoder` (old: `id_of_key`) | write (key in) | `_id = key_encoder(k)` | user key → backend id |
+| `value_decoder` (old: `obj_of_data`) | read (value out) | `obj = value_decoder(data)` | deserialize |
+| `value_encoder` (old: `data_of_obj`) | write (value in) | `data = value_encoder(obj)` | serialize |
 | `postget` | read, key-aware | `obj = postget(k, data)` | deserialize depending on key (e.g. by extension) |
 | `preset` | write, key-aware | `data = preset(k, obj)` | serialize depending on key |
 
-Use `obj_of_data`/`data_of_obj` when the transform is the same for all values; use
+Use `value_decoder`/`value_encoder` when the transform is the same for all values; use
 `postget`/`preset` when it depends on the key.
 
 ## Prefer ready-made codecs over hand-rolled lambdas
@@ -112,7 +112,7 @@ def resolve(self, data):  # first arg is the store
     return f"{self.root}/{data}"
 
 
-s = wrap_kvs(store, obj_of_data=FirstArgIsMapping(resolve))
+s = wrap_kvs(store, value_decoder=FirstArgIsMapping(resolve))
 ```
 Note: passing a bare `def f(self, data)` (first param named `self`/`store`/`mapping`, ≥2
 required params) also works via dol's heuristic — but `FirstArgIsMapping` is explicit and
@@ -126,7 +126,7 @@ by default (guard against wiping a backend); re-enable deliberately if you must.
 
 ## Gotchas
 
-- **`bytes.decode` as `obj_of_data`** now works, but prefer `ValueCodecs.str_to_bytes()`
+- **`bytes.decode` as `value_decoder`** now works, but prefer `ValueCodecs.str_to_bytes()`
   or `lambda b: b.decode()` for clarity.
 - **`clear()` is disabled** on `KvPersister` — deliberate.
 - **A wrapped class's own methods see the *unwrapped* store as `self`** — if you write a

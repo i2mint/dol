@@ -27,15 +27,15 @@ def test_wrap_kvs_unary_builtin_transform_issue_9():
     positional), but its first parameter is named ``self``. The old name-only
     heuristic mis-called it as ``bytes.decode(store, data)`` -> TypeError.
     """
-    S = wrap_kvs(dict, obj_of_data=bytes.decode)
+    S = wrap_kvs(dict, value_decoder=bytes.decode)
     s = S({"k": b"hello"})
     assert s["k"] == "hello"
 
     # str.upper, str.split — same shape, must also be treated as unary
-    assert wrap_kvs({"k": "hi"}, obj_of_data=str.upper)["k"] == "HI"
+    assert wrap_kvs({"k": "hi"}, value_decoder=str.upper)["k"] == "HI"
 
     # The lambda form, which always worked, must keep working
-    assert wrap_kvs({"k": b"hi"}, obj_of_data=lambda x: x.decode())["k"] == "hi"
+    assert wrap_kvs({"k": b"hi"}, value_decoder=lambda x: x.decode())["k"] == "hi"
 
 
 def test_wrap_kvs_self_convention_still_works():
@@ -46,7 +46,7 @@ def test_wrap_kvs_self_convention_still_works():
     def obj_of_data(self, data):
         return f"{getattr(self, 'p', '?')}:{data}"
 
-    S = wrap_kvs(dict, obj_of_data=obj_of_data)
+    S = wrap_kvs(dict, value_decoder=obj_of_data)
     s = S({"a": "x"})
     s.p = "ns"
     assert s["a"] == "ns:x"
@@ -55,7 +55,7 @@ def test_wrap_kvs_self_convention_still_works():
     def key_of_id(store, _id):
         return _id.upper()
 
-    s2 = wrap_kvs({"a": 1, "b": 2}, key_of_id=key_of_id)
+    s2 = wrap_kvs({"a": 1, "b": 2}, key_decoder=key_of_id)
     assert sorted(s2) == ["A", "B"]
 
 
@@ -66,7 +66,7 @@ def test_first_arg_is_mapping_explicit_marker_issue_12():
     def needs_store(x, data):  # first param 'x' -> heuristic alone says no-self
         return f"{getattr(x, 'p', '?')}/{data}"
 
-    S = wrap_kvs(dict, obj_of_data=FirstArgIsMapping(needs_store))
+    S = wrap_kvs(dict, value_decoder=FirstArgIsMapping(needs_store))
     s = S({"a": "v"})
     s.p = "NS"
     assert s["a"] == "NS/v"

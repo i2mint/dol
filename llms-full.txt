@@ -6,7 +6,7 @@
 
 - **All stores are `Mapping` or `MutableMapping`**. You interact with any backend the same way you use a Python dict: `store[k]`, `store[k] = v`, `del store[k]`, `for k in store`.
 - **`wrap_kvs` is the core function**. It wraps a store class or instance with key/value transforms. Stack multiple `wrap_kvs` calls to build transform pipelines ("Russian dolls").
-- **Transforms come in pairs**: `key_of_id`/`id_of_key` for keys; `obj_of_data`/`data_of_obj` for values. Use `postget`/`preset` when the transform depends on the key.
+- **Transforms come in pairs**: `key_decoder`/`key_encoder` for keys; `value_decoder`/`value_encoder` for values (the older `key_of_id`/`id_of_key`/`obj_of_data`/`data_of_obj` keywords still work but are deprecated since 0.4). Use `postget`/`preset` when the transform depends on the key.
 - **Test with `dict`, deploy with real storage**. All dol stores accept a `dict` as the backend; swap it for `Files`, `ZipFiles`, a DB store, etc. when ready.
 - **Pure Python, zero dependencies**. The core package (`dol`) has no external requirements.
 
@@ -134,18 +134,18 @@ Transformation and wrapping tools. The most important module.
 def wrap_kvs(
     store=None,
     *,
-    key_of_id=None,        # outgoing key transform: inner_id → outer_key
-    id_of_key=None,        # incoming key transform: outer_key → inner_id
-    obj_of_data=None,      # outgoing value transform: stored_data → python_obj
-    data_of_obj=None,      # incoming value transform: python_obj → stored_data
+    key_decoder=None,      # outgoing key transform: inner_id → outer_key
+    key_encoder=None,      # incoming key transform: outer_key → inner_id
+    value_decoder=None,    # outgoing value transform: stored_data → python_obj
+    value_encoder=None,    # incoming value transform: python_obj → stored_data
     preset=None,           # (key, obj) → data  [write, key-aware]
     postget=None,          # (key, data) → obj  [read, key-aware]
-    key_codec=None,        # Codec(encoder=id_of_key, decoder=key_of_id)
-    value_codec=None,      # Codec(encoder=data_of_obj, decoder=obj_of_data)
-    key_encoder=None,      # alias for id_of_key
-    key_decoder=None,      # alias for key_of_id
-    value_encoder=None,    # alias for data_of_obj
-    value_decoder=None,    # alias for obj_of_data
+    key_codec=None,        # Codec(encoder=key_encoder, decoder=key_decoder)
+    value_codec=None,      # Codec(encoder=value_encoder, decoder=value_decoder)
+    key_of_id=None,        # DEPRECATED (0.4) old name of key_decoder
+    id_of_key=None,        # DEPRECATED (0.4) old name of key_encoder
+    obj_of_data=None,      # DEPRECATED (0.4) old name of value_decoder
+    data_of_obj=None,      # DEPRECATED (0.4) old name of value_encoder
     name=None,
     wrapper=None,          # wrapper class, defaults to Store
     outcoming_key_methods=(),
@@ -160,34 +160,34 @@ Make a Store with the given key/value transforms applied. Can wrap a class (retu
 **`@store_decorator` makes it work in 4 modes:**
 ```python
 # 1. Class decorator (no parens)
-@wrap_kvs(obj_of_data=json.loads, data_of_obj=json.dumps)
+@wrap_kvs(value_decoder=json.loads, value_encoder=json.dumps)
 class MyStore(dict): ...
 
 # 2. Type wrapping
-JsonDict = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+JsonDict = wrap_kvs(dict, value_decoder=json.loads, value_encoder=json.dumps)
 
 # 3. Instance wrapping
 d = {}
-d = wrap_kvs(d, obj_of_data=json.loads, data_of_obj=json.dumps)
+d = wrap_kvs(d, value_decoder=json.loads, value_encoder=json.dumps)
 
 # 4. Partial (factory)
-json_wrap = wrap_kvs(obj_of_data=json.loads, data_of_obj=json.dumps)
+json_wrap = wrap_kvs(value_decoder=json.loads, value_encoder=json.dumps)
 MyStore = json_wrap(dict)
 ```
 
-**`obj_of_data` vs `postget`:**
-- `obj_of_data(data) → obj` — value transform, no key context
+**`value_decoder` vs `postget`:**
+- `value_decoder(data) → obj` — value transform, no key context
 - `postget(key, data) → obj` — value transform with key context (e.g., choose deserializer by file extension)
 
 ```python
 # Key transform: strip prefix
 s = wrap_kvs(dict,
-    id_of_key=lambda k: f"user:{k}",
-    key_of_id=lambda _id: _id[len("user:"):],
+    key_encoder=lambda k: f"user:{k}",
+    key_decoder=lambda _id: _id[len("user:"):],
 )
 
 # Value transform: JSON serialization
-s = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+s = wrap_kvs(dict, value_decoder=json.loads, value_encoder=json.dumps)
 
 # Key-conditioned value transform
 s = wrap_kvs(dict,
@@ -197,8 +197,8 @@ s = wrap_kvs(dict,
 
 # Stacking layers
 s = dict()
-s = wrap_kvs(s, id_of_key=lambda k: k + '.pkl', key_of_id=lambda _id: _id[:-4])
-s = wrap_kvs(s, obj_of_data=pickle.loads, data_of_obj=pickle.dumps)
+s = wrap_kvs(s, key_encoder=lambda k: k + '.pkl', key_decoder=lambda _id: _id[:-4])
+s = wrap_kvs(s, value_decoder=pickle.loads, value_encoder=pickle.dumps)
 ```
 
 ### filt_iter
@@ -291,11 +291,11 @@ class Codec(Generic[DecodedType, EncodedType]):
 
 class ValueCodec(Codec):
     def __call__(self, store):  # wraps store with value codec
-        return wrap_kvs(store, data_of_obj=self.encoder, obj_of_data=self.decoder)
+        return wrap_kvs(store, value_encoder=self.encoder, value_decoder=self.decoder)
 
 class KeyCodec(Codec):
     def __call__(self, store):  # wraps store with key codec
-        return wrap_kvs(store, id_of_key=self.encoder, key_of_id=self.decoder)
+        return wrap_kvs(store, key_encoder=self.encoder, key_decoder=self.decoder)
 
 class KeyValueCodec(Codec):
     def __call__(self, store):  # wraps store with key-conditioned codec
@@ -667,7 +667,7 @@ class MyStore:
 from dol import wrap_kvs
 import json
 
-JsonStore = wrap_kvs(dict, obj_of_data=json.loads, data_of_obj=json.dumps)
+JsonStore = wrap_kvs(dict, value_decoder=json.loads, value_encoder=json.dumps)
 s = JsonStore()
 s['config'] = {'debug': True}   # stored as JSON string
 s['config']                      # returns {'debug': True}
@@ -681,10 +681,10 @@ from dol import Files, wrap_kvs
 def make_user_store(username):
     return wrap_kvs(
         Files('/data'),
-        id_of_key=lambda k: f"{username}/{k}",
-        key_of_id=lambda _id: _id[len(username)+1:],
-        obj_of_data=lambda b: b.decode(),
-        data_of_obj=lambda s: s.encode(),
+        key_encoder=lambda k: f"{username}/{k}",
+        key_decoder=lambda _id: _id[len(username)+1:],
+        value_decoder=lambda b: b.decode(),
+        value_encoder=lambda s: s.encode(),
     )
 
 store = make_user_store('alice')
@@ -719,8 +719,8 @@ def make_store(backend=None):
         backend = {}   # use dict for testing
     return wrap_kvs(
         backend,
-        obj_of_data=json.loads,
-        data_of_obj=json.dumps,
+        value_decoder=json.loads,
+        value_encoder=json.dumps,
     )
 
 # In tests:

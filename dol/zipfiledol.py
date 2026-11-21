@@ -972,7 +972,7 @@ remove_mac_junk_from_zip.__doc__ = "Removes mac junk keys from zip"
 #
 # ZipFileReader = wrap_kvs(mk_kv_reader_from_kv_collection(FileCollection, name='_ZipFileReader'),
 #                          name='ZipFileReader',
-#                          obj_of_data=ZipReader)
+#                          value_decoder=ZipReader)
 
 
 # ----------------------------- Extras -------------------------------------------------

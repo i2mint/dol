@@ -113,7 +113,7 @@ def test_write_errors_propagate(tmp_path, store_cls):
 
 def test_no_dirs_for_non_path_inner_store(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    s = mk_dirs_if_missing(wrap_kvs(dict, id_of_key=lambda k: k))()
+    s = mk_dirs_if_missing(wrap_kvs(dict, key_encoder=lambda k: k))()
     s["rel/dir/key"] = 1
     assert s["rel/dir/key"] == 1
     assert not (tmp_path / "rel").exists()  # never mkdir under the CWD

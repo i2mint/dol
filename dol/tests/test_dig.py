@@ -194,16 +194,16 @@ def test_trace_getitem():
 
     s = wrap_kvs(
         d,
-        key_of_id=lambda x: x[: -len(".num")],
-        id_of_key=lambda x: x + ".num",
-        obj_of_data=lambda x: int(x),
-        data_of_obj=lambda x: str(x),
+        key_decoder=lambda x: x[: -len(".num")],
+        key_encoder=lambda x: x + ".num",
+        value_decoder=lambda x: int(x),
+        value_encoder=lambda x: str(x),
     )
 
     ss = wrap_kvs(
         s,
-        key_of_id=lambda x: x.upper(),
-        id_of_key=lambda x: x.lower(),
+        key_decoder=lambda x: x.upper(),
+        key_encoder=lambda x: x.lower(),
     )
 
     # Trace should show transformation through layers
@@ -285,7 +285,7 @@ def test_store_trans_path_recurses_with_the_given_method():
     from dol.dig import inner_most_val
 
     store = wrap_kvs(
-        wrap_kvs({"k": 1}, data_of_obj=lambda v: v * 10), data_of_obj=lambda v: v + 1
+        wrap_kvs({"k": 1}, value_encoder=lambda v: v * 10), value_encoder=lambda v: v + 1
     )
     assert inner_most_val(store, 5) == 60  # (5 + 1) * 10, both layers applied
 

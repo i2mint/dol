@@ -23,21 +23,21 @@ Store: JsonFileStore (wrap_kvs applied to Files)
 
 Read pipeline:
   key='report'
-  → id_of_key: 'report' + '.json' = 'report.json'
+  → key_encoder: 'report' + '.json' = 'report.json'
   → Files.__getitem__('report.json')
   → raw_data: b'{"x": 1}'
-  → obj_of_data: json.loads(raw_data)
+  → value_decoder: json.loads(raw_data)
   → returns: {'x': 1}
 
 Write pipeline:
   key='report', obj={'x': 1}
-  → id_of_key: 'report.json'
-  → data_of_obj: json.dumps({'x': 1}) = '{"x": 1}'
+  → key_encoder: 'report.json'
+  → value_encoder: json.dumps({'x': 1}) = '{"x": 1}'
   → Files.__setitem__('report.json', '{"x": 1}')
 
 Iteration:
   Files.__iter__() → ['report.json', 'data.json', ...]
-  → key_of_id: strip '.json' → ['report', 'data', ...]
+  → key_decoder: strip '.json' → ['report', 'data', ...]
 ```
 
 ## Notes

@@ -179,7 +179,7 @@ class ExplicitKeysSource(ExplicitKeys, ObjReader, KvReader):
 
     >>> def explicit_keys_source(key_collection, _obj_of_key):
     ...     from dol.trans import wrap_kvs
-    ...     return wrap_kvs({k: k for k in key_collection}, obj_of_data=_obj_of_key)
+    ...     return wrap_kvs({k: k for k in key_collection}, value_decoder=_obj_of_key)
 
     >>> s = explicit_keys_source([1, 2, 3], str)
     >>> list(s)

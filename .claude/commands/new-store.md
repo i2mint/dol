@@ -38,10 +38,10 @@ def make_<name>_store(root_path, ...):
     """
     return wrap_kvs(
         <backend>,
-        id_of_key=...,
-        key_of_id=...,
-        obj_of_data=...,
-        data_of_obj=...,
+        key_encoder=...,
+        key_decoder=...,
+        value_decoder=...,
+        value_encoder=...,
     )
 ```
 
