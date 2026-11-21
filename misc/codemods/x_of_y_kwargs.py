@@ -75,10 +75,16 @@ def _is_call_start(toks, i) -> bool:
     """Whether ``toks[i]`` is the ``(`` opening a ``wrap_kvs(`` or ``partial(wrap_kvs,`` call."""
 
     def name(j):
-        return toks[j].string if 0 <= j < len(toks) and toks[j].type == tokenize.NAME else None
+        return (
+            toks[j].string
+            if 0 <= j < len(toks) and toks[j].type == tokenize.NAME
+            else None
+        )
 
     def op(j, s):
-        return 0 <= j < len(toks) and toks[j].type == tokenize.OP and toks[j].string == s
+        return (
+            0 <= j < len(toks) and toks[j].type == tokenize.OP and toks[j].string == s
+        )
 
     if not op(i, "("):
         return False
@@ -160,7 +166,11 @@ def _embedded_blocks(lines):
         if m and m.group(2) == ">>>":
             block = [(i, len(m.group(0)))]
             i += 1
-            while i < len(lines) and (c := _DOCTEST_LINE.match(lines[i])) and c.group(2) == "...":
+            while (
+                i < len(lines)
+                and (c := _DOCTEST_LINE.match(lines[i]))
+                and c.group(2) == "..."
+            ):
                 block.append((i, len(c.group(0))))
                 i += 1
             yield block

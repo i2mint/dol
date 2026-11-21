@@ -2256,7 +2256,10 @@ def _handle_codecs(kwargs: dict):
     # and the X_of_Y path (``_wrap_kvs``) applies it, so the new names must too.
     for codec_name, (decoder_slot, encoder_slot) in _CODEC_KWARG_SLOTS.items():
         if (codec := kwargs.get(codec_name)) is not None:
-            for slot, func in ((decoder_slot, codec.decoder), (encoder_slot, codec.encoder)):
+            for slot, func in (
+                (decoder_slot, codec.decoder),
+                (encoder_slot, codec.encoder),
+            ):
                 if kwargs.get(slot) is not None:
                     raise ValueError(f"Cannot specify both {codec_name} and {slot}")
                 kwargs[slot] = func
