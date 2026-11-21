@@ -5,8 +5,8 @@ import pickle
 from typing import KT, VT, Tuple
 from collections.abc import Iterable
 import pytest
+from dol.base import MappingViewMixin
 from dol import (
-    MappingViewMixin,
     Store,
     wrap_kvs,
     filt_iter,

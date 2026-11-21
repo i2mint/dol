@@ -133,31 +133,31 @@ Notes on the graph:
 
 ## 3. Public API surface (`dol/__init__.py`)
 
-Grouped by concern. All names below are importable as `from dol import <name>`.
+Grouped by concern. All names below are importable as `from dol import <name>`, except the ones marked †: since 0.4 ([#145](https://github.com/i2mint/dol/issues/145)) they are no longer top-level exports. `dol.<name>` still works for one release with a `DeprecationWarning`; import them from their submodule, or from `xdol` for the 11 that moved there (the table is `dol/_relocated.py`).
 
-**Base classes / protocol** (`base.py`): `Collection`, `MappingViewMixin`, `KvReader`,
+**Base classes / protocol** (`base.py`): `Collection`, `MappingViewMixin`†, `KvReader`,
 `KvPersister`, `Reader` (alias of `KvReader`), `Persister` (alias of `KvPersister`),
 `Store`, `kv_walk`, `KT`, `VT`, `BaseKeysView`, `BaseValuesView`, `BaseItemsView`.
 
 **Wrappers / transforms** (`trans.py`): `wrap_kvs`, `kv_wrap`, `filt_iter`,
 `cached_keys`, `cache_iter` (deprecating), `add_decoder`, `add_ipython_key_completions`,
-`insert_hash_method`, `add_path_get`, `add_path_access`, `flatten`, `disable_delitem`,
-`disable_setitem`, `mk_read_only`, `add_aliases`, `insert_aliases`,
-`add_missing_key_handling`, `store_decorator`, `redirect_getattr_to_getitem`.
+`insert_hash_method`†, `add_path_get`, `add_path_access`, `flatten`, `disable_delitem`,
+`disable_setitem`, `mk_read_only`, `add_aliases`, `insert_aliases`†,
+`add_missing_key_handling`, `store_decorator`, `redirect_getattr_to_getitem`†.
 
 **Codecs** (`kv_codecs.py`): `ValueCodecs`, `KeyCodecs`.
 
 **Caching** (`caching.py`): `cache_this`, `add_extension`, `lru_cache_method`,
-`WriteBackChainMap`, `mk_cached_store` (old alias), `cache_vals`, `store_cached`,
-`store_cached_with_single_key`, `ensure_clear_to_kv_store`, `flush_on_exit`,
-`mk_write_cached_store`.
+`WriteBackChainMap`†, `mk_cached_store` (old alias), `cache_vals`, `store_cached`,
+`store_cached_with_single_key`†, `ensure_clear_to_kv_store`, `flush_on_exit`†,
+`mk_write_cached_store`†.
 
 **Paths / naming** (`paths.py`, `naming.py`): `flatten_dict`, `leaf_paths`,
 `KeyTemplate`, `mk_relative_path_store`, `KeyPath`, `paths_getter`, `path_get`,
 `path_set`, `path_filter`, `add_prefix_filtering`, `StrTupleDict`,
-`mk_store_from_path_format_store_cls`.
+`mk_store_from_path_format_store_cls`†.
 
-**Sources / composite** (`sources.py`): `FlatReader`, `SequenceKvReader`, `FuncReader`,
+**Sources / composite** (`sources.py`): `FlatReader`†, `SequenceKvReader`†, `FuncReader`,
 `Attrs`, `ObjReader`, `FanoutReader`, `FanoutPersister`, `CascadedStores`, `MultiSource`.
 
 **Filesystem** (`filesys.py`): `Files`, `FilesReader`, `TextFiles`, `PickleFiles`,
@@ -167,16 +167,16 @@ Grouped by concern. All names below are importable as `from dol import <name>`.
 
 **Zip** (`zipfiledol.py`): `ZipReader`, `ZipInfoReader`, `FilesOfZip`,
 `FileStreamsOfZip`, `FlatZipFilesReader`, `ZipFiles`, `ZipStore` (alias),
-`ZipFileStreamsReader`, `zip_compress`, `zip_decompress`, `to_zip_file`,
-`remove_mac_junk_from_zip`, `tar_compress`, `tar_decompress`.
+`ZipFileStreamsReader`, `zip_compress`†, `zip_decompress`, `to_zip_file`†,
+`remove_mac_junk_from_zip`, `tar_compress`†, `tar_decompress`†.
 
-**Utils** (`util.py`): `Pipe`, `lazyprop`, `partialclass`, `groupby`, `regroupby`,
-`igroupby`, `instance_checker`, `chain_get`, `non_colliding_key`, `get_app_folder`,
-`get_app_config_folder`, `AttributeMapping`, `AttributeMutableMapping`,
+**Utils** (`util.py`): `Pipe`, `lazyprop`, `partialclass`†, `groupby`, `regroupby`†,
+`igroupby`†, `instance_checker`†, `chain_get`, `non_colliding_key`, `get_app_folder`,
+`get_app_config_folder`, `AttributeMapping`, `AttributeMutableMapping`†,
 `not_a_mac_junk_path`, `written_bytes`, `written_key`, `read_from_bytes`.
 
 **Other**: `store_aggregate` (`tools.py`), `mk_item2kv_for`, `appendable`
-(`appendable.py`), `trace_getitem` (`dig.py`), `ExplicitKeyMap`, `invertible_maps`,
+(`appendable.py`), `trace_getitem`† (`dig.py`), `ExplicitKeyMap`†, `invertible_maps`,
 `KeysReader` (`explicit.py`).
 
 **Deprecation shim**: `__init__.py:197` defines a module-level `__getattr__` that maps the
