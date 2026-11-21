@@ -73,7 +73,7 @@ def resolve(name: str):
     return getattr(import_module(defining_module), name)
 
 
-def kvhead(store, n=1):
+def kvhead(store, n=1):  # frozen copy; xdol.from_dol holds the maintained one
     """Get the first item of a kv store, or a list of the first n items
 
     >>> kvhead({'a': 1, 'b': 2})
@@ -101,3 +101,8 @@ def ihead(store, n=1):
             return item
     else:
         return [item for i, item in enumerate(store) if i < n]
+
+
+# Keep pickles and reprs of these two pointing at ``dol`` as before the move
+# (``dol.kvhead`` resolves through the shim to this very object).
+kvhead.__module__ = ihead.__module__ = "dol"
