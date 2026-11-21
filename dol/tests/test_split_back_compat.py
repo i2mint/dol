@@ -729,8 +729,13 @@ MODULE_NAMES = {
 
 @pytest.mark.parametrize("module_name", sorted(MODULE_NAMES))
 def test_names_still_importable(module_name):
+    from dol._relocated import RELOCATED  # dol-level shims, tested in test_relocated
+
     module = importlib.import_module(module_name)
-    missing = [n for n in MODULE_NAMES[module_name] if not hasattr(module, n)]
+    names = MODULE_NAMES[module_name]
+    if module_name == "dol":
+        names = [n for n in names if n not in RELOCATED]
+    missing = [n for n in names if not hasattr(module, n)]
     assert not missing, f"{module_name} lost names: {missing}"
 
 

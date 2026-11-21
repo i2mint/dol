@@ -21,24 +21,6 @@ import os
 file_sep = os.path.sep
 
 
-def kvhead(store, n=1):
-    """Get the first item of a kv store, or a list of the first n items"""
-    if n == 1:
-        for k in store:
-            return k, store[k]
-    else:
-        return [(k, store[k]) for i, k in enumerate(store) if i < n]
-
-
-def ihead(store, n=1):
-    """Get the first item of an iterable, or a list of the first n items"""
-    if n == 1:
-        for item in iter(store):
-            return item
-    else:
-        return [item for i, item in enumerate(store) if i < n]
-
-
 # from dol.base import (
 #     Collection,  # base class for collections (adds to collections.abc.Collection)
 #     MappingViewMixin,
@@ -64,7 +46,6 @@ from dol.kv_codecs import ValueCodecs, KeyCodecs
 
 from dol.base import (
     Collection,  # base class for collections (adds to collections.abc.Collection)
-    MappingViewMixin,
     KvReader,  # base class for kv readers (adds to collections.abc.Mapping)
     KvPersister,  # base for kv persisters (adds to collections.abc.MutableMapping)
     Reader,  # TODO: deprecate? (now KvReader)
@@ -79,9 +60,7 @@ from dol.base import KT, VT, BaseKeysView, BaseValuesView, BaseItemsView
 
 
 from dol.zipfiledol import (
-    zip_compress,
     zip_decompress,
-    to_zip_file,
     ZipReader,
     ZipInfoReader,
     FilesOfZip,  # read-only access to files in a zip archive
@@ -91,8 +70,6 @@ from dol.zipfiledol import (
     ZipStore,  # back-compatible alias of ZipFiles
     ZipFileStreamsReader,
     remove_mac_junk_from_zip,
-    tar_compress,
-    tar_decompress,
 )
 
 from dol.gitignore import (
@@ -137,15 +114,10 @@ from dol.util import (
     get_app_folder,  # get the path to a folder for application data
     get_app_config_folder,  # get the path to a folder for application config
     AttributeMapping,  # a mapping that provides attribute-access to the keys that are valid attribute names
-    AttributeMutableMapping,  # a mutable mapping version of AttributeMapping
     Pipe,  # chain functions
     lazyprop,  # lazy evaluation of properties
-    partialclass,  # partial class instantiation
     groupby,  # group items according to group keys
-    regroupby,  # recursive version of groupby
-    igroupby,
     not_a_mac_junk_path,  # filter function to filter out mac junk paths
-    instance_checker,  # make filter function that checks the type of an object
     chain_get,  # a function to perform chained get operations (i.e. path keys get)
     written_bytes,  # transform a file-writing function into a bytes-writing function
     written_key,  # writes an object to a key and returns the key.
@@ -162,7 +134,6 @@ from dol.trans import (
     cached_keys,  # cache store keys
     add_decoder,  # add a decoder (i.e. outcomming value transformer) to a store
     add_ipython_key_completions,  # add ipython key completions
-    insert_hash_method,  # add a hash method to store
     add_path_get,  # add a path_get method to store
     add_path_access,  # add path_get and path_set methods to store
     autoviv,  # opt-in write-through autovivification (add_path_access + create_missing)
@@ -173,32 +144,25 @@ from dol.trans import (
     disable_setitem,  # disable ability to write to a store
     mk_read_only,  # disable ability to write to a store or delete its keys
     add_aliases,  # delegation-wrap any object and add aliases for its methods
-    insert_aliases,  # insert aliases for special (dunder) store methods,
     add_missing_key_handling,  # add a missing key handler to a store
     cache_iter,  # being deprecated
     store_decorator,  # Helper to make store decorators
-    redirect_getattr_to_getitem,  # redirect attribute access to __getitem__
 )
 
 from dol.caching import (
     cache_this,  # cache the result of "property" methods in a store
     add_extension,  # a helper (for cache_this) to make key functions
     lru_cache_method,  # A decorator to cache the result of a method, ignoring the first argument
-    WriteBackChainMap,  # write-back cache
     mk_cached_store,  # (old alias of cache_vals) wrap a store so it uses a cache
     cache_vals,  # wrap a store so it uses a cache
     store_cached,  # func memorizer using a specific store as its "memory"
-    store_cached_with_single_key,
     ensure_clear_to_kv_store,  # add a clear method to a store (removed by default)
-    flush_on_exit,  # make a store become a context manager that flushes cache on exit
-    mk_write_cached_store,
 )
 
 from dol.appendable import mk_item2kv_for, appendable
 
 from dol.naming import (
     StrTupleDict,  # convert from and to strings, tuples, and dicts.
-    mk_store_from_path_format_store_cls,
 )
 
 from dol.paths import (
@@ -221,18 +185,15 @@ from dol.paths import (
 )
 
 from dol.dig import (
-    trace_getitem,  # trace getitem calls, stepping through the layers
     inner_most_key,  # resolve a key through every layer of a wrapped store
     key_in_scope,  # whether a key passes every filt_iter scope of a wrapped store
     unravel_key,  # ... same, but yielding the key at each layer
 )
 
-from dol.explicit import ExplicitKeyMap, invertible_maps, KeysReader
+from dol.explicit import invertible_maps, KeysReader
 
 
 from dol.sources import (
-    FlatReader,  # A flat view of a store of stores (a sort of union of stores)
-    SequenceKvReader,
     FuncReader,
     Attrs,
     ObjReader,
@@ -258,15 +219,23 @@ from .content import (
 )
 
 
+from dol import _relocated  # names that left the top level (#145), served below
+
+
 def __getattr__(name):
     """Handle deprecated imports at module level."""
-    if name == "get_app_data_folder":
-        import warnings
+    import warnings
 
+    if name == "get_app_data_folder":
         warnings.warn(
             "`get_app_data_folder` is deprecated. Use `get_app_config_folder` instead.",
             DeprecationWarning,
             stacklevel=2,
         )
         return get_app_config_folder
+    if name in _relocated.RELOCATED:  # issue #145: moved to xdol or to a submodule
+        warnings.warn(
+            _relocated.deprecation_message(name), DeprecationWarning, stacklevel=2
+        )
+        return _relocated.resolve(name)
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
