@@ -1,5 +1,5 @@
 {
-  "collection_duration_seconds": 1.8880760669708252,
+  "collection_duration_seconds": 2.4526400566101074,
   "commit_message": "Review fixes: token-based codemod, falsy transforms, warning attribution\n\n- misc/codemods/x_of_y_kwargs.py now works on tokens: comments and strings\n  never count when finding a wrap_kvs call's end, only keywords at the call's\n  own depth are renamed, and a rename whose new name is already passed in the\n  call is skipped and reported instead of producing a duplicate keyword.\n  Doctest examples and fenced python blocks are rewritten the same way;\n  Markdown files only get their embedded code rewritten. The mapping is\n  imported from dol.trans (one source of truth).\n- _handle_codecs checks the encoder/decoder and codec keywords with\n  `is not None`, like the X_of_Y path: a falsy callable was silently dropped.\n- The deprecation warning skips every frame inside dol (not only trans.py),\n  so Pipe(wrap_kvs(...)) is attributed to the caller.\n- dol-dev-wrap-kvs skill: the keyword names and the is-not-None rule.",
   "commit_sha": "19793fcf1bbc220294b6ae8bef55f6188324bb95",
   "metrics": {
@@ -11,19 +11,19 @@
       "statements_total": 0
     },
     "umpyre_stats": {
-      "comment_lines": 12818,
-      "comment_lines_ratio": 0.054315170365222695,
-      "docs_lines": 27063,
-      "empty_lines": 28820,
-      "empty_lines_ratio": 0.12212226633840834,
-      "files_analyzed": 558,
-      "function_lines": 97001,
-      "function_lines_ratio": 0.41103337810867274,
-      "mean_lines_per_function": 16.522057571112246,
-      "num_classes": 1485,
-      "num_functions": 5871,
+      "comment_lines": 13228,
+      "comment_lines_ratio": 0.054594380427246014,
+      "docs_lines": 27983,
+      "empty_lines": 29864,
+      "empty_lines_ratio": 0.123254201472579,
+      "files_analyzed": 569,
+      "function_lines": 101404,
+      "function_lines_ratio": 0.41851289332056657,
+      "mean_lines_per_function": 16.427020897456668,
+      "num_classes": 1546,
+      "num_functions": 6173,
       "pypi_version": "0.3.120",
-      "total_lines": 235993
+      "total_lines": 242296
     },
     "wily": {
       "cyclomatic_avg": 0.0,
@@ -42,6 +42,6 @@
   },
   "python_version": "3.10",
   "schema_version": "1.0",
-  "timestamp": "2026-11-21T14:55:28.863839Z",
+  "timestamp": "2026-11-21T14:55:36.835883Z",
   "workflow_status": {}
 }
