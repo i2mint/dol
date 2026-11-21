@@ -251,10 +251,10 @@ format, you can use `dol.trans.wrap_kvs` for that.
 
 ```pycon
 >>> from dol import wrap_kvs
->>> ss = wrap_kvs(sliceable_s, obj_of_data=list)
+>>> ss = wrap_kvs(sliceable_s, value_decoder=list)
 >>> ss[1:3]
 ['world', 'bob']
->>> sss = wrap_kvs(sliceable_s, obj_of_data=sorted)
+>>> sss = wrap_kvs(sliceable_s, value_decoder=sorted)
 >>> sss[1:3]
 ['bob', 'world']
 ```

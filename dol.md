@@ -1,4 +1,4 @@
-> built 2026-11-09 08:11 UTC from 2fa827e (master) · dol 0.3.120. Details: build_info.json
+> built 2026-11-21 17:14 UTC from b76fa3a (master) · dol 0.4.0. Details: build_info.json
 
 # index.html.md
 
@@ -1768,7 +1768,7 @@ are transform-equivalent, so either answer is correct).
 ```pycon
 >>> import math
 >>> from dol import wrap_kvs, wrapped_self
->>> sq = wrap_kvs(data_of_obj=lambda x: x * x, obj_of_data=lambda x: math.sqrt(x))
+>>> sq = wrap_kvs(value_encoder=lambda x: x * x, value_decoder=lambda x: math.sqrt(x))
 >>> @sq
 ... class S(dict):
 ...     def via_self(self, k):
@@ -3010,7 +3010,7 @@ The value of `arg` after every layer’s `method` has been applied.
 
 ```pycon
 >>> from dol import wrap_kvs
->>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+>>> s = wrap_kvs({'a.txt': 1}, key_encoder=lambda k: k + '.txt')
 >>> inner_most(s, 'a', '_id_of_key')
 'a.txt'
 ```
@@ -3041,7 +3041,7 @@ The value of `arg` after every layer’s `method` has been applied.
 
 ```pycon
 >>> from dol import wrap_kvs
->>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+>>> s = wrap_kvs({'a.txt': 1}, key_encoder=lambda k: k + '.txt')
 >>> inner_most(s, 'a', '_id_of_key')
 'a.txt'
 ```
@@ -3072,7 +3072,7 @@ The value of `arg` after every layer’s `method` has been applied.
 
 ```pycon
 >>> from dol import wrap_kvs
->>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+>>> s = wrap_kvs({'a.txt': 1}, key_encoder=lambda k: k + '.txt')
 >>> inner_most(s, 'a', '_id_of_key')
 'a.txt'
 ```
@@ -3146,7 +3146,7 @@ Walks the `.store` chain, applying `store.<method>` at every layer that defines 
 
 ```pycon
 >>> from dol import wrap_kvs
->>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+>>> s = wrap_kvs({'a.txt': 1}, key_encoder=lambda k: k + '.txt')
 >>> list(store_trans_path(s, 'a', '_id_of_key'))
 ['a.txt', 'a.txt']
 ```
@@ -3186,10 +3186,10 @@ Say that we want the interface to not see the `'.num'` strings, and deal with nu
 
 ```pycon
 >>> s = wrap_kvs(d,
-...              key_of_id=lambda x: x[:-len('.num')],
-...              id_of_key=lambda x: x + '.num',
-...              obj_of_data=lambda x: int(x),
-...              data_of_obj=lambda x: str(x)
+...              key_decoder=lambda x: x[:-len('.num')],
+...              key_encoder=lambda x: x + '.num',
+...              value_decoder=lambda x: int(x),
+...              value_encoder=lambda x: str(x)
 ...             )
 >>>
 ```
@@ -3198,8 +3198,8 @@ Oh, and we want the interface to display upper case keys.
 
 ```pycon
 >>> ss = wrap_kvs(s,
-...              key_of_id=lambda x: x.upper(),
-...              id_of_key=lambda x: x.lower(),
+...              key_decoder=lambda x: x.upper(),
+...              key_encoder=lambda x: x.lower(),
 ...             )
 ```
 
@@ -3207,8 +3207,8 @@ And we want the numerical unit to be the kilo (that’s 1000):
 
 ```pycon
 >>> sss = wrap_kvs(ss,
-...                obj_of_data=lambda x: x / 1000,
-...                data_of_obj=lambda x: x * 1000
+...                value_decoder=lambda x: x / 1000,
+...                value_encoder=lambda x: x * 1000
 ...               )
 >>>
 >>> dict(sss.items())
@@ -3257,7 +3257,7 @@ Walks the `.store` chain, applying `store.<method>` at every layer that defines 
 
 ```pycon
 >>> from dol import wrap_kvs
->>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+>>> s = wrap_kvs({'a.txt': 1}, key_encoder=lambda k: k + '.txt')
 >>> list(store_trans_path(s, 'a', '_id_of_key'))
 ['a.txt', 'a.txt']
 ```
@@ -3278,7 +3278,7 @@ Walks the `.store` chain, applying `store.<method>` at every layer that defines 
 
 ```pycon
 >>> from dol import wrap_kvs
->>> s = wrap_kvs({'a.txt': 1}, id_of_key=lambda k: k + '.txt')
+>>> s = wrap_kvs({'a.txt': 1}, key_encoder=lambda k: k + '.txt')
 >>> list(store_trans_path(s, 'a', '_id_of_key'))
 ['a.txt', 'a.txt']
 ```
@@ -3629,7 +3629,7 @@ Main functionality equivalent to recipe:
 ```pycon
 >>> def explicit_keys_source(key_collection, _obj_of_key):
 ...     from dol.trans import wrap_kvs
-...     return wrap_kvs({k: k for k in key_collection}, obj_of_data=_obj_of_key)
+...     return wrap_kvs({k: k for k in key_collection}, value_decoder=_obj_of_key)
 ```
 
 ```pycon
@@ -4517,25 +4517,11 @@ interface, and transforms that interface with composable layers. Start with
 ```pycon
 >>> from dol import wrap_kvs
 >>> import json
->>> s = wrap_kvs({}, obj_of_data=json.loads, data_of_obj=json.dumps)
+>>> s = wrap_kvs({}, value_decoder=json.loads, value_encoder=json.dumps)
 >>> s['a'] = {'x': 1}
 >>> s['a'], s.store
 ({'x': 1}, {'a': '{"x": 1}'})
 ```
-
-### Functions
-
-| [`ihead`](_autosummary/dol.html.md#dol.ihead)(store[, n])   | Get the first item of an iterable, or a list of the first n items   |
-|----------------------------------------------------------------------|---------------------------------------------------------------------|
-| [`kvhead`](_autosummary/dol.html.md#dol.kvhead)(store[, n])  | Get the first item of a kv store, or a list of the first n items    |
-
-### dol.ihead(store, n=1)
-
-Get the first item of an iterable, or a list of the first n items
-
-### dol.kvhead(store, n=1)
-
-Get the first item of a kv store, or a list of the first n items
 
 ### Modules
 
@@ -12652,7 +12638,7 @@ That said,
 ```
 
 The reason why we don’t do this automatically is that it may not always be desirable.
-If one wanted to though, one could use `wrap_kvs(obj_of_data=...)` to wrap
+If one wanted to though, one could use `wrap_kvs(value_decoder=...)` to wrap
 specific values with `add_path_access`.
 For example, if you wanted to wrap all mappings recursively, you could:
 
@@ -14057,10 +14043,10 @@ format, you can use `dol.trans.wrap_kvs` for that.
 
 ```pycon
 >>> from dol import wrap_kvs
->>> ss = wrap_kvs(sliceable_s, obj_of_data=list)
+>>> ss = wrap_kvs(sliceable_s, value_decoder=list)
 >>> ss[1:3]
 ['world', 'bob']
->>> sss = wrap_kvs(sliceable_s, obj_of_data=sorted)
+>>> sss = wrap_kvs(sliceable_s, value_decoder=sorted)
 >>> sss[1:3]
 ['bob', 'world']
 ```
@@ -14177,7 +14163,7 @@ This module re-exports them, and the add-ons, so older imports keep working.
 
 ```pycon
 >>> from dol.trans import wrap_kvs
->>> s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)
+>>> s = wrap_kvs({}, key_decoder=str.upper, key_encoder=str.lower, value_decoder=int, value_encoder=str)
 >>> s['a'] = 1
 >>> s.store  # the backend holds the transformed key and value
 {'a': '1'}
@@ -14336,7 +14322,7 @@ alternative to naming a transform’s first parameter `self`/`store`/`mapping`.
 >>> from dol import wrap_kvs, FirstArgIsMapping
 >>> def prefix_with_name(self, data):
 ...     return f"{getattr(self, 'name', '?')}:{data}"
->>> S = wrap_kvs(dict, obj_of_data=FirstArgIsMapping(prefix_with_name))
+>>> S = wrap_kvs(dict, value_decoder=FirstArgIsMapping(prefix_with_name))
 >>> s = S({'a': 'x'}); s.name = 'ns'
 >>> s['a']
 'ns:x'
@@ -14394,7 +14380,7 @@ dunder mapping methods (like `__iter__`, `__getitem__`) etc.
 Add a decoder layer to a store.
 
 #### NOTE
-This is a convenience function for `wrap_kvs(..., obj_of_data=decoder)`.
+This is a convenience function for `wrap_kvs(..., value_decoder=decoder)`.
 
 ```pycon
 >>> s = {'a': "42"}
@@ -15964,21 +15950,41 @@ Morphemes:
     _id: inner key
     obj: outer value
     data: inner value
-Grammar:
-    Y_of_X: means that you get a Y output when giving an X input. Also known as X_to_Y.
+Direction:
+    decoder: outgoing, backend -> interface (``key_decoder``: _id -> key,
+             ``value_decoder``: data -> obj)
+    encoder: ingoing, interface -> backend (``key_encoder``: key -> _id,
+             ``value_encoder``: obj -> data)
 ```
+
+The older `Y_of_X` keywords (`key_of_id`, `id_of_key`, `obj_of_data`,
+`data_of_obj`) still work but are deprecated since 0.4: they emit a
+`DeprecationWarning` naming their replacement, and will be removed in 1.0
+([https://github.com/i2mint/dol/issues/92](https://github.com/i2mint/dol/issues/92)).
 
 * **Parameters:**
   * **store** – Store class or instance
   * **name** – Name to give the wrapper class
-  * **key_of_id** – The outcoming key transformation function.
-    Forms are `k = key_of_id(_id)` or `k = key_of_id(self, _id)`
-  * **id_of_key** – The ingoing key transformation function.
-    Forms are `_id = id_of_key(k)` or `_id = id_of_key(self, k)`
-  * **obj_of_data** – The outcoming val transformation function.
-    Forms are `obj = obj_of_data(data)` or `obj = obj_of_data(self, data)`
-  * **data_of_obj** – The ingoing val transformation function.
-    Forms are `data = data_of_obj(obj)` or `data = data_of_obj(self, obj)`
+  * **key_decoder** – The outcoming key transformation function.
+    Forms are `k = key_decoder(_id)` or `k = key_decoder(self, _id)`
+  * **key_encoder** – The ingoing key transformation function.
+    Forms are `_id = key_encoder(k)` or `_id = key_encoder(self, k)`
+  * **value_decoder** – The outcoming val transformation function.
+    Forms are `obj = value_decoder(data)` or `obj = value_decoder(self, data)`
+  * **value_encoder** – The ingoing val transformation function.
+    Forms are `data = value_encoder(obj)` or `data = value_encoder(self, obj)`
+  * **key_codec** – an object with `encoder` and `decoder`
+    attributes (e.g. a `Codec`), setting both directions at once.
+  * **value_codec** – an object with `encoder` and `decoder`
+    attributes (e.g. a `Codec`), setting both directions at once.
+  * **key_of_id** – deprecated old names of
+    key_decoder, key_encoder, value_decoder, value_encoder.
+  * **id_of_key** – deprecated old names of
+    key_decoder, key_encoder, value_decoder, value_encoder.
+  * **obj_of_data** – deprecated old names of
+    key_decoder, key_encoder, value_decoder, value_encoder.
+  * **data_of_obj** – deprecated old names of
+    key_decoder, key_encoder, value_decoder, value_encoder.
   * **preset** – 
 
     A function that is called before doing a `__setitem__`.
@@ -15991,7 +15997,7 @@ Grammar:
   * **postget** – A function that is called after the value `v` for a key `k` is be `__getitem__`.
     The function is called with both `k` and `v` as inputs, and should output a transformed value.
     The intent use is to do outcoming value transformations conditioned on the key.
-    We already have `obj_of_data` for outcoming value trans, but cannot condition it’s behavior on k.
+    We already have `value_decoder` for outcoming value trans, but cannot condition its behavior on k.
     For example, you may want to deserialize the bytes of a ‘.csv’, or ‘.json’, or ‘.pickle’ in different ways.
     Forms are `obj = postget(k, data)` or `obj = postget(self, k, data)`
 * **Returns:**
@@ -16008,7 +16014,7 @@ Grammar:
 ...     return obj + 100
 >>>
 >>> A = wrap_kvs(dict, name='A',
-...             key_of_id=key_of_id, id_of_key=id_of_key, obj_of_data=obj_of_data, data_of_obj=data_of_obj)
+...             key_decoder=key_of_id, key_encoder=id_of_key, value_decoder=obj_of_data, value_encoder=data_of_obj)
 >>> a = A()
 >>> a['KEY'] = 1
 >>> a  # repr is just the base class (dict) repr, so shows "inside" the store (lower case keys and +100)
@@ -16035,18 +16041,18 @@ Grammar:
 >>> # Order of the value transforms: on write, ``preset`` runs first and ``data_of_obj``
 >>> # gets its output; on read, ``obj_of_data`` runs first and ``postget`` gets *its* output.
 >>> raw = {}
->>> s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), data_of_obj=lambda o: ('data_of_obj', o))
+>>> s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), value_encoder=lambda o: ('data_of_obj', o))
 >>> s['k'] = 1
 >>> raw
 {'k': ('data_of_obj', ('preset', 1))}
->>> s = wrap_kvs({'k': 1}, obj_of_data=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))
+>>> s = wrap_kvs({'k': 1}, value_decoder=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))
 >>> s['k']
 ('postget', ('obj_of_data', 1))
 >>>
 >>> # ``wrap_kvs`` (and ``filt_iter``, ...) are decorators with keyword options, so
 >>> # ``functools.partial`` turns one into a reusable wrapper of your own:
 >>> from functools import partial
->>> upper_keys = partial(wrap_kvs, key_of_id=str.upper, id_of_key=str.lower)
+>>> upper_keys = partial(wrap_kvs, key_decoder=str.upper, key_encoder=str.lower)
 >>> d = upper_keys({'a': 1})  # wrap an instance...
 >>> list(d)
 ['A']
@@ -18138,20 +18144,18 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-09 08:11 UTC** from commit <a href="https://github.com/i2mint/dol/commit/2fa827eb1aec1ea73fb1834d88e333b0e11c3753"><code>2fa827e</code></a> on branch <code>master</code>, for **dol 0.3.120** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-21 17:14 UTC** from commit <a href="https://github.com/i2mint/dol/commit/b76fa3adbf9c71611574b2b67b6b0852a54b3def"><code>b76fa3a</code></a> on branch <code>master</code>, for **dol 0.4.0** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.3.120) is ahead of the latest release on PyPI (0.3.118): these docs describe unreleased code.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/2fa827eb1aec1ea73fb1834d88e333b0e11c3753"><code>2fa827eb1aec1ea73fb1834d88e333b0e11c3753</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/b76fa3adbf9c71611574b2b67b6b0852a54b3def"><code>b76fa3adbf9c71611574b2b67b6b0852a54b3def</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.3.120</code>                                                                                                                              |
+| Tags at this commit | <code>0.4.0</code>                                                                                                                                |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18160,9 +18164,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/42583888778">42583888778</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/44928724951">44928724951</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>44a0ef9c59b950d4f9cdefd498853cf89ce8b225</code> (in the history of the built commit) |
+| Event commit | <code>6d1ef964b35201060933e162f8be78e0c69db938</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -18187,13 +18191,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.3.118/">0.3.118</a>, older than the documented version (0.3.120).
+Latest release: <a href="https://pypi.org/project/dol/0.4.0/">0.4.0</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 2fa827eb1aec1ea73fb1834d88e333b0e11c3753
+git checkout b76fa3adbf9c71611574b2b67b6b0852a54b3def
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

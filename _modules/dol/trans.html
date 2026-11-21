@@ -290,7 +290,7 @@
 <span class="sd">This module re-exports them, and the add-ons, so older imports keep working.</span>
 
 <span class="sd">    &gt;&gt;&gt; from dol.trans import wrap_kvs</span>
-<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({}, key_of_id=str.upper, id_of_key=str.lower, obj_of_data=int, data_of_obj=str)</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({}, key_decoder=str.upper, key_encoder=str.lower, value_decoder=int, value_encoder=str)</span>
 <span class="sd">    &gt;&gt;&gt; s['a'] = 1</span>
 <span class="sd">    &gt;&gt;&gt; s.store  # the backend holds the transformed key and value</span>
 <span class="sd">    {'a': '1'}</span>
@@ -891,7 +891,7 @@
 <span class="sd">    &gt;&gt;&gt; from dol import wrap_kvs, FirstArgIsMapping</span>
 <span class="sd">    &gt;&gt;&gt; def prefix_with_name(self, data):</span>
 <span class="sd">    ...     return f"{getattr(self, 'name', '?')}:{data}"</span>
-<span class="sd">    &gt;&gt;&gt; S = wrap_kvs(dict, obj_of_data=FirstArgIsMapping(prefix_with_name))</span>
+<span class="sd">    &gt;&gt;&gt; S = wrap_kvs(dict, value_decoder=FirstArgIsMapping(prefix_with_name))</span>
 <span class="sd">    &gt;&gt;&gt; s = S({'a': 'x'}); s.name = 'ns'</span>
 <span class="sd">    &gt;&gt;&gt; s['a']</span>
 <span class="sd">    'ns:x'</span>
@@ -2346,21 +2346,32 @@
 <span class="sd">            _id: inner key</span>
 <span class="sd">            obj: outer value</span>
 <span class="sd">            data: inner value</span>
-<span class="sd">        Grammar:</span>
-<span class="sd">            Y_of_X: means that you get a Y output when giving an X input. Also known as X_to_Y.</span>
+<span class="sd">        Direction:</span>
+<span class="sd">            decoder: outgoing, backend -&gt; interface (``key_decoder``: _id -&gt; key,</span>
+<span class="sd">                     ``value_decoder``: data -&gt; obj)</span>
+<span class="sd">            encoder: ingoing, interface -&gt; backend (``key_encoder``: key -&gt; _id,</span>
+<span class="sd">                     ``value_encoder``: obj -&gt; data)</span>
 
+<span class="sd">    The older ``Y_of_X`` keywords (``key_of_id``, ``id_of_key``, ``obj_of_data``,</span>
+<span class="sd">    ``data_of_obj``) still work but are deprecated since 0.4: they emit a</span>
+<span class="sd">    ``DeprecationWarning`` naming their replacement, and will be removed in 1.0</span>
+<span class="sd">    (https://github.com/i2mint/dol/issues/92).</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        store: Store class or instance</span>
 <span class="sd">        name: Name to give the wrapper class</span>
-<span class="sd">        key_of_id: The outcoming key transformation function.</span>
-<span class="sd">            Forms are `k = key_of_id(_id)` or `k = key_of_id(self, _id)`</span>
-<span class="sd">        id_of_key: The ingoing key transformation function.</span>
-<span class="sd">            Forms are `_id = id_of_key(k)` or `_id = id_of_key(self, k)`</span>
-<span class="sd">        obj_of_data: The outcoming val transformation function.</span>
-<span class="sd">            Forms are `obj = obj_of_data(data)` or `obj = obj_of_data(self, data)`</span>
-<span class="sd">        data_of_obj: The ingoing val transformation function.</span>
-<span class="sd">            Forms are `data = data_of_obj(obj)` or `data = data_of_obj(self, obj)`</span>
+<span class="sd">        key_decoder: The outcoming key transformation function.</span>
+<span class="sd">            Forms are `k = key_decoder(_id)` or `k = key_decoder(self, _id)`</span>
+<span class="sd">        key_encoder: The ingoing key transformation function.</span>
+<span class="sd">            Forms are `_id = key_encoder(k)` or `_id = key_encoder(self, k)`</span>
+<span class="sd">        value_decoder: The outcoming val transformation function.</span>
+<span class="sd">            Forms are `obj = value_decoder(data)` or `obj = value_decoder(self, data)`</span>
+<span class="sd">        value_encoder: The ingoing val transformation function.</span>
+<span class="sd">            Forms are `data = value_encoder(obj)` or `data = value_encoder(self, obj)`</span>
+<span class="sd">        key_codec, value_codec: an object with ``encoder`` and ``decoder``</span>
+<span class="sd">            attributes (e.g. a ``Codec``), setting both directions at once.</span>
+<span class="sd">        key_of_id, id_of_key, obj_of_data, data_of_obj: deprecated old names of</span>
+<span class="sd">            key_decoder, key_encoder, value_decoder, value_encoder.</span>
 <span class="sd">        preset: A function that is called before doing a `__setitem__`.</span>
 <span class="sd">            The function is called with both `k` and `v` as inputs, and should output a transformed value.</span>
 <span class="sd">            The intent use is to do ingoing value transformations conditioned on the key.</span>
@@ -2371,7 +2382,7 @@
 <span class="sd">        postget: A function that is called after the value `v` for a key `k` is be `__getitem__`.</span>
 <span class="sd">            The function is called with both `k` and `v` as inputs, and should output a transformed value.</span>
 <span class="sd">            The intent use is to do outcoming value transformations conditioned on the key.</span>
-<span class="sd">            We already have `obj_of_data` for outcoming value trans, but cannot condition it's behavior on k.</span>
+<span class="sd">            We already have `value_decoder` for outcoming value trans, but cannot condition its behavior on k.</span>
 <span class="sd">            For example, you may want to deserialize the bytes of a '.csv', or '.json', or '.pickle' in different ways.</span>
 <span class="sd">            Forms are `obj = postget(k, data)` or `obj = postget(self, k, data)`</span>
 
@@ -2388,7 +2399,7 @@
 <span class="sd">    ...     return obj + 100</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; A = wrap_kvs(dict, name='A',</span>
-<span class="sd">    ...             key_of_id=key_of_id, id_of_key=id_of_key, obj_of_data=obj_of_data, data_of_obj=data_of_obj)</span>
+<span class="sd">    ...             key_decoder=key_of_id, key_encoder=id_of_key, value_decoder=obj_of_data, value_encoder=data_of_obj)</span>
 <span class="sd">    &gt;&gt;&gt; a = A()</span>
 <span class="sd">    &gt;&gt;&gt; a['KEY'] = 1</span>
 <span class="sd">    &gt;&gt;&gt; a  # repr is just the base class (dict) repr, so shows "inside" the store (lower case keys and +100)</span>
@@ -2415,18 +2426,18 @@
 <span class="sd">    &gt;&gt;&gt; # Order of the value transforms: on write, ``preset`` runs first and ``data_of_obj``</span>
 <span class="sd">    &gt;&gt;&gt; # gets its output; on read, ``obj_of_data`` runs first and ``postget`` gets *its* output.</span>
 <span class="sd">    &gt;&gt;&gt; raw = {}</span>
-<span class="sd">    &gt;&gt;&gt; s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), data_of_obj=lambda o: ('data_of_obj', o))</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs(raw, preset=lambda k, o: ('preset', o), value_encoder=lambda o: ('data_of_obj', o))</span>
 <span class="sd">    &gt;&gt;&gt; s['k'] = 1</span>
 <span class="sd">    &gt;&gt;&gt; raw</span>
 <span class="sd">    {'k': ('data_of_obj', ('preset', 1))}</span>
-<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({'k': 1}, obj_of_data=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))</span>
+<span class="sd">    &gt;&gt;&gt; s = wrap_kvs({'k': 1}, value_decoder=lambda d: ('obj_of_data', d), postget=lambda k, d: ('postget', d))</span>
 <span class="sd">    &gt;&gt;&gt; s['k']</span>
 <span class="sd">    ('postget', ('obj_of_data', 1))</span>
 <span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; # ``wrap_kvs`` (and ``filt_iter``, ...) are decorators with keyword options, so</span>
 <span class="sd">    &gt;&gt;&gt; # ``functools.partial`` turns one into a reusable wrapper of your own:</span>
 <span class="sd">    &gt;&gt;&gt; from functools import partial</span>
-<span class="sd">    &gt;&gt;&gt; upper_keys = partial(wrap_kvs, key_of_id=str.upper, id_of_key=str.lower)</span>
+<span class="sd">    &gt;&gt;&gt; upper_keys = partial(wrap_kvs, key_decoder=str.upper, key_encoder=str.lower)</span>
 <span class="sd">    &gt;&gt;&gt; d = upper_keys({'a': 1})  # wrap an instance...</span>
 <span class="sd">    &gt;&gt;&gt; list(d)</span>
 <span class="sd">    ['A']</span>
@@ -2508,9 +2519,82 @@
         <span class="n">name</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="vm">__qualname__</span>
 
     <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="n">wrapper</span><span class="o">=</span><span class="n">wrapper</span> <span class="ow">or</span> <span class="n">Store</span><span class="p">)</span>
+    <span class="n">_warn_on_x_of_y_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">_handle_codecs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_wrap_store</span><span class="p">(</span><span class="n">_wrap_kvs</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span></div>
 
+
+
+<span class="c1"># The X_of_Y keywords of wrap_kvs and the encoder/decoder names that replace them.</span>
+<span class="c1"># "decoder" is the outgoing direction (backend -&gt; interface), "encoder" the ingoing one.</span>
+<span class="n">X_OF_Y_TO_CODEC_KWARG</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"key_of_id"</span><span class="p">:</span> <span class="s2">"key_decoder"</span><span class="p">,</span>
+    <span class="s2">"id_of_key"</span><span class="p">:</span> <span class="s2">"key_encoder"</span><span class="p">,</span>
+    <span class="s2">"obj_of_data"</span><span class="p">:</span> <span class="s2">"value_decoder"</span><span class="p">,</span>
+    <span class="s2">"data_of_obj"</span><span class="p">:</span> <span class="s2">"value_encoder"</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">X_OF_Y_DEPRECATION</span> <span class="o">=</span> <span class="s2">"wrap_kvs X_of_Y keywords are deprecated"</span>
+
+<span class="c1"># codec keyword -&gt; the (decoder, encoder) X_of_Y slots it fills</span>
+<span class="n">_CODEC_KWARG_SLOTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"key_codec"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"key_of_id"</span><span class="p">,</span> <span class="s2">"id_of_key"</span><span class="p">),</span>
+    <span class="s2">"value_codec"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"obj_of_data"</span><span class="p">,</span> <span class="s2">"data_of_obj"</span><span class="p">),</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_warn_on_x_of_y_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Warn (DeprecationWarning) if ``wrap_kvs`` was given an ``X_of_Y`` keyword.</span>
+
+<span class="sd">    The old names keep working; the warning names the replacement. It is attributed to</span>
+<span class="sd">    the first frame outside dol's wrapping machinery, i.e. the code that called</span>
+<span class="sd">    ``wrap_kvs`` (or applied the decorator it made).</span>
+
+<span class="sd">    &gt;&gt;&gt; import warnings</span>
+<span class="sd">    &gt;&gt;&gt; with warnings.catch_warnings(record=True) as w:</span>
+<span class="sd">    ...     warnings.simplefilter('always')</span>
+<span class="sd">    ...     _warn_on_x_of_y_kwargs({'obj_of_data': int, 'key_of_id': None})</span>
+<span class="sd">    &gt;&gt;&gt; print(w[0].message)  # doctest: +ELLIPSIS</span>
+<span class="sd">    wrap_kvs X_of_Y keywords are deprecated: use value_decoder= instead of obj_of_data= ...</span>
+<span class="sd">    """</span>
+    <span class="n">used</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">X_OF_Y_TO_CODEC_KWARG</span> <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">used</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">renames</span> <span class="o">=</span> <span class="s2">", "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">X_OF_Y_TO_CODEC_KWARG</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">= instead of </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">="</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">used</span><span class="p">)</span>
+    <span class="n">warn</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">X_OF_Y_DEPRECATION</span><span class="si">}</span><span class="s2">: use </span><span class="si">{</span><span class="n">renames</span><span class="si">}</span><span class="s2"> (same semantics; the old names will be "</span>
+        <span class="s2">"removed in dol 1.0, see https://github.com/i2mint/dol/issues/92)."</span><span class="p">,</span>
+        <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="n">stacklevel</span><span class="o">=</span><span class="n">_stacklevel_outside_wrapping_machinery</span><span class="p">(),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_stacklevel_outside_wrapping_machinery</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The ``warn`` stacklevel of the first frame outside dol and functools.</span>
+
+<span class="sd">    Counted from the caller of ``warn`` (stacklevel=1 is the function calling ``warn``).</span>
+<span class="sd">    Every frame in the ``dol`` package (``trans``, ``util.Pipe``, ``base``, ...) counts as</span>
+<span class="sd">    machinery, except dol's own tests, which are callers like any user code.</span>
+<span class="sd">    """</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+
+    <span class="n">dol_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+    <span class="n">tests_dir</span> <span class="o">=</span> <span class="n">dol_dir</span> <span class="o">+</span> <span class="s2">"tests"</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_machinery</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">==</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">functools</span><span class="o">.</span><span class="vm">__file__</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">dol_dir</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">tests_dir</span><span class="p">)</span>
+
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># the caller of the function that calls warn</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">while</span> <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">is_machinery</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span><span class="p">):</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_back</span>
+        <span class="n">level</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">level</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_handle_codecs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
@@ -2530,46 +2614,25 @@
 <span class="sd">    &gt;&gt;&gt; assert kwargs['key_of_id'] == int</span>
 <span class="sd">    &gt;&gt;&gt; assert kwargs['id_of_key'] == str</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">key_codec</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_codec"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_of_id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both key_codec and key_of_id"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"key_of_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_codec</span><span class="o">.</span><span class="n">decoder</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id_of_key"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both key_codec and id_of_key"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"id_of_key"</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_codec</span><span class="o">.</span><span class="n">encoder</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"key_codec"</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">value_codec</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"value_codec"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"obj_of_data"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both value_codec and obj_of_data"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"obj_of_data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_codec</span><span class="o">.</span><span class="n">decoder</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_of_obj"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both value_codec and data_of_obj"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"data_of_obj"</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_codec</span><span class="o">.</span><span class="n">encoder</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"value_codec"</span><span class="p">]</span>
+    <span class="c1"># ``is not None`` (not truthiness) everywhere: a falsy callable is still a transform,</span>
+    <span class="c1"># and the X_of_Y path (``_wrap_kvs``) applies it, so the new names must too.</span>
+    <span class="k">for</span> <span class="n">codec_name</span><span class="p">,</span> <span class="p">(</span><span class="n">decoder_slot</span><span class="p">,</span> <span class="n">encoder_slot</span><span class="p">)</span> <span class="ow">in</span> <span class="n">_CODEC_KWARG_SLOTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">codec</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">codec_name</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">slot</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">decoder_slot</span><span class="p">,</span> <span class="n">codec</span><span class="o">.</span><span class="n">decoder</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">encoder_slot</span><span class="p">,</span> <span class="n">codec</span><span class="o">.</span><span class="n">encoder</span><span class="p">),</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">slot</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cannot specify both </span><span class="si">{</span><span class="n">codec_name</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">slot</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="n">slot</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">codec_name</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="n">key_decoder</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_decoder"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_of_id"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both key_decoder and key_of_id"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"key_of_id"</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_decoder</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"key_decoder"</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">key_encoder</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_encoder"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"id_of_key"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both key_encoder and id_of_key"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"id_of_key"</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_encoder</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"key_encoder"</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">value_decoder</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"value_decoder"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"obj_of_data"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both value_decoder and obj_of_data"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"obj_of_data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_decoder</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"value_decoder"</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="n">value_encoder</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"value_encoder"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"data_of_obj"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot specify both value_encoder and data_of_obj"</span><span class="p">)</span>
-        <span class="n">kwargs</span><span class="p">[</span><span class="s2">"data_of_obj"</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_encoder</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"value_encoder"</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">old_name</span><span class="p">,</span> <span class="n">new_name</span> <span class="ow">in</span> <span class="n">X_OF_Y_TO_CODEC_KWARG</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="o">:=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_name</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">old_name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Cannot specify both </span><span class="si">{</span><span class="n">new_name</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">old_name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="n">old_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+            <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">new_name</span><span class="p">]</span>
 
 
 <span class="c1"># TODO: Below is more general and clean, but breaks tests. Fix tests and use this.</span>
@@ -2621,7 +2684,7 @@
 <span class="w">    </span><span class="sd">"""Add a decoder layer to a store.</span>
 
 <span class="sd">    Note:</span>
-<span class="sd">        This is a convenience function for ``wrap_kvs(..., obj_of_data=decoder)``.</span>
+<span class="sd">        This is a convenience function for ``wrap_kvs(..., value_decoder=decoder)``.</span>
 
 <span class="sd">    &gt;&gt;&gt; s = {'a': "42"}</span>
 <span class="sd">    &gt;&gt;&gt; ss = add_decoder(s, decoder=int)</span>
@@ -2645,7 +2708,7 @@
                 <span class="s2">"If the decoder keyword is not given, the first argument must be the "</span>
                 <span class="s2">"(callable) decoder"</span>
             <span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">decoder</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store_cls</span><span class="p">,</span> <span class="n">value_decoder</span><span class="o">=</span><span class="n">decoder</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
 
 
@@ -2754,7 +2817,7 @@
             <span class="n">name</span>
             <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">))</span> <span class="o">+</span> <span class="s2">"_kr"</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">key_of_id</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">key_decoder</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wrapper</span>
 
@@ -2791,7 +2854,7 @@
             <span class="n">name</span>
             <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">))</span> <span class="o">+</span> <span class="s2">"_kw"</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">id_of_key</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">key_encoder</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wrapper</span>
 
@@ -2822,7 +2885,7 @@
             <span class="n">name</span>
             <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">))</span> <span class="o">+</span> <span class="s2">"_vr"</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">value_decoder</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wrapper</span>
 
@@ -2853,7 +2916,7 @@
             <span class="n">name</span>
             <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">))</span> <span class="o">+</span> <span class="s2">"_vw"</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">value_encoder</span><span class="o">=</span><span class="n">trans_func</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">wrapper</span>
 
@@ -3211,10 +3274,10 @@
         <span class="k">return</span> <span class="n">wrap_kvs</span><span class="p">(</span>
             <span class="n">o</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
-            <span class="n">key_of_id</span><span class="o">=</span><span class="n">key_of_id</span><span class="p">,</span>
-            <span class="n">id_of_key</span><span class="o">=</span><span class="n">id_of_key</span><span class="p">,</span>
-            <span class="n">obj_of_data</span><span class="o">=</span><span class="n">obj_of_data</span><span class="p">,</span>
-            <span class="n">data_of_obj</span><span class="o">=</span><span class="n">data_of_obj</span><span class="p">,</span>
+            <span class="n">key_decoder</span><span class="o">=</span><span class="n">key_of_id</span><span class="p">,</span>
+            <span class="n">key_encoder</span><span class="o">=</span><span class="n">id_of_key</span><span class="p">,</span>
+            <span class="n">value_decoder</span><span class="o">=</span><span class="n">obj_of_data</span><span class="p">,</span>
+            <span class="n">value_encoder</span><span class="o">=</span><span class="n">data_of_obj</span><span class="p">,</span>
             <span class="n">preset</span><span class="o">=</span><span class="n">preset</span><span class="p">,</span>
             <span class="n">postget</span><span class="o">=</span><span class="n">postget</span><span class="p">,</span>
         <span class="p">)</span>
@@ -3332,7 +3395,7 @@
     <span class="n">_data_trans</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
         <span class="n">_conditional_data_trans</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="n">condition</span><span class="p">,</span> <span class="n">data_trans</span><span class="o">=</span><span class="n">data_trans</span>
     <span class="p">)</span>
-    <span class="k">return</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">data_trans</span><span class="p">,</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">_data_trans</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Pipe</span><span class="p">(</span><span class="n">data_trans</span><span class="p">,</span> <span class="n">wrap_kvs</span><span class="p">(</span><span class="n">store</span><span class="p">,</span> <span class="n">value_decoder</span><span class="o">=</span><span class="n">_data_trans</span><span class="p">))</span></div>
 
 
 
@@ -3726,7 +3789,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=93101784"></script>
+</div><script src="../../_static/documentation_options.js?v=1437fa6d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>

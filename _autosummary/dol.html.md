@@ -11,25 +11,11 @@ interface, and transforms that interface with composable layers. Start with
 ```pycon
 >>> from dol import wrap_kvs
 >>> import json
->>> s = wrap_kvs({}, obj_of_data=json.loads, data_of_obj=json.dumps)
+>>> s = wrap_kvs({}, value_decoder=json.loads, value_encoder=json.dumps)
 >>> s['a'] = {'x': 1}
 >>> s['a'], s.store
 ({'x': 1}, {'a': '{"x": 1}'})
 ```
-
-### Functions
-
-| [`ihead`](#dol.ihead)(store[, n])   | Get the first item of an iterable, or a list of the first n items   |
-|----------------------------------------------------------------------|---------------------------------------------------------------------|
-| [`kvhead`](#dol.kvhead)(store[, n])  | Get the first item of a kv store, or a list of the first n items    |
-
-### dol.ihead(store, n=1)
-
-Get the first item of an iterable, or a list of the first n items
-
-### dol.kvhead(store, n=1)
-
-Get the first item of a kv store, or a list of the first n items
 
 ### Modules
 

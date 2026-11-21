@@ -184,7 +184,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -273,7 +273,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
@@ -288,37 +288,12 @@ interface, and transforms that interface with composable layers. Start with
 <code class="docutils literal notranslate"><span class="pre">filt_iter</span></code> (key filtering) and <code class="docutils literal notranslate"><span class="pre">cache_this</span></code> (caching).</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">dol</span><span class="w"> </span><span class="kn">import</span> <span class="n">wrap_kvs</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({},</span> <span class="n">obj_of_data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">data_of_obj</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">wrap_kvs</span><span class="p">({},</span> <span class="n">value_decoder</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span> <span class="n">value_encoder</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'x'</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s1">'a'</span><span class="p">],</span> <span class="n">s</span><span class="o">.</span><span class="n">store</span>
 <span class="go">({'x': 1}, {'a': '{"x": 1}'})</span>
 </pre></div>
 </div>
-<p class="rubric">Functions</p>
-<div class="table-wrapper autosummary longtable docutils container">
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#dol.ihead" title="dol.ihead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ihead</span></code></a>(store[, n])</p></td>
-<td><p>Get the first item of an iterable, or a list of the first n items</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#dol.kvhead" title="dol.kvhead"><code class="xref py py-obj docutils literal notranslate"><span class="pre">kvhead</span></code></a>(store[, n])</p></td>
-<td><p>Get the first item of a kv store, or a list of the first n items</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.ihead">
-<span class="sig-prename descclassname"><span class="pre">dol.</span></span><span class="sig-name descname"><span class="pre">ihead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol.html#ihead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.ihead" title="Link to this definition">¶</a></dt>
-<dd><p>Get the first item of an iterable, or a list of the first n items</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="dol.kvhead">
-<span class="sig-prename descclassname"><span class="pre">dol.</span></span><span class="sig-name descname"><span class="pre">kvhead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dol.html#kvhead"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dol.kvhead" title="Link to this definition">¶</a></dt>
-<dd><p>Get the first item of a kv store, or a list of the first n items</p>
-</dd></dl>
-
 <p class="rubric">Modules</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
@@ -457,33 +432,13 @@ interface, and transforms that interface with composable layers. Start with
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">dol</a><ul>
-<li><a class="reference internal" href="#dol.ihead"><code class="docutils literal notranslate"><span class="pre">ihead()</span></code></a></li>
-<li><a class="reference internal" href="#dol.kvhead"><code class="docutils literal notranslate"><span class="pre">kvhead()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=93101784"></script>
+</div><script src="../_static/documentation_options.js?v=1437fa6d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
