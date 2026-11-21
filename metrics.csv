@@ -1,8 +1,21 @@
 metric,value
 schema_version,1.0
-timestamp,2026-11-21T14:58:54.858208Z
-commit_sha,73863a79fba851b597e5c9e92647461e9026ca1c
-commit_message,Merge 1f604ecbdf7d8ffb4e68be04c6883ac69741d637 into 5327d231df23c1e7b24f670daeacc315dcde2a7d
+timestamp,2026-11-21T14:58:56.450762Z
+commit_sha,1f604ecbdf7d8ffb4e68be04c6883ac69741d637
+commit_message,"Review fixes: token-based codemod, falsy transforms, warning attribution
+
+- misc/codemods/x_of_y_kwargs.py now works on tokens: comments and strings
+  never count when finding a wrap_kvs call's end, only keywords at the call's
+  own depth are renamed, and a rename whose new name is already passed in the
+  call is skipped and reported instead of producing a duplicate keyword.
+  Doctest examples and fenced python blocks are rewritten the same way;
+  Markdown files only get their embedded code rewritten. The mapping is
+  imported from dol.trans (one source of truth).
+- _handle_codecs checks the encoder/decoder and codec keywords with
+  `is not None`, like the X_of_Y path: a falsy callable was silently dropped.
+- The deprecation warning skips every frame inside dol (not only trans.py),
+  so Pipe(wrap_kvs(...)) is attributed to the caller.
+- dol-dev-wrap-kvs skill: the keyword names and the is-not-None rule."
 python_version,3.10
 metrics.umpyre_stats.num_functions,6175
 metrics.umpyre_stats.num_classes,1546
@@ -33,4 +46,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,2.1088662147521973
+collection_duration_seconds,2.8818981647491455
