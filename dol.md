@@ -1,4 +1,4 @@
-> built 2026-11-21 17:14 UTC from b76fa3a (master) · dol 0.4.0. Details: build_info.json
+> built 2026-11-22 22:41 UTC from c26da8e (master) · dol 0.4.1. Details: build_info.json
 
 # index.html.md
 
@@ -17,7 +17,11 @@ But simply put, what `dol` provides is tools to make your interface with data be
 
 The package is light-weight: Pure python; no third-party dependencies.
 
-To install:	`pip install dol`
+To install:
+
+```default
+pip install dol
+```
 
 [Documentation here](https://i2mint.github.io/dol/)
 
@@ -18144,7 +18148,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-21 17:14 UTC** from commit <a href="https://github.com/i2mint/dol/commit/b76fa3adbf9c71611574b2b67b6b0852a54b3def"><code>b76fa3a</code></a> on branch <code>master</code>, for **dol 0.4.0** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 22:41 UTC** from commit <a href="https://github.com/i2mint/dol/commit/c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77"><code>c26da8e</code></a> on branch <code>master</code>, for **dol 0.4.1** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -18153,9 +18157,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/b76fa3adbf9c71611574b2b67b6b0852a54b3def"><code>b76fa3adbf9c71611574b2b67b6b0852a54b3def</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77"><code>c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.4.0</code>                                                                                                                                |
+| Tags at this commit | <code>0.4.1</code>                                                                                                                                |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18164,15 +18168,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/44928724951">44928724951</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/45078922535">45078922535</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>6d1ef964b35201060933e162f8be78e0c69db938</code> (in the history of the built commit) |
+| Event commit | <code>f186b4666ed273742e7817a695a970e115b28be6</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.22  |
+| epythet  | 0.2.23  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -18191,14 +18195,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.4.0/">0.4.0</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.4.1/">0.4.1</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout b76fa3adbf9c71611574b2b67b6b0852a54b3def
-pip install "epythet==0.2.22"
+git checkout c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77
+pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

@@ -13,7 +13,11 @@ But simply put, what `dol` provides is tools to make your interface with data be
 
 The package is light-weight: Pure python; no third-party dependencies.
 
-To install:	`pip install dol`
+To install:
+
+```default
+pip install dol
+```
 
 [Documentation here](https://i2mint.github.io/dol/)
 
