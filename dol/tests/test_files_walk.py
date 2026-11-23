@@ -58,7 +58,7 @@ def test_symlinks_are_followed_and_broken_ones_skipped(tree, tmp_path_factory):
 
 
 def test_the_key_pattern_still_filters_walked_keys(tree):
-    s = FileCollection(str(tree), subpath="a/{rest}")
+    s = FileCollection(str(tree), subpath=os.path.join("a", "{rest}"))
     assert _rel(s, tree) == ["a/b/x.txt"]
 
 
