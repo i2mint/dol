@@ -1,4 +1,4 @@
-> built 2026-11-22 22:41 UTC from c26da8e (master) · dol 0.4.1. Details: build_info.json
+> built 2026-11-23 15:54 UTC from 6a6735c (master) · dol 0.4.2. Details: build_info.json
 
 # index.html.md
 
@@ -122,6 +122,32 @@ But you could do this with AWS S3 using tools from
 [azuredol](https://github.com/i2mint/azuredol), or mongoDB with
 [mongodol](https://github.com/i2mint/mongodol),
 github with [hubcap](https://github.com/thorwhalen/hubcap), and so on…
+
+### Any fsspec URL is a dol store
+
+For a backend that has no `*dol` package of its own (GCS, HTTP, SFTP, a zip, …), use [fsspec](https://filesystem-spec.readthedocs.io/) as the transport. `fsspec.get_mapper(url)` already returns a `MutableMapping`, so dol’s codecs wrap it directly, and dol itself still needs no dependency:
+
+```python
+import fsspec
+from dol import Pipe, ValueCodecs, KeyCodecs
+
+store = Pipe(
+    ValueCodecs.str_to_bytes(),  # fsspec stores bytes
+    ValueCodecs.json(),
+    KeyCodecs.suffixed(".json"),
+)(fsspec.get_mapper("gcs://my-bucket/prefix"))
+
+store["config"] = {"a": 1}  # written as config.json
+store["config"]  # {'a': 1}
+```
+
+Three things to know:
+
+1. Put an explicit bytes codec (`ValueCodecs.str_to_bytes()`, `pickle`, …) under any codec that produces `str`: fsspec mappers store bytes, and backends disagree on `str` values (`memory://` raises `TypeError`, `s3://` silently encodes).
+2. Keys are paths under the root, and nested keys (`sub/b`) are listed recursively.
+3. A missing key raises `KeyError`, but a missing bucket raises `FileNotFoundError` when you list the store.
+
+For S3, prefer [s3dol](https://github.com/i2mint/s3dol): it adds bucket management, provider presets, an error taxonomy and large-object support that a plain fsspec mapper does not have.
 
 All of these extensions provide adapters from various data sources/targets to the
 dict-like interface (called “Mapping” in python typing).
@@ -18148,7 +18174,7 @@ See `zip_compress` for usage examples.
 
 # About this build
 
-This documentation was built on **2026-11-22 22:41 UTC** from commit <a href="https://github.com/i2mint/dol/commit/c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77"><code>c26da8e</code></a> on branch <code>master</code>, for **dol 0.4.1** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 15:54 UTC** from commit <a href="https://github.com/i2mint/dol/commit/6a6735c2a9bfa4ff60b086280796529ca9274b46"><code>6a6735c</code></a> on branch <code>master</code>, for **dol 0.4.2** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -18157,9 +18183,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77"><code>c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/6a6735c2a9bfa4ff60b086280796529ca9274b46"><code>6a6735c2a9bfa4ff60b086280796529ca9274b46</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.4.1</code>                                                                                                                                |
+| Tags at this commit | <code>0.4.2</code>                                                                                                                                |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -18168,15 +18194,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/45078922535">45078922535</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/45210014807">45210014807</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>f186b4666ed273742e7817a695a970e115b28be6</code> (in the history of the built commit) |
+| Event commit | <code>bce3ce3a6b3faaf54fc509bc7cd3336f7a705877</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.23  |
+| epythet  | 0.2.25  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -18195,14 +18221,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.4.1/">0.4.1</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.4.2/">0.4.2</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout c26da8e3d76514f9bd1dd5416bb2a1bfcdc51b77
-pip install "epythet==0.2.23"
+git checkout 6a6735c2a9bfa4ff60b086280796529ca9274b46
+pip install "epythet==0.2.25"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
