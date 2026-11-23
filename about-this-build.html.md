@@ -2,18 +2,20 @@
 
 # About this build
 
-This documentation was built on **2026-11-23 15:54 UTC** from commit <a href="https://github.com/i2mint/dol/commit/6a6735c2a9bfa4ff60b086280796529ca9274b46"><code>6a6735c</code></a> on branch <code>master</code>, for **dol 0.4.2** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 19:54 UTC** from commit <a href="https://github.com/i2mint/dol/commit/ca04574dd0fbc965151c9a8e2ae90f4d6eba0572"><code>ca04574</code></a> on branch <code>master</code>, for **dol 0.4.3** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.4.3) is ahead of the latest release on PyPI (0.4.2): these docs describe unreleased code.
 
 ## Source
 
 |                     |                                                                                                                                                   |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/i2mint/dol/commit/6a6735c2a9bfa4ff60b086280796529ca9274b46"><code>6a6735c2a9bfa4ff60b086280796529ca9274b46</code></a> |
+| Commit              | <a href="https://github.com/i2mint/dol/commit/ca04574dd0fbc965151c9a8e2ae90f4d6eba0572"><code>ca04574dd0fbc965151c9a8e2ae90f4d6eba0572</code></a> |
 | Branch              | <code>master</code>                                                                                                                               |
-| Tags at this commit | <code>0.4.2</code>                                                                                                                                |
+| Tags at this commit | <code>0.4.3</code>                                                                                                                                |
 | Working tree        | clean                                                                                                                                             |
 | Remote              | <code>https://github.com/i2mint/dol</code>                                                                                                        |
 
@@ -22,9 +24,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>i2mint/dol</code>                                                                    |
-| Run          | <a href="https://github.com/i2mint/dol/actions/runs/45210014807">45210014807</a>           |
+| Run          | <a href="https://github.com/i2mint/dol/actions/runs/45253314315">45253314315</a>           |
 | Ref          | <code>refs/heads/master</code>                                                             |
-| Event commit | <code>bce3ce3a6b3faaf54fc509bc7cd3336f7a705877</code> (in the history of the built commit) |
+| Event commit | <code>619cbbe80caf26d6b6d11bf31a6501754041708b</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -49,13 +51,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/dol/0.4.2/">0.4.2</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/dol/0.4.2/">0.4.2</a>, older than the documented version (0.4.3).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/i2mint/dol && cd dol
-git checkout 6a6735c2a9bfa4ff60b086280796529ca9274b46
+git checkout ca04574dd0fbc965151c9a8e2ae90f4d6eba0572
 pip install "epythet==0.2.25"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

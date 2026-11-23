@@ -330,26 +330,71 @@
 
 
 
-<div class="viewcode-block" id="paths_in_dir">
-<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.paths_in_dir">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">paths_in_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_hidden</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="c1"># TODO: is dot a platform independent marker for hidden file?</span>
+    <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_dir_entries</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The ``os.DirEntry`` objects of ``dirpath``, skipping hidden ones unless</span>
+<span class="sd">    ``include_hidden``; empty for a directory that vanished, is not a directory, or</span>
+<span class="sd">    is not readable.</span>
+
+<span class="sd">    ``os.scandir`` gets each entry's type from the directory listing itself, so</span>
+<span class="sd">    :func:`_entry_is_dir` / :func:`_entry_is_file` cost no ``stat`` call on most</span>
+<span class="sd">    platforms (i2mint/dol#219). The listing is read in full before anything is</span>
+<span class="sd">    yielded, as ``os.listdir`` did: a caller that writes into the folder while</span>
+<span class="sd">    iterating does not see its own new files, and no directory handle stays open</span>
+<span class="sd">    while the caller works.</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">include_hidden</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span>
-                <span class="s2">"."</span>
-            <span class="p">):</span>  <span class="c1"># TODO: is dot a platform independent marker for hidden file?</span>
-                <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">filepath</span><span class="p">):</span>
-                    <span class="k">yield</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">yield</span> <span class="n">filepath</span>
+        <span class="k">with</span> <span class="n">os</span><span class="o">.</span><span class="n">scandir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span> <span class="k">as</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">entries</span> <span class="k">if</span> <span class="n">include_hidden</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_is_hidden</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">name</span><span class="p">)]</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">NotADirectoryError</span><span class="p">,</span> <span class="ne">PermissionError</span><span class="p">):</span>
         <span class="c1"># Skip directories that vanished, aren't directories, or aren't readable rather</span>
         <span class="c1"># than crashing the (recursive) walk. Notably, OS-protected directories such as</span>
         <span class="c1"># macOS's ``.../com.apple.*/TemporaryItems/`` under the temp dir raise</span>
-        <span class="c1"># PermissionError from ``os.listdir`` (Issue #3).</span>
-        <span class="k">pass</span></div>
+        <span class="c1"># PermissionError when listed (Issue #3).</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_entry_is_dir</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``os.path.isdir(entry.path)``, mostly without a ``stat`` call.</span>
+
+<span class="sd">    Like ``os.path.isdir``, it follows symlinks and answers ``False`` for any entry</span>
+<span class="sd">    it cannot resolve (a symlink loop, a link through a file or into an unreadable</span>
+<span class="sd">    folder), where ``DirEntry.is_dir`` raises. On Windows a junction's type comes</span>
+<span class="sd">    from the listing even when its target is gone, so it is checked for real.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">is_junction</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="s2">"is_junction"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Python 3.12+</span>
+        <span class="k">if</span> <span class="n">is_junction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">is_junction</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_entry_is_file</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``os.path.isfile(entry.path)``, mostly without a ``stat`` call (see</span>
+<span class="sd">    :func:`_entry_is_dir`)."""</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">entry</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="paths_in_dir">
+<a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.paths_in_dir">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">paths_in_dir</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">include_hidden</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">_dir_entries</span><span class="p">(</span><span class="n">rootdir</span><span class="p">,</span> <span class="n">include_hidden</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_entry_is_dir</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">entry</span><span class="o">.</span><span class="n">path</span></div>
 
 
 
@@ -361,15 +406,17 @@
 <span class="w">    </span><span class="sd">"""Recursively generates filepaths of folder (and subfolders, etc.) up to a given level"""</span>
     <span class="k">if</span> <span class="n">max_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">max_levels</span> <span class="o">=</span> <span class="n">inf</span>
-    <span class="k">for</span> <span class="n">full_path</span> <span class="ow">in</span> <span class="n">paths_in_dir</span><span class="p">(</span><span class="n">root_folder</span><span class="p">,</span> <span class="n">include_hidden</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">_dir_entries</span><span class="p">(</span><span class="n">root_folder</span><span class="p">,</span> <span class="n">include_hidden</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_entry_is_dir</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">_current_level</span> <span class="o">&lt;</span> <span class="n">max_levels</span><span class="p">:</span>
                 <span class="k">yield from</span> <span class="n">iter_filepaths_in_folder_recursively</span><span class="p">(</span>
-                    <span class="n">full_path</span><span class="p">,</span> <span class="n">max_levels</span><span class="p">,</span> <span class="n">_current_level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">include_hidden</span>
+                    <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">path</span><span class="p">),</span>
+                    <span class="n">max_levels</span><span class="p">,</span>
+                    <span class="n">_current_level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">include_hidden</span><span class="p">,</span>
                 <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
-                <span class="k">yield</span> <span class="n">full_path</span></div>
+        <span class="k">elif</span> <span class="n">_entry_is_file</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">entry</span><span class="o">.</span><span class="n">path</span></div>
 
 
 
@@ -381,8 +428,9 @@
 <span class="w">    </span><span class="sd">"""Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level"""</span>
     <span class="k">if</span> <span class="n">max_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">max_levels</span> <span class="o">=</span> <span class="n">inf</span>
-    <span class="k">for</span> <span class="n">full_path</span> <span class="ow">in</span> <span class="n">paths_in_dir</span><span class="p">(</span><span class="n">root_folder</span><span class="p">,</span> <span class="n">include_hidden</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">full_path</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">_dir_entries</span><span class="p">(</span><span class="n">root_folder</span><span class="p">,</span> <span class="n">include_hidden</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">_entry_is_dir</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+            <span class="n">full_path</span> <span class="o">=</span> <span class="n">ensure_slash_suffix</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
             <span class="k">yield</span> <span class="n">full_path</span>
             <span class="k">if</span> <span class="n">_current_level</span> <span class="o">&lt;</span> <span class="n">max_levels</span><span class="p">:</span>
                 <span class="k">yield from</span> <span class="n">iter_dirpaths_in_folder_recursively</span><span class="p">(</span>
@@ -899,6 +947,26 @@
         <span class="p">)</span></div>
 
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_walked_key_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The predicate that keeps the keys of this collection's own walk.</span>
+
+<span class="sd">        A walked path starts with ``rootdir`` and has no ``..`` segment, so it is in</span>
+<span class="sd">        the root by construction and only the key pattern needs checking; the</span>
+<span class="sd">        containment test, about 40% of a walk, is for keys a caller supplies</span>
+<span class="sd">        (i2mint/dol#219). A subclass that overrides ``is_valid_key`` or</span>
+<span class="sd">        ``is_in_root`` (on the class or the instance) keeps its own check on every</span>
+<span class="sd">        walked key.</span>
+<span class="sd">        """</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">is_valid_key</span> <span class="ow">is</span> <span class="n">FileSysCollection</span><span class="o">.</span><span class="n">is_valid_key</span>
+            <span class="ow">and</span> <span class="bp">cls</span><span class="o">.</span><span class="n">is_in_root</span> <span class="ow">is</span> <span class="n">FileSysCollection</span><span class="o">.</span><span class="n">is_in_root</span>
+            <span class="ow">and</span> <span class="s2">"is_valid_key"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="s2">"is_in_root"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_key_pattern</span><span class="o">.</span><span class="n">match</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span>
+
 <div class="viewcode-block" id="FileSysCollection.validate_in_root">
 <a class="viewcode-back" href="../../_autosummary/dol.filesys.html#dol.filesys.FileSysCollection.validate_in_root">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_in_root</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
@@ -941,7 +1009,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_walked_key_filter</span><span class="p">(),</span>
             <span class="n">iter_dirpaths_in_folder_recursively</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="p">,</span>
                 <span class="n">max_levels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_levels</span><span class="p">,</span>
@@ -973,7 +1041,7 @@
 <span class="sd">        True</span>
 <span class="sd">        """</span>
         <span class="k">yield from</span> <span class="nb">filter</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">is_valid_key</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_walked_key_filter</span><span class="p">(),</span>
             <span class="n">iter_filepaths_in_folder_recursively</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rootdir</span><span class="p">,</span>
                 <span class="n">max_levels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_levels</span><span class="p">,</span>
@@ -1843,7 +1911,7 @@
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=9dc614e0"></script>
+</div><script src="../../_static/documentation_options.js?v=34866086"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
