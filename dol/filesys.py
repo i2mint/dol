@@ -55,24 +55,69 @@ def ensure_slash_suffix(path: str):
         return path
 
 
-def paths_in_dir(rootdir, include_hidden=False):
-    """Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""
+def _is_hidden(name: str) -> bool:
+    # TODO: is dot a platform independent marker for hidden file?
+    return name.startswith(".")
+
+
+def _dir_entries(dirpath, include_hidden=False) -> list:
+    """The ``os.DirEntry`` objects of ``dirpath``, skipping hidden ones unless
+    ``include_hidden``; empty for a directory that vanished, is not a directory, or
+    is not readable.
+
+    ``os.scandir`` gets each entry's type from the directory listing itself, so
+    :func:`_entry_is_dir` / :func:`_entry_is_file` cost no ``stat`` call on most
+    platforms (i2mint/dol#219). The listing is read in full before anything is
+    yielded, as ``os.listdir`` did: a caller that writes into the folder while
+    iterating does not see its own new files, and no directory handle stays open
+    while the caller works.
+    """
     try:
-        for name in os.listdir(rootdir):
-            if include_hidden or not name.startswith(
-                "."
-            ):  # TODO: is dot a platform independent marker for hidden file?
-                filepath = os.path.join(rootdir, name)
-                if os.path.isdir(filepath):
-                    yield ensure_slash_suffix(filepath)
-                else:
-                    yield filepath
+        with os.scandir(dirpath) as entries:
+            return [e for e in entries if include_hidden or not _is_hidden(e.name)]
     except (FileNotFoundError, NotADirectoryError, PermissionError):
         # Skip directories that vanished, aren't directories, or aren't readable rather
         # than crashing the (recursive) walk. Notably, OS-protected directories such as
         # macOS's ``.../com.apple.*/TemporaryItems/`` under the temp dir raise
-        # PermissionError from ``os.listdir`` (Issue #3).
-        pass
+        # PermissionError when listed (Issue #3).
+        return []
+
+
+def _entry_is_dir(entry) -> bool:
+    """``os.path.isdir(entry.path)``, mostly without a ``stat`` call.
+
+    Like ``os.path.isdir``, it follows symlinks and answers ``False`` for any entry
+    it cannot resolve (a symlink loop, a link through a file or into an unreadable
+    folder), where ``DirEntry.is_dir`` raises. On Windows a junction's type comes
+    from the listing even when its target is gone, so it is checked for real.
+    """
+    try:
+        if not entry.is_dir():
+            return False
+        is_junction = getattr(entry, "is_junction", None)  # Python 3.12+
+        if is_junction is not None and is_junction():
+            return os.path.isdir(entry.path)
+        return True
+    except OSError:
+        return False
+
+
+def _entry_is_file(entry) -> bool:
+    """``os.path.isfile(entry.path)``, mostly without a ``stat`` call (see
+    :func:`_entry_is_dir`)."""
+    try:
+        return entry.is_file()
+    except OSError:
+        return False
+
+
+def paths_in_dir(rootdir, include_hidden=False):
+    """Yield the paths of the entries of ``rootdir`` (directories with a trailing separator), skipping hidden ones unless ``include_hidden``."""
+    for entry in _dir_entries(rootdir, include_hidden):
+        if _entry_is_dir(entry):
+            yield ensure_slash_suffix(entry.path)
+        else:
+            yield entry.path
 
 
 def iter_filepaths_in_folder_recursively(
@@ -81,15 +126,17 @@ def iter_filepaths_in_folder_recursively(
     """Recursively generates filepaths of folder (and subfolders, etc.) up to a given level"""
     if max_levels is None:
         max_levels = inf
-    for full_path in paths_in_dir(root_folder, include_hidden):
-        if os.path.isdir(full_path):
+    for entry in _dir_entries(root_folder, include_hidden):
+        if _entry_is_dir(entry):
             if _current_level < max_levels:
                 yield from iter_filepaths_in_folder_recursively(
-                    full_path, max_levels, _current_level + 1, include_hidden
+                    ensure_slash_suffix(entry.path),
+                    max_levels,
+                    _current_level + 1,
+                    include_hidden,
                 )
-        else:
-            if os.path.isfile(full_path):
-                yield full_path
+        elif _entry_is_file(entry):
+            yield entry.path
 
 
 def iter_dirpaths_in_folder_recursively(
@@ -98,8 +145,9 @@ def iter_dirpaths_in_folder_recursively(
     """Recursively generates dirpaths of folder (and subfolders, etc.) up to a given level"""
     if max_levels is None:
         max_levels = inf
-    for full_path in paths_in_dir(root_folder, include_hidden):
-        if os.path.isdir(full_path):
+    for entry in _dir_entries(root_folder, include_hidden):
+        if _entry_is_dir(entry):
+            full_path = ensure_slash_suffix(entry.path)
             yield full_path
             if _current_level < max_levels:
                 yield from iter_dirpaths_in_folder_recursively(
@@ -574,6 +622,26 @@ class FileSysCollection(Collection):
             )
         )
 
+    def _walked_key_filter(self):
+        """The predicate that keeps the keys of this collection's own walk.
+
+        A walked path starts with ``rootdir`` and has no ``..`` segment, so it is in
+        the root by construction and only the key pattern needs checking; the
+        containment test, about 40% of a walk, is for keys a caller supplies
+        (i2mint/dol#219). A subclass that overrides ``is_valid_key`` or
+        ``is_in_root`` (on the class or the instance) keeps its own check on every
+        walked key.
+        """
+        cls = type(self)
+        if (
+            cls.is_valid_key is FileSysCollection.is_valid_key
+            and cls.is_in_root is FileSysCollection.is_in_root
+            and "is_valid_key" not in vars(self)
+            and "is_in_root" not in vars(self)
+        ):
+            return self._key_pattern.match
+        return self.is_valid_key
+
     def validate_in_root(self, k):
         """Raise ``KeyValidationError`` if ``k`` leaves ``rootdir`` (i2mint/dol#107).
 
@@ -607,7 +675,7 @@ class DirCollection(FileSysCollection):
 
     def __iter__(self):
         yield from filter(
-            self.is_valid_key,
+            self._walked_key_filter(),
             iter_dirpaths_in_folder_recursively(
                 self.rootdir,
                 max_levels=self._max_levels,
@@ -636,7 +704,7 @@ class FileCollection(FileSysCollection):
         True
         """
         yield from filter(
-            self.is_valid_key,
+            self._walked_key_filter(),
             iter_filepaths_in_folder_recursively(
                 self.rootdir,
                 max_levels=self._max_levels,
