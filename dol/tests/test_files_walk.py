@@ -82,3 +82,42 @@ def test_files_lists_relative_keys(tree):
     from dol import Files
 
     assert sorted(Files(str(tree))) == ["a/b/x.txt".replace("/", os.sep), "y.json"]
+
+
+@pytest.mark.skipif(os.name == "nt", reason="symlinks need privileges on Windows")
+@pytest.mark.parametrize(
+    "make_link",
+    [
+        pytest.param(lambda root: os.symlink(root / "loop", root / "loop"), id="self-loop"),
+        pytest.param(lambda root: os.symlink(root / "y.json" / "x", root / "through_file"), id="enotdir"),
+    ],
+)
+def test_unresolvable_symlinks_are_skipped(tree, make_link):
+    make_link(tree)
+    assert _rel(FileCollection(str(tree)), tree) == ["a/b/x.txt", "y.json"]
+    assert _rel(DirCollection(str(tree)), tree) == ["a", "a/b"]
+
+
+@pytest.mark.skipif(os.name == "nt", reason="symlinks need privileges on Windows")
+def test_a_directory_cycle_ends(tree):
+    os.symlink(tree, tree / "a" / "back")
+    keys = list(FileCollection(str(tree)))  # ends once the OS refuses the depth
+    assert len(keys) > 2
+
+
+def test_files_written_during_iteration_are_not_yielded(tmp_path):
+    n = 3000  # large enough that a lazy directory read would see new entries
+    for i in range(n):
+        (tmp_path / f"f{i}").write_text("")
+    seen = 0
+    for k in FileCollection(str(tmp_path)):
+        seen += 1
+        with open(k + ".bak", "w"):
+            pass
+    assert seen == n
+
+
+def test_an_instance_level_validator_applies_to_walked_keys(tree):
+    s = FileCollection(str(tree))
+    s.is_valid_key = lambda k: k.endswith(".json")
+    assert _rel(s, tree) == ["y.json"]
