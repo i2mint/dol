@@ -115,6 +115,32 @@ But you could do this with AWS S3 using tools from
 [mongodol](https://github.com/i2mint/mongodol), 
 github with [hubcap](https://github.com/thorwhalen/hubcap), and so on...
 
+### Any fsspec URL is a dol store
+
+For a backend that has no `*dol` package of its own (GCS, HTTP, SFTP, a zip, ...), use [fsspec](https://filesystem-spec.readthedocs.io/) as the transport. `fsspec.get_mapper(url)` already returns a `MutableMapping`, so dol's codecs wrap it directly, and dol itself still needs no dependency:
+
+```python
+import fsspec
+from dol import Pipe, ValueCodecs, KeyCodecs
+
+store = Pipe(
+    ValueCodecs.str_to_bytes(),  # fsspec stores bytes
+    ValueCodecs.json(),
+    KeyCodecs.suffixed('.json'),
+)(fsspec.get_mapper('gcs://my-bucket/prefix'))
+
+store['config'] = {'a': 1}  # written as config.json
+store['config']  # {'a': 1}
+```
+
+Three things to know:
+
+1. Put an explicit bytes codec (`ValueCodecs.str_to_bytes()`, `pickle`, ...) under any codec that produces `str`: fsspec mappers store bytes, and backends disagree on `str` values (`memory://` raises `TypeError`, `s3://` silently encodes).
+2. Keys are paths under the root, and nested keys (`sub/b`) are listed recursively.
+3. A missing key raises `KeyError`, but a missing bucket raises `FileNotFoundError` when you list the store.
+
+For S3, prefer [s3dol](https://github.com/i2mint/s3dol): it adds bucket management, provider presets, an error taxonomy and large-object support that a plain fsspec mapper does not have.
+
 All of these extensions provide adapters from various data sources/targets to the 
 dict-like interface (called "Mapping" in python typing).
 What `dol` provides are base tools to make a path from these to the interface 
