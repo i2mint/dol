@@ -126,11 +126,11 @@ from dol import Pipe, ValueCodecs, KeyCodecs
 store = Pipe(
     ValueCodecs.str_to_bytes(),  # fsspec stores bytes
     ValueCodecs.json(),
-    KeyCodecs.suffixed('.json'),
-)(fsspec.get_mapper('gcs://my-bucket/prefix'))
+    KeyCodecs.suffixed(".json"),
+)(fsspec.get_mapper("gcs://my-bucket/prefix"))
 
-store['config'] = {'a': 1}  # written as config.json
-store['config']  # {'a': 1}
+store["config"] = {"a": 1}  # written as config.json
+store["config"]  # {'a': 1}
 ```
 
 Three things to know:
