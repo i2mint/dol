@@ -97,3 +97,4 @@ path template — landmines 1 & 2) → **file IO**. When a Windows-only `KeyErro
 - [ ] No POSIX-only `os` call without a guard/`getpass` replacement.
 - [ ] Tests/doctests assert behavior or `os.path.join`, not literal separators.
 - [ ] Windows CI job is green (not just Linux/macOS).
+- [ ] A directory walk on `os.scandir` keeps `listdir` + `isdir` semantics: `DirEntry.is_dir()`/`is_file()` raise on a symlink loop, a link through a file or into an unreadable folder (wrap them, as `dol.filesys._entry_is_dir` does), and `scandir` reads lazily, so snapshot each listing before yielding (#219).
