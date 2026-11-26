@@ -144,6 +144,18 @@ class Collection(CollectionABC):
             return next(iter(self))
 
 
+def _has_scanning_len(store) -> bool:
+    """True if ``len(store)`` is just the default count-by-iterating, so it costs a full
+    walk and cannot refuse (i2mint/dol#223). A ``Store`` layer's ``len`` is a scan
+    exactly when the store it wraps has a scanning ``len``."""
+    len_ = getattr(type(store), "__len__", None)
+    if len_ is Collection.__len__:
+        return True
+    if len_ is Store.__len__:
+        return _has_scanning_len(object.__getattribute__(store, "store"))
+    return False
+
+
 # KvCollection = Collection  # alias meant for back-compatibility. Would like to deprecated
 
 
@@ -838,15 +850,21 @@ class Store(KvPersister):
         ``_key_of_id`` is marked with ``raises_out_of_scope``), the number of in-scope
         ids, which takes a scan (i2mint/dol#123).
 
-        The inner ``len`` is always asked first, so an inner store that refuses ``len``
+        The inner ``len`` is asked first, so an inner store that refuses ``len``
         (e.g. a remote listing, to spare ``list()`` a second scan) still refuses it
-        here, and an empty one costs no scan. Otherwise note that ``list(store)`` of a
-        scoped layer scans twice: once to size the list, once to fill it.
+        here, and an empty one costs no scan. The exception is an inner ``len`` that is
+        itself only the default count-by-iterating (``Collection.__len__``): it can
+        neither refuse nor be cheap, so asking it would add a walk for nothing, and it
+        is skipped (i2mint/dol#223). ``list(store)`` of a scoped layer therefore scans
+        twice (size, then fill) rather than three times.
         """
-        n = len(self.store)
-        if n and may_raise_out_of_scope(self._key_of_id):
+        if may_raise_out_of_scope(self._key_of_id):
+            if not _has_scanning_len(self.store):
+                n = len(self.store)
+                if not n:
+                    return 0
             return sum(1 for _ in self)
-        return n
+        return len(self.store)
 
     def __bool__(self) -> bool:
         if may_raise_out_of_scope(self._key_of_id):
