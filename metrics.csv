@@ -1,50 +1,28 @@
 metric,value
 schema_version,1.0
-timestamp,2026-11-23T19:53:10.959720Z
-commit_sha,619cbbe80caf26d6b6d11bf31a6501754041708b
-commit_message,"perf: walk Files with os.scandir, skip containment for walked keys (#219) (#222)
+timestamp,2026-11-26T13:46:12.270335Z
+commit_sha,13b3b455016a3864ec58461c022c4f6e5a1a27a4
+commit_message,"Scoped Store len skips an inner scanning len: list(store) walks twice, not three times (#223)
 
-* perf: walk Files with os.scandir and skip containment for walked keys (#219)
-
-The walk read each entry's type with isdir/isfile (about three stat calls
-per file); os.scandir gets it from the listing. Keys produced by the walk
-start with rootdir and have no '..' segment, so only the key pattern is
-checked for them; the containment test stays for caller-supplied keys,
-and for every key when a subclass overrides is_valid_key or is_in_root.
-About 9x per walk on a 10k-file tree.
-
-* fix(#219): keep the walk's old semantics on unresolvable links and concurrent writes
-
-Review findings on the scandir walk:
-- DirEntry.is_dir/is_file raise on a symlink loop, a link through a file
-  or into an unreadable folder, where os.path.isdir/isfile answered False;
-  _entry_is_dir/_entry_is_file restore that (and check broken Windows
-  junctions for real).
-- Each directory listing is read in full before yielding, as listdir did,
-  so files written during iteration are not yielded and no handle stays open.
-- An instance-level is_valid_key/is_in_root override is honoured too.
-
-* dev skill: scandir walk landmines (#219)
-
-* test(#219): build the subpath template with os.path.join (Windows)"
+Refs #223"
 python_version,3.10
-metrics.umpyre_stats.num_functions,5877
-metrics.umpyre_stats.num_classes,1485
-metrics.umpyre_stats.total_lines,236163
-metrics.umpyre_stats.empty_lines,28849
-metrics.umpyre_stats.comment_lines,12841
-metrics.umpyre_stats.docs_lines,27100
-metrics.umpyre_stats.function_lines,97114
-metrics.umpyre_stats.empty_lines_ratio,0.12215715416894264
-metrics.umpyre_stats.comment_lines_ratio,0.05437346239673446
-metrics.umpyre_stats.function_lines_ratio,0.41121598218179817
-metrics.umpyre_stats.mean_lines_per_function,16.5244172196699
+metrics.umpyre_stats.num_functions,5913
+metrics.umpyre_stats.num_classes,1486
+metrics.umpyre_stats.total_lines,237124
+metrics.umpyre_stats.empty_lines,29073
+metrics.umpyre_stats.comment_lines,12848
+metrics.umpyre_stats.docs_lines,27341
+metrics.umpyre_stats.function_lines,97725
+metrics.umpyre_stats.empty_lines_ratio,0.12260673740321519
+metrics.umpyre_stats.comment_lines_ratio,0.054182621750645234
+metrics.umpyre_stats.function_lines_ratio,0.41212614497056393
+metrics.umpyre_stats.mean_lines_per_function,16.527143581938102
 metrics.umpyre_stats.files_analyzed,559
-metrics.umpyre_stats.pypi_version,0.4.2
+metrics.umpyre_stats.pypi_version,0.4.3
 metrics.workflow_status.last_run_status,success
-metrics.workflow_status.last_success_timestamp,2026-11-23T19:36:19Z
+metrics.workflow_status.last_success_timestamp,2026-11-23T19:55:19Z
 metrics.workflow_status.recent_failure_count,0
-metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/45250361432
+metrics.workflow_status.run_url,https://github.com/i2mint/dol/actions/runs/45253825208
 metrics.workflow_status.total_runs_analyzed,10
 metrics.wily.cyclomatic_avg,0.0
 metrics.wily.maintainability_index,0.0
@@ -60,4 +38,4 @@ metrics.coverage.branch_coverage,0.0
 metrics.coverage.statements_covered,0
 metrics.coverage.statements_total,0
 metrics.coverage.error,No coverage file found
-collection_duration_seconds,8.119249105453491
+collection_duration_seconds,5.254943370819092
